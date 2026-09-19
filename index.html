@@ -80,6 +80,15 @@ button.order:hover{background:var(--accent-2);}
 .accordion-header.active .accordion-arrow{transform:rotate(180deg);}
 .accordion-body{display:none;padding:14px 16px 18px;background:var(--bg-alt);border-top:1px solid var(--line);}
 .accordion-body.open{display:block;}
+.soon{display:inline-block;margin-left:10px;padding:3px 10px;border-radius:12px;background:#FDECE8;color:var(--accent-2);font-size:11px;font-weight:800;letter-spacing:.05em;vertical-align:middle;}
+.soon-item .accordion-header{cursor:default;}
+.soon-item .accordion-header:hover{background:#fff;}
+.soon-item .accordion-arrow{display:none;}
+.admin-top{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px;}
+.admin-bar{display:flex;gap:8px;flex-wrap:wrap;padding:8px 16px;background:#FFF7F5;border-top:1px dashed var(--accent);}
+.admin-top button,.admin-bar button,.mini{padding:7px 12px;border-radius:6px;border:1px solid var(--accent);background:#fff;color:var(--accent-2);font-size:12.5px;font-weight:700;cursor:pointer;}
+.admin-top button:hover,.admin-bar button:hover,.mini:hover{background:#FDECE8;}
+.admin-bar button.danger,.mini.danger{border-color:#c0392b;color:#c0392b;}
 .builder label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 6px;}
 .builder select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:6px;font-size:14.5px;background:#fff;margin-bottom:16px;color:var(--text);}
 .builder-price{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-top:1px solid var(--line);padding-top:16px;}
@@ -169,11 +178,7 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 
   <section id="tab-avulsas" class="hidden">
     <h2>Apostilas avulsas</h2>
-    <p class="lede">Legislação educacional ou conhecimento pedagógico, por licenciatura — sem levar o kit completo. R$ 10,00 cada.</p>
-    <div class="avulsa-types">
-      <div class="avulsa-type"><span class="avulsa-icon">📘</span><div><div class="avulsa-name">Legislação Educacional</div><div class="avulsa-price">R$ 10,00</div></div></div>
-      <div class="avulsa-type"><span class="avulsa-icon">📗</span><div><div class="avulsa-name">Conhecimento Pedagógico</div><div class="avulsa-price">R$ 10,00</div></div></div>
-    </div>
+    <p class="lede">Uma disciplina por vez, por licenciatura ou cargo — sem levar o kit completo. R$ 10,00 cada.</p>
     <div class="search" style="max-width:none;margin-bottom:14px;">
       <input id="avulsaSearch" placeholder="Filtrar por licenciatura...">
     </div>
@@ -237,13 +242,21 @@ const licenciaturas = [
   {area:"Artes", kit:"Kit Professor de Artes"},
   {area:"Sociologia", kit:"Kit Professor de Sociologia"},
   {area:"Filosofia", kit:"Kit Professor de Filosofia"},
-  {area:"Merendeiro", kit:"Kit Merendeiro"},
-  {area:"Técnico Administrativo", kit:"Kit Técnico Administrativo"}
+  {area:"Merendeiro", kit:"Kit Merendeiro", mods:["Língua Portuguesa","Matemática","Conhecimentos Específicos"]},
+  {area:"Assistente Técnico (Administrativo)", kit:"Kit Assistente Técnico (Administrativo)", mods:["Língua Portuguesa","Raciocínio Lógico-Matemático","Noções de Informática","Conhecimentos Específicos"]}
 ];
+const CONTEUDO_PADRAO = "4 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional e Mapas Mentais";
+licenciaturas.forEach(l=>{ if(l.mods){ l.conteudo = l.mods.length + " apostilas: " + l.mods.slice(0,-1).join(", ") + " e " + l.mods[l.mods.length-1]; } });
 
 let kits = JSON.parse(localStorage.getItem('kits_licenciatura') || 'null');
 if(!kits){
-  kits = licenciaturas.map((l,i)=>({id:i+1, nome:l.kit, conteudo:"4 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional e Mapas Mentais", price:"29,90"}));
+  kits = licenciaturas.map((l,i)=>({id:i+1, nome:l.kit, conteudo:l.conteudo || CONTEUDO_PADRAO, price:"29,90"}));
+} else {
+  kits.forEach(k=>{
+    const l = licenciaturas[k.id-1];
+    if(l && l.conteudo && k.conteudo === CONTEUDO_PADRAO){ k.conteudo = l.conteudo; }
+    if(l && k.nome === 'Kit Técnico Administrativo'){ k.nome = l.kit; }
+  });
 }
 
 function renderKits(filter){
@@ -267,7 +280,7 @@ renderKits('');
 const modulos = ["Legislação Educacional","Conhecimento Pedagógico"];
 let avulsas = [];
 licenciaturas.forEach((l,i)=>{
-  modulos.forEach((m,j)=>{
+  (l.mods || modulos).forEach((m,j)=>{
     avulsas.push({id:i*10+j, mod:m, lic:l.area, price:"10,00"});
   });
 });
@@ -277,7 +290,7 @@ function renderAvulsas(filter){
   const f = (filter||'').toLowerCase();
   el.innerHTML = avulsas.filter(a=>a.lic.toLowerCase().includes(f)).map(a=>`
     <div class="kitrow">
-      <div class="kitname">${a.mod === "Legislação Educacional" ? "📘" : "📗"} ${a.mod} — ${a.lic}</div>
+      <div class="kitname">${a.mod === "Legislação Educacional" ? "📘" : a.mod === "Conhecimento Pedagógico" ? "📗" : "📙"} ${a.mod} — ${a.lic}</div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="kitprice">R$ <b>${a.price}</b></div>
         <button class="order" onclick="openOrderAvulsa(${a.id})">Pedir pelo WhatsApp</button>
@@ -290,8 +303,8 @@ document.getElementById('avulsaSearch').addEventListener('input', e=>renderAvuls
 document.getElementById('searchBox').addEventListener('input', e=>renderKits(e.target.value));
 
 /* ---- outros concursos ---- */
-const outrosConcursos = {
-  pa: { nome:"SEDUC Pará", cargos:[
+const OUTROS_PADRAO = {
+  pa: { nome:"SEDUC Pará", breve:true, cargos:[
     {area:"Pedagogia", kit:"Kit Especialista em Educação"},
     {area:"Anos Iniciais", kit:"Kit Professor Classe I — Anos Iniciais"},
     {area:"História", kit:"Kit Professor Classe I — História"},
@@ -310,7 +323,7 @@ const outrosConcursos = {
     {area:"Libras", kit:"Kit Professor Classe I — Libras"},
     {area:"Gestão Administrativa", kit:"Kit Assistente de Gestão Governamental e Educacional"}
   ]},
-  ce: { nome:"SEDUC Ceará", cargos:[
+  ce: { nome:"SEDUC Ceará", breve:true, cargos:[
     {area:"Língua Portuguesa", kit:"Kit Professor Nível C — Português"},
     {area:"Matemática", kit:"Kit Professor Nível C — Matemática"},
     {area:"História", kit:"Kit Professor Nível C — História"},
@@ -326,7 +339,7 @@ const outrosConcursos = {
     {area:"Língua Espanhola", kit:"Kit Professor Nível C — Espanhol"},
     {area:"Atendimento Educacional Especializado", kit:"Kit Professor Nível C — AEE"}
   ]},
-  pvh: { nome:"SEMED Porto Velho", cargos:[
+  pvh: { nome:"SEMED Porto Velho", breve:true, cargos:[
     {area:"Pedagogia (Séries Iniciais)", kit:"Kit Professor Nível II — Séries Iniciais"},
     {area:"Letras / Português-Inglês", kit:"Kit Professor Nível II — Português/Inglês"},
     {area:"Matemática", kit:"Kit Professor Nível II — Matemática"},
@@ -341,7 +354,14 @@ const outrosConcursos = {
   ]}
 };
 
-let outrosKits = {}, outrosOpened = {};
+function escHtml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+let outrosConcursos = null;
+try{ outrosConcursos = JSON.parse(localStorage.getItem('outros_config') || 'null'); }catch(e){ outrosConcursos = null; }
+if(!outrosConcursos || typeof outrosConcursos !== 'object'){ outrosConcursos = JSON.parse(JSON.stringify(OUTROS_PADRAO)); }
+function saveOutros(){ try{ localStorage.setItem('outros_config', JSON.stringify(outrosConcursos)); }catch(e){} }
+function saveOutrosKits(key){ try{ localStorage.setItem('kits_'+key, JSON.stringify(outrosKits[key])); }catch(e){} }
+
+let outrosKits = {}, outrosOpened = {}, outrosOpenKey = null;
 Object.keys(outrosConcursos).forEach(key=>{
   let stored = JSON.parse(localStorage.getItem('kits_'+key) || 'null');
   if(!stored){
@@ -352,24 +372,47 @@ Object.keys(outrosConcursos).forEach(key=>{
 
 function renderOutros(){
   const wrap = document.getElementById('outrosWrap');
-  wrap.innerHTML = Object.keys(outrosConcursos).map(key=>{
+  const keys = Object.keys(outrosConcursos);
+  let html = '';
+  if(adminMode){
+    html += `<div class="admin-top">
+      <button onclick="addConcurso()">＋ Novo concurso</button>
+      <button onclick="exportOutros()">Copiar configuração</button>
+    </div>`;
+  }
+  if(!keys.length){ html += `<p class="lede">Nenhum concurso cadastrado.</p>`; }
+  html += keys.map(key=>{
     const c = outrosConcursos[key];
-    return `<div class="accordion-item">
+    const locked = c.breve && !adminMode;
+    return `<div class="accordion-item${locked?' soon-item':''}">
       <div class="accordion-header" onclick="toggleAccordion('${key}', this)">
-        <span>${c.nome}</span><span class="accordion-arrow">▾</span>
+        <span>${escHtml(c.nome)}${c.breve?'<span class="soon">EM BREVE</span>':''}</span><span class="accordion-arrow">▾</span>
       </div>
+      ${adminMode?`<div class="admin-bar">
+        <button onclick="renameConcurso('${key}')">Editar nome</button>
+        <button onclick="toggleBreve('${key}')">${c.breve?'Marcar como disponível':'Marcar como EM BREVE'}</button>
+        <button onclick="addCargo('${key}')">＋ Adicionar cargo/kit</button>
+        <button class="danger" onclick="deleteConcurso('${key}')">Excluir concurso</button>
+      </div>`:''}
       <div class="accordion-body" id="acc-${key}">
         <div class="kitlist" id="kitlist-${key}"></div>
-        <p class="lede" style="margin-top:18px;margin-bottom:8px;">Apostilas avulsas (R$ 10,00 cada)</p>
+        ${c.cargos.length?`<p class="lede" style="margin-top:18px;margin-bottom:8px;">Apostilas avulsas (R$ 10,00 cada)</p>`:''}
         <div class="kitlist" id="avulsalist-${key}"></div>
       </div>
     </div>`;
   }).join('');
+  wrap.innerHTML = html;
+  outrosOpened = {};
+  if(outrosOpenKey && outrosConcursos[outrosOpenKey]){ openAccordion(outrosOpenKey); } else { outrosOpenKey = null; }
 }
 renderOutros();
 
 function renderOutrosKits(key){
   const el = document.getElementById('kitlist-'+key);
+  if(!outrosKits[key].length){
+    el.innerHTML = adminMode ? `<div class="kitrow" style="color:var(--muted);font-size:13.5px;">Nenhum kit ainda. Use "＋ Adicionar cargo/kit".</div>` : '';
+    return;
+  }
   el.innerHTML = outrosKits[key].map(k=>`
     <div class="kitrow">
       <div>
@@ -379,6 +422,7 @@ function renderOutrosKits(key){
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="kitprice">R$ <b class="editable" data-field="price" data-outros="${key}" data-id="${k.id}">${k.price}</b></div>
         <button class="order" onclick="openOrderOutrosKit('${key}',${k.id})">Pedir pelo WhatsApp</button>
+        ${adminMode?`<button class="mini danger" onclick="removeCargo('${key}',${k.id})">Remover</button>`:''}
       </div>
     </div>`).join('');
   if(adminMode) makeEditable();
@@ -398,20 +442,93 @@ function renderOutrosAvulsas(key){
       </div>
     </div>`).join('');
 }
+function openAccordion(key){
+  const body = document.getElementById('acc-'+key);
+  if(!body) return;
+  const header = body.parentElement.querySelector('.accordion-header');
+  body.classList.add('open');
+  header.classList.add('active');
+  if(!outrosOpened[key]){
+    renderOutrosKits(key);
+    renderOutrosAvulsas(key);
+    outrosOpened[key] = true;
+  }
+  outrosOpenKey = key;
+}
 function toggleAccordion(key, headerEl){
+  const c = outrosConcursos[key];
+  if(!c || (c.breve && !adminMode)) return;
   const body = document.getElementById('acc-'+key);
   const wasOpen = body.classList.contains('open');
   document.querySelectorAll('.accordion-body').forEach(b=>b.classList.remove('open'));
   document.querySelectorAll('.accordion-header').forEach(h=>h.classList.remove('active'));
-  if(!wasOpen){
-    body.classList.add('open');
-    headerEl.classList.add('active');
-    if(!outrosOpened[key]){
-      renderOutrosKits(key);
-      renderOutrosAvulsas(key);
-      outrosOpened[key] = true;
-    }
-  }
+  outrosOpenKey = null;
+  if(!wasOpen){ openAccordion(key); }
+}
+
+/* ---- admin: concursos ---- */
+function addConcurso(){
+  const nome = (prompt('Nome do concurso (ex.: SEDUC Amazonas):') || '').trim();
+  if(!nome) return;
+  const key = 'c' + Date.now().toString(36);
+  outrosConcursos[key] = {nome, breve:true, cargos:[]};
+  outrosKits[key] = [];
+  saveOutros(); saveOutrosKits(key);
+  outrosOpenKey = key;
+  renderOutros();
+}
+function renameConcurso(key){
+  const nome = (prompt('Novo nome do concurso:', outrosConcursos[key].nome) || '').trim();
+  if(!nome) return;
+  outrosConcursos[key].nome = nome;
+  saveOutros(); renderOutros();
+}
+function toggleBreve(key){
+  outrosConcursos[key].breve = !outrosConcursos[key].breve;
+  saveOutros(); renderOutros();
+}
+function deleteConcurso(key){
+  if(!confirm('Excluir "' + outrosConcursos[key].nome + '" e todos os kits dele?')) return;
+  delete outrosConcursos[key];
+  delete outrosKits[key];
+  try{ localStorage.removeItem('kits_'+key); }catch(e){}
+  if(outrosOpenKey === key) outrosOpenKey = null;
+  saveOutros(); renderOutros();
+}
+function addCargo(key){
+  const area = (prompt('Nome do cargo/licenciatura (ex.: História):') || '').trim();
+  if(!area) return;
+  const lista = outrosKits[key];
+  const id = lista.reduce((m,k)=>Math.max(m,k.id),0) + 1;
+  outrosConcursos[key].cargos.push({area, kit:'Kit ' + area});
+  lista.push({id, nome:'Kit ' + area, conteudo:"4 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional e Mapas Mentais", price:"29,90"});
+  saveOutros(); saveOutrosKits(key);
+  outrosOpenKey = key;
+  renderOutros();
+}
+function removeCargo(key,id){
+  const idx = outrosKits[key].findIndex(k=>k.id===id);
+  if(idx < 0) return;
+  if(!confirm('Remover "' + outrosKits[key][idx].nome + '" (kit e apostilas avulsas desse cargo)?')) return;
+  outrosKits[key].splice(idx,1);
+  outrosConcursos[key].cargos.splice(idx,1);
+  saveOutros(); saveOutrosKits(key);
+  outrosOpenKey = key;
+  renderOutros();
+}
+function fallbackCopy(txt, done){
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ prompt('Copie este texto:', txt); }
+  document.body.removeChild(ta);
+}
+function exportOutros(){
+  const txt = JSON.stringify({concursos:outrosConcursos, kits:outrosKits});
+  const done = ()=>alert('Configuração copiada. Cole no chat para atualizar o arquivo do site.');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt, done));
+  } else { fallbackCopy(txt, done); }
 }
 
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
@@ -472,7 +589,7 @@ function checkPw(){
     document.getElementById('pwOverlay').classList.remove('show');
     document.getElementById('pwMsg').textContent = '';
     makeEditable();
-    Object.keys(outrosOpened).forEach(key=>{ if(outrosOpened[key]){ renderOutrosKits(key); } });
+    renderOutros();
   } else {
     attempts++;
     document.getElementById('pwMsg').textContent = `Senha incorreta (${attempts}/3)`;
