@@ -115,6 +115,14 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 /* admin */
 .lock{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;opacity:.18;cursor:default;margin-left:8px;}
 .admin-on .editable{outline:1px dashed var(--accent);outline-offset:2px;}
+.admin-banner{display:none;background:#FFF7F5;border-bottom:1px dashed var(--accent);padding:10px 0;font-size:13px;color:var(--text);}
+.admin-on .admin-banner{display:block;}
+.admin-banner .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.admin-banner button{padding:8px 14px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.admin-banner button:hover{background:var(--accent-2);}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:9px 16px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:70;max-width:90vw;text-align:center;}
+.toast.show{opacity:1;}
+.toast.erro{background:#c0392b;}
 .pw-overlay{position:fixed;inset:0;background:rgba(20,28,74,.7);display:none;align-items:center;justify-content:center;z-index:60;}
 .pw-overlay.show{display:flex;}
 .pw-box{background:#fff;padding:24px;border-radius:10px;width:280px;}
@@ -131,6 +139,14 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
     <div class="search"><input id="searchBox" placeholder="Qual licenciatura você procura?"></div>
   </div>
 </nav>
+
+<div class="admin-banner" id="adminBanner">
+  <div class="wrap">
+    <span>Modo administrador: o que você altera fica salvo só neste navegador. Para todos verem, baixe o site atualizado e substitua o <b>index.html</b> no GitHub.</span>
+    <button onclick="baixarSite()">Baixar site atualizado</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
 
 <header class="hero">
   <div class="wrap" style="text-align:center;">
@@ -224,6 +240,22 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 <script>
 const WHATSAPP_NUMBER = "5592984478798";
 
+const CONFIG_SALVA = /*CFG_INI*/null/*CFG_FIM*/;
+function copiaProfunda(x){ return JSON.parse(JSON.stringify(x)); }
+function hashTxt(t){ let h = 5381; for(let i=0;i<t.length;i++){ h = ((h<<5)+h+t.charCodeAt(i))|0; } return String(h); }
+function gravarLocal(chave, valor){ try{ localStorage.setItem(chave, JSON.stringify(valor)); return true; }catch(e){ return false; } }
+let toastTimer = null;
+function toast(msg, erro){
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.toggle('erro', !!erro);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function avisoSalvo(ok){ toast(ok ? '✓ Salvo neste navegador' : 'Não foi possível salvar neste navegador', !ok); }
+
 let adminMode = false, attempts = 0, lockedUntil = 0;
 let currentItem = null;
 function norm(t){ return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
@@ -244,20 +276,21 @@ const licenciaturas = [
   {area:"Artes", kit:"Kit Professor de Artes"},
   {area:"Sociologia", kit:"Kit Professor de Sociologia"},
   {area:"Filosofia", kit:"Kit Professor de Filosofia"},
-  {area:"Merendeiro", kit:"Kit Merendeiro", mods:["Língua Portuguesa","Matemática","Conhecimentos Específicos"]},
-  {area:"Assistente Técnico (Administrativo)", kit:"Kit Assistente Técnico (Administrativo)", mods:["Língua Portuguesa","Raciocínio Lógico-Matemático","Noções de Informática","Conhecimentos Específicos"]}
+  {area:"Merendeiro", kit:"Kit Merendeiro", price:"19,90", mods:["Língua Portuguesa","Matemática","Conhecimentos Específicos"]},
+  {area:"Assistente Técnico (Administrativo)", kit:"Kit Assistente Técnico (Administrativo)", price:"24,90", mods:["Língua Portuguesa","Raciocínio Lógico-Matemático","Noções de Informática","Conhecimentos Específicos"]}
 ];
 const CONTEUDO_PADRAO = "4 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional e Mapas Mentais";
 licenciaturas.forEach(l=>{ if(l.mods){ l.conteudo = l.mods.length + " apostilas: " + l.mods.slice(0,-1).join(", ") + " e " + l.mods[l.mods.length-1]; } });
 
 let kits = JSON.parse(localStorage.getItem('kits_licenciatura') || 'null');
 if(!kits){
-  kits = licenciaturas.map((l,i)=>({id:i+1, nome:l.kit, conteudo:l.conteudo || CONTEUDO_PADRAO, price:"29,90"}));
+  kits = (CONFIG_SALVA && Array.isArray(CONFIG_SALVA.kits)) ? copiaProfunda(CONFIG_SALVA.kits) : licenciaturas.map((l,i)=>({id:i+1, nome:l.kit, conteudo:l.conteudo || CONTEUDO_PADRAO, price:l.price || "29,90"}));
 } else {
   kits.forEach(k=>{
     const l = licenciaturas[k.id-1];
     if(l && l.conteudo && k.conteudo === CONTEUDO_PADRAO){ k.conteudo = l.conteudo; }
     if(l && k.nome === 'Kit Técnico Administrativo'){ k.nome = l.kit; }
+    if(l && l.price && k.price === '29,90'){ k.price = l.price; }
   });
 }
 
@@ -280,21 +313,22 @@ function renderKits(filter){
 renderKits('');
 
 const modulos = ["Legislação Educacional","Conhecimento Pedagógico"];
-const AVULSAS_VERSAO = 3;
 function avulsasPadrao(){
+  if(CONFIG_SALVA && Array.isArray(CONFIG_SALVA.avulsas)){ return copiaProfunda(CONFIG_SALVA.avulsas); }
   const out = [];
   let id = 1;
   ["Legislação Educacional","Conhecimento Pedagógico","ECA","LDB"].forEach(m=>out.push({id:id++, mod:m, lic:"", price:"10,00"}));
   licenciaturas.forEach(l=>out.push({id:id++, mod:"Conhecimento Específico", lic:l.area, price:"10,00"}));
   return out;
 }
+const AVULSAS_SIG = hashTxt(JSON.stringify(avulsasPadrao()));
 let avulsas = null;
 try{
   const st = JSON.parse(localStorage.getItem('avulsas_licenciatura') || 'null');
-  if(st && st.v === AVULSAS_VERSAO && Array.isArray(st.lista)){ avulsas = st.lista; }
+  if(st && st.sig === AVULSAS_SIG && Array.isArray(st.lista)){ avulsas = st.lista; }
 }catch(e){ avulsas = null; }
 if(!avulsas){ avulsas = avulsasPadrao(); }
-function saveAvulsas(){ try{ localStorage.setItem('avulsas_licenciatura', JSON.stringify({v:AVULSAS_VERSAO, lista:avulsas})); }catch(e){} }
+function saveAvulsas(){ return gravarLocal('avulsas_licenciatura', {sig:AVULSAS_SIG, lista:avulsas}); }
 function iconeAvulsa(mod){
   const m = norm(mod);
   return /legisla|\beca\b|\bldb\b/.test(m) ? "📘" : /pedagog/.test(m) ? "📗" : "📙";
@@ -412,13 +446,17 @@ const OUTROS_PADRAO = {
 function escHtml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 let outrosConcursos = null;
 try{ outrosConcursos = JSON.parse(localStorage.getItem('outros_config') || 'null'); }catch(e){ outrosConcursos = null; }
-if(!outrosConcursos || typeof outrosConcursos !== 'object'){ outrosConcursos = JSON.parse(JSON.stringify(OUTROS_PADRAO)); }
-function saveOutros(){ try{ localStorage.setItem('outros_config', JSON.stringify(outrosConcursos)); }catch(e){} }
-function saveOutrosKits(key){ try{ localStorage.setItem('kits_'+key, JSON.stringify(outrosKits[key])); }catch(e){} }
+const OUTROS_BASE = (CONFIG_SALVA && CONFIG_SALVA.outros && CONFIG_SALVA.outros.concursos) ? CONFIG_SALVA.outros.concursos : OUTROS_PADRAO;
+if(!outrosConcursos || typeof outrosConcursos !== 'object'){ outrosConcursos = copiaProfunda(OUTROS_BASE); }
+function saveOutros(){ return gravarLocal('outros_config', outrosConcursos); }
+function saveOutrosKits(key){ return gravarLocal('kits_'+key, outrosKits[key]); }
 
 let outrosKits = {}, outrosOpened = {}, outrosOpenKey = null;
 Object.keys(outrosConcursos).forEach(key=>{
   let stored = JSON.parse(localStorage.getItem('kits_'+key) || 'null');
+  if(!stored && CONFIG_SALVA && CONFIG_SALVA.outros && CONFIG_SALVA.outros.kits && Array.isArray(CONFIG_SALVA.outros.kits[key])){
+    stored = copiaProfunda(CONFIG_SALVA.outros.kits[key]);
+  }
   if(!stored){
     stored = outrosConcursos[key].cargos.map((c,i)=>({id:i+1, nome:c.kit, conteudo:"4 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional e Mapas Mentais", price:"29,90"}));
   }
@@ -660,22 +698,49 @@ function checkPw(){
 function makeEditable(){
   document.querySelectorAll('.editable').forEach(el=>{
     el.contentEditable = true;
+    el.onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); el.blur(); } };
     el.oninput = () => {
       const id = Number(el.dataset.id), field = el.dataset.field, outros = el.dataset.outros;
+      const valor = el.textContent.trim();
+      let ok = true;
       if(el.dataset.avulsa){
         const av = avulsas.find(a=>a.id===id);
-        if(av){ av[field] = el.textContent; saveAvulsas(); }
-        return;
-      }
-      if(outros){
+        if(av){ av[field] = valor; ok = saveAvulsas(); }
+      } else if(outros){
         const item = outrosKits[outros].find(k=>k.id===id);
-        if(item){ item[field] = el.textContent; localStorage.setItem('kits_'+outros, JSON.stringify(outrosKits[outros])); }
+        if(item){ item[field] = valor; ok = gravarLocal('kits_'+outros, outrosKits[outros]); }
       } else {
         const item = kits.find(k=>k.id===id);
-        if(item){ item[field] = el.textContent; localStorage.setItem('kits_licenciatura', JSON.stringify(kits)); }
+        if(item){ item[field] = valor; ok = gravarLocal('kits_licenciatura', kits); }
       }
+      avisoSalvo(ok);
     };
   });
+}
+
+async function baixarSite(){
+  try{
+    const url = location.href.split('#')[0].split('?')[0];
+    const r = await fetch(url, {cache:'no-store'});
+    if(!r.ok){ throw new Error('http ' + r.status); }
+    const orig = await r.text();
+    const ini = '/*CFG_' + 'INI*/', fim = '/*CFG_' + 'FIM*/';
+    const i = orig.indexOf(ini), j = orig.indexOf(fim, i);
+    if(i < 0 || j < 0){ throw new Error('versão antiga publicada'); }
+    const cfg = JSON.stringify({avulsas:avulsas, kits:kits, outros:{concursos:outrosConcursos, kits:outrosKits}}).replace(/</g,'\\u003c');
+    const novo = orig.slice(0, i + ini.length) + cfg + orig.slice(j);
+    const blob = new Blob([novo], {type:'text/html;charset=utf-8'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'index.html';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(link.href), 4000);
+    toast('Arquivo baixado. Agora substitua o index.html no GitHub.');
+  }catch(e){
+    alert('Não consegui gerar o arquivo. Abra o site pelo endereço do GitHub Pages (não pelo arquivo do computador). Se o erro continuar, o index.html publicado pode ser uma versão antiga: suba primeiro a versão mais recente e tente de novo.');
+  }
 }
 </script>
 </body>
