@@ -218,6 +218,9 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 <script>
 const WHATSAPP_NUMBER = "5592984478798";
 
+let adminMode = false, attempts = 0, lockedUntil = 0;
+let currentItem = null;
+
 const licenciaturas = [
   {area:"Pedagogia", kit:"Kit Pedagogo"},
   {area:"Anos Iniciais (1º ao 5º ano)", kit:"Kit Professor de 1º ao 5º ano"},
@@ -419,7 +422,6 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
   document.getElementById('tab-outros').classList.toggle('hidden', t.dataset.tab!=='outros');
 }));
 
-let currentItem = null;
 function openOrderKit(id){
   const k = kits.find(x=>x.id===id);
   currentItem = {title:k.nome, price:k.price};
@@ -445,14 +447,16 @@ function openOrderOutrosAvulsa(key,mod,lic){
 }
 function closeOrder(){ document.getElementById('orderOverlay').classList.remove('show'); }
 function sendOrder(){
+  if(!currentItem){ closeOrder(); return; }
   const name = document.getElementById('buyerName').value.trim() || 'Interessado(a)';
   const msg = `Olá! Sou ${name} e quero pedir: ${currentItem.title} — R$ ${currentItem.price}.`;
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   closeOrder();
+  const win = window.open(url, '_blank');
+  if(!win){ window.location.href = url; }
 }
 
 /* ---- admin ---- */
-let adminMode = false, attempts = 0, lockedUntil = 0;
 function openPw(){
   if(Date.now() < lockedUntil){ return; }
   document.getElementById('pwOverlay').classList.add('show');
