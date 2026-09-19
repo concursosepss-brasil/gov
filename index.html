@@ -114,7 +114,7 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 
 /* admin */
 .lock{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;opacity:.18;cursor:default;margin-left:8px;}
-.editable{outline:1px dashed var(--accent);outline-offset:2px;}
+.admin-on .editable{outline:1px dashed var(--accent);outline-offset:2px;}
 .pw-overlay{position:fixed;inset:0;background:rgba(20,28,74,.7);display:none;align-items:center;justify-content:center;z-index:60;}
 .pw-overlay.show{display:flex;}
 .pw-box{background:#fff;padding:24px;border-radius:10px;width:280px;}
@@ -156,7 +156,7 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
   <div class="wrap">
     <span class="badge">CONCURSO PÚBLICO ÁREA EDUCACIONAL - APOSTILAS</span>
     <h1>Kits para todas as licenciaturas</h1>
-    <p>Kits completos por licenciatura e apostilas avulsas de legislação educacional e conhecimento pedagógico — direto ao edital, com pedido pelo WhatsApp.</p>
+    <p>Kits completos por licenciatura e apostilas avulsas por disciplina — direto ao edital, com pedido pelo WhatsApp.</p>
   </div>
 </header>
 
@@ -172,15 +172,16 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 
   <section id="tab-kits">
     <h2>Kits completos</h2>
-    <p class="lede">Cada kit reúne conhecimentos específicos da licenciatura, conhecimento pedagógico e legislação educacional.</p>
+    <p class="lede">Cada kit reúne as apostilas das disciplinas cobradas no edital para o cargo.</p>
     <div class="kitlist" id="kitList"></div>
   </section>
 
   <section id="tab-avulsas" class="hidden">
     <h2>Apostilas avulsas</h2>
     <p class="lede">Uma disciplina por vez, por licenciatura ou cargo — sem levar o kit completo. R$ 10,00 cada.</p>
+    <div id="avulsaAdmin"></div>
     <div class="search" style="max-width:none;margin-bottom:14px;">
-      <input id="avulsaSearch" placeholder="Filtrar por licenciatura...">
+      <input id="avulsaSearch" placeholder="Filtrar por apostila ou licenciatura...">
     </div>
     <div class="kitlist" id="avulsaList"></div>
   </section>
@@ -225,9 +226,10 @@ const WHATSAPP_NUMBER = "5592984478798";
 
 let adminMode = false, attempts = 0, lockedUntil = 0;
 let currentItem = null;
+function norm(t){ return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
 
 const licenciaturas = [
-  {area:"Pedagogia", kit:"Kit Pedagogo"},
+  {area:"Pedagogo", kit:"Kit Pedagogo"},
   {area:"Anos Iniciais (1º ao 5º ano)", kit:"Kit Professor de 1º ao 5º ano"},
   {area:"Educação Infantil", kit:"Kit Professor de Educação Infantil"},
   {area:"História", kit:"Kit Professor de História"},
@@ -261,8 +263,8 @@ if(!kits){
 
 function renderKits(filter){
   const el = document.getElementById('kitList');
-  const f = (filter||'').toLowerCase();
-  el.innerHTML = kits.filter(k=>k.nome.toLowerCase().includes(f)).map(k=>`
+  const f = norm(filter);
+  el.innerHTML = kits.filter(k=>norm(k.nome).includes(f)).map(k=>`
     <div class="kitrow">
       <div>
         <div class="kitname editable" data-field="nome" data-id="${k.id}">${k.nome}</div>
@@ -278,25 +280,78 @@ function renderKits(filter){
 renderKits('');
 
 const modulos = ["Legislação Educacional","Conhecimento Pedagógico"];
-let avulsas = [];
-licenciaturas.forEach((l,i)=>{
-  (l.mods || modulos).forEach((m,j)=>{
-    avulsas.push({id:i*10+j, mod:m, lic:l.area, price:"10,00"});
-  });
-});
+const AVULSAS_VERSAO = 3;
+function avulsasPadrao(){
+  const out = [];
+  let id = 1;
+  ["Legislação Educacional","Conhecimento Pedagógico","ECA","LDB"].forEach(m=>out.push({id:id++, mod:m, lic:"", price:"10,00"}));
+  licenciaturas.forEach(l=>out.push({id:id++, mod:"Conhecimento Específico", lic:l.area, price:"10,00"}));
+  return out;
+}
+let avulsas = null;
+try{
+  const st = JSON.parse(localStorage.getItem('avulsas_licenciatura') || 'null');
+  if(st && st.v === AVULSAS_VERSAO && Array.isArray(st.lista)){ avulsas = st.lista; }
+}catch(e){ avulsas = null; }
+if(!avulsas){ avulsas = avulsasPadrao(); }
+function saveAvulsas(){ try{ localStorage.setItem('avulsas_licenciatura', JSON.stringify({v:AVULSAS_VERSAO, lista:avulsas})); }catch(e){} }
+function iconeAvulsa(mod){
+  const m = norm(mod);
+  return /legisla|\beca\b|\bldb\b/.test(m) ? "📘" : /pedagog/.test(m) ? "📗" : "📙";
+}
 
 function renderAvulsas(filter){
   const el = document.getElementById('avulsaList');
-  const f = (filter||'').toLowerCase();
-  el.innerHTML = avulsas.filter(a=>a.lic.toLowerCase().includes(f)).map(a=>`
+  const f = norm(filter);
+  const bar = document.getElementById('avulsaAdmin');
+  bar.innerHTML = adminMode ? `<div class="admin-top">
+      <button onclick="addAvulsa()">＋ Nova apostila avulsa</button>
+      <button onclick="exportAvulsas()">Copiar configuração</button>
+      <button class="danger" onclick="resetAvulsas()">Restaurar lista padrão</button>
+    </div>` : '';
+  const rows = avulsas.filter(a=>norm(a.lic+' '+a.mod).includes(f));
+  if(!rows.length){
+    el.innerHTML = `<div class="kitrow" style="color:var(--muted);font-size:13.5px;">${adminMode?'Nenhuma apostila avulsa. Use "＋ Nova apostila avulsa".':'Nenhuma apostila encontrada.'}</div>`;
+    return;
+  }
+  const ed = (field,id) => adminMode ? ` class="editable" data-avulsa="1" data-field="${field}" data-id="${id}"` : '';
+  el.innerHTML = rows.map(a=>`
     <div class="kitrow">
-      <div class="kitname">${a.mod === "Legislação Educacional" ? "📘" : a.mod === "Conhecimento Pedagógico" ? "📗" : "📙"} ${a.mod} — ${a.lic}</div>
+      <div class="kitname">${iconeAvulsa(a.mod)} <span${ed('mod',a.id)}>${escHtml(a.mod)}</span>${a.lic?` — <span${ed('lic',a.id)}>${escHtml(a.lic)}</span>`:''}</div>
       <div style="display:flex;align-items:center;gap:12px;">
-        <div class="kitprice">R$ <b>${a.price}</b></div>
+        <div class="kitprice">R$ <b${ed('price',a.id)}>${escHtml(a.price)}</b></div>
         <button class="order" onclick="openOrderAvulsa(${a.id})">Pedir pelo WhatsApp</button>
+        ${adminMode?`<button class="mini danger" onclick="removeAvulsa(${a.id})">Remover</button>`:''}
       </div>
     </div>`).join('');
+  if(adminMode) makeEditable();
 }
+function addAvulsa(){
+  const mod = (prompt('Nome da apostila (ex.: Conhecimento Específico):') || '').trim();
+  if(!mod) return;
+  const licRaw = prompt('Licenciatura ou cargo (ex.: História). Deixe em branco se for para todos:');
+  if(licRaw === null) return;
+  const lic = licRaw.trim();
+  const id = avulsas.reduce((m,a)=>Math.max(m,a.id),0) + 1;
+  avulsas.push({id, mod, lic, price:"10,00"});
+  saveAvulsas();
+  document.getElementById('avulsaSearch').value = '';
+  renderAvulsas('');
+}
+function removeAvulsa(id){
+  const a = avulsas.find(x=>x.id===id);
+  if(!a || !confirm('Remover "' + a.mod + (a.lic ? ' — ' + a.lic : '') + '"?')) return;
+  avulsas = avulsas.filter(x=>x.id!==id);
+  saveAvulsas();
+  renderAvulsas(document.getElementById('avulsaSearch').value);
+}
+function resetAvulsas(){
+  if(!confirm('Voltar a lista de apostilas avulsas ao padrão? Suas alterações nesta aba serão perdidas.')) return;
+  try{ localStorage.removeItem('avulsas_licenciatura'); }catch(e){}
+  avulsas = avulsasPadrao();
+  renderAvulsas(document.getElementById('avulsaSearch').value);
+}
+function exportAvulsas(){ copiarConfig(JSON.stringify({avulsas:avulsas})); }
 renderAvulsas('');
 document.getElementById('avulsaSearch').addEventListener('input', e=>renderAvulsas(e.target.value));
 
@@ -523,13 +578,13 @@ function fallbackCopy(txt, done){
   try{ document.execCommand('copy'); done(); }catch(e){ prompt('Copie este texto:', txt); }
   document.body.removeChild(ta);
 }
-function exportOutros(){
-  const txt = JSON.stringify({concursos:outrosConcursos, kits:outrosKits});
+function copiarConfig(txt){
   const done = ()=>alert('Configuração copiada. Cole no chat para atualizar o arquivo do site.');
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt, done));
   } else { fallbackCopy(txt, done); }
 }
+function exportOutros(){ copiarConfig(JSON.stringify({concursos:outrosConcursos, kits:outrosKits})); }
 
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -547,7 +602,7 @@ function openOrderKit(id){
 }
 function openOrderAvulsa(id){
   const a = avulsas.find(x=>x.id===id);
-  currentItem = {title:`${a.mod} — ${a.lic}`, price:a.price};
+  currentItem = {title:a.lic ? `${a.mod} — ${a.lic}` : a.mod, price:a.price};
   document.getElementById('orderItemLabel').textContent = currentItem.title;
   document.getElementById('orderOverlay').classList.add('show');
 }
@@ -588,8 +643,10 @@ function checkPw(){
     adminMode = true;
     document.getElementById('pwOverlay').classList.remove('show');
     document.getElementById('pwMsg').textContent = '';
+    document.body.classList.add('admin-on');
     makeEditable();
     renderOutros();
+    renderAvulsas(document.getElementById('avulsaSearch').value);
   } else {
     attempts++;
     document.getElementById('pwMsg').textContent = `Senha incorreta (${attempts}/3)`;
@@ -605,6 +662,11 @@ function makeEditable(){
     el.contentEditable = true;
     el.oninput = () => {
       const id = Number(el.dataset.id), field = el.dataset.field, outros = el.dataset.outros;
+      if(el.dataset.avulsa){
+        const av = avulsas.find(a=>a.id===id);
+        if(av){ av[field] = el.textContent; saveAvulsas(); }
+        return;
+      }
       if(outros){
         const item = outrosKits[outros].find(k=>k.id===id);
         if(item){ item[field] = el.textContent; localStorage.setItem('kits_'+outros, JSON.stringify(outrosKits[outros])); }
