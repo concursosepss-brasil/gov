@@ -194,7 +194,7 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 
   <section id="tab-avulsas" class="hidden">
     <h2>Apostilas avulsas</h2>
-    <p class="lede">Uma disciplina por vez, por licenciatura ou cargo — sem levar o kit completo. R$ 10,00 cada.</p>
+    <p class="lede">Uma disciplina por vez, por licenciatura ou cargo — sem levar o kit completo.</p>
     <div id="avulsaAdmin"></div>
     <div class="search" style="max-width:none;margin-bottom:14px;">
       <input id="avulsaSearch" placeholder="Filtrar por apostila ou licenciatura...">
@@ -240,6 +240,7 @@ footer{font-size:12px;color:#9096A8;text-align:center;padding:28px 20px 14px;}
 <script>
 const WHATSAPP_NUMBER = "5592984478798";
 
+const PRECO_AVULSA = "19,90";
 const CONFIG_SALVA = /*CFG_INI*/null/*CFG_FIM*/;
 function copiaProfunda(x){ return JSON.parse(JSON.stringify(x)); }
 function hashTxt(t){ let h = 5381; for(let i=0;i<t.length;i++){ h = ((h<<5)+h+t.charCodeAt(i))|0; } return String(h); }
@@ -276,8 +277,8 @@ const licenciaturas = [
   {area:"Artes", kit:"Kit Professor de Artes"},
   {area:"Sociologia", kit:"Kit Professor de Sociologia"},
   {area:"Filosofia", kit:"Kit Professor de Filosofia"},
-  {area:"Merendeiro", kit:"Kit Merendeiro", price:"19,90", mods:["Língua Portuguesa","Matemática","Conhecimentos Específicos"]},
-  {area:"Assistente Técnico (Administrativo)", kit:"Kit Assistente Técnico (Administrativo)", price:"24,90", mods:["Língua Portuguesa","Raciocínio Lógico-Matemático","Noções de Informática","Conhecimentos Específicos"]}
+  {area:"Merendeiro", kit:"Kit Merendeiro", price:"19,90", avulsaPrice:"14,90", mods:["Língua Portuguesa","Matemática","Conhecimentos Específicos"]},
+  {area:"Assistente Técnico (Administrativo)", kit:"Kit Assistente Técnico (Administrativo)", mods:["Língua Portuguesa","Raciocínio Lógico-Matemático","Noções de Informática","Conhecimentos Específicos"]}
 ];
 const CONTEUDO_PADRAO = "4 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional e Mapas Mentais";
 licenciaturas.forEach(l=>{ if(l.mods){ l.conteudo = l.mods.length + " apostilas: " + l.mods.slice(0,-1).join(", ") + " e " + l.mods[l.mods.length-1]; } });
@@ -291,6 +292,7 @@ if(!kits){
     if(l && l.conteudo && k.conteudo === CONTEUDO_PADRAO){ k.conteudo = l.conteudo; }
     if(l && k.nome === 'Kit Técnico Administrativo'){ k.nome = l.kit; }
     if(l && l.price && k.price === '29,90'){ k.price = l.price; }
+    if(l && l.area.indexOf('Assistente Técnico') === 0 && k.price === '24,90'){ k.price = '29,90'; }
   });
 }
 
@@ -317,8 +319,8 @@ function avulsasPadrao(){
   if(CONFIG_SALVA && Array.isArray(CONFIG_SALVA.avulsas)){ return copiaProfunda(CONFIG_SALVA.avulsas); }
   const out = [];
   let id = 1;
-  ["Legislação Educacional","Conhecimento Pedagógico","ECA","LDB"].forEach(m=>out.push({id:id++, mod:m, lic:"", price:"10,00"}));
-  licenciaturas.forEach(l=>out.push({id:id++, mod:"Conhecimento Específico", lic:l.area, price:"10,00"}));
+  [["Legislação Educacional",PRECO_AVULSA],["Conhecimento Pedagógico",PRECO_AVULSA],["ECA","10,00"],["LDB","10,00"]].forEach(p=>out.push({id:id++, mod:p[0], lic:"", price:p[1]}));
+  licenciaturas.forEach(l=>out.push({id:id++, mod:"Conhecimento Específico", lic:l.area, price:l.avulsaPrice || PRECO_AVULSA}));
   return out;
 }
 const AVULSAS_SIG = hashTxt(JSON.stringify(avulsasPadrao()));
@@ -367,7 +369,7 @@ function addAvulsa(){
   if(licRaw === null) return;
   const lic = licRaw.trim();
   const id = avulsas.reduce((m,a)=>Math.max(m,a.id),0) + 1;
-  avulsas.push({id, mod, lic, price:"10,00"});
+  avulsas.push({id, mod, lic, price:PRECO_AVULSA});
   saveAvulsas();
   document.getElementById('avulsaSearch').value = '';
   renderAvulsas('');
@@ -489,7 +491,7 @@ function renderOutros(){
       </div>`:''}
       <div class="accordion-body" id="acc-${key}">
         <div class="kitlist" id="kitlist-${key}"></div>
-        ${c.cargos.length?`<p class="lede" style="margin-top:18px;margin-bottom:8px;">Apostilas avulsas (R$ 10,00 cada)</p>`:''}
+        ${c.cargos.length?`<p class="lede" style="margin-top:18px;margin-bottom:8px;">Apostilas avulsas (R$ ${PRECO_AVULSA} cada)</p>`:''}
         <div class="kitlist" id="avulsalist-${key}"></div>
       </div>
     </div>`;
@@ -530,7 +532,7 @@ function renderOutrosAvulsas(key){
     <div class="kitrow">
       <div class="kitname">${a.mod==="Legislação Educacional"?"📘":"📗"} ${a.mod} — ${a.lic}</div>
       <div style="display:flex;align-items:center;gap:12px;">
-        <div class="kitprice">R$ <b>10,00</b></div>
+        <div class="kitprice">R$ <b>${PRECO_AVULSA}</b></div>
         <button class="order" onclick="openOrderOutrosAvulsa('${key}','${a.mod}','${a.lic.replace(/'/g,"\\'")}')">Pedir pelo WhatsApp</button>
       </div>
     </div>`).join('');
@@ -651,7 +653,7 @@ function openOrderOutrosKit(key,id){
   document.getElementById('orderOverlay').classList.add('show');
 }
 function openOrderOutrosAvulsa(key,mod,lic){
-  currentItem = {title:`${mod} — ${lic} (${outrosConcursos[key].nome})`, price:"10,00"};
+  currentItem = {title:`${mod} — ${lic} (${outrosConcursos[key].nome})`, price:PRECO_AVULSA};
   document.getElementById('orderItemLabel').textContent = currentItem.title;
   document.getElementById('orderOverlay').classList.add('show');
 }
