@@ -65,6 +65,8 @@ h2{font-size:19px;margin:0 0 4px;font-weight:800;color:var(--text);}
 .kitprice b{color:var(--text);font-size:16px;}
 button.order{background:var(--accent);color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:800;letter-spacing:.02em;cursor:pointer;white-space:nowrap;}
 button.order:hover{background:var(--accent-2);}
+button.ghost{background:transparent;color:var(--accent-2);border:1px solid var(--line);padding:9px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+button.ghost:hover{border-color:var(--accent-2);}
 
 /* avulsas builder */
 .avulsa-types{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
@@ -170,6 +172,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;padding:28px 20px 14p
     <span class="tab active" data-tab="kits">Kits por licenciatura</span>
     <span class="tab" data-tab="avulsas">Apostilas avulsas</span>
     <span class="tab" data-tab="outros">Outros Concursos</span>
+    <span class="tab" data-tab="questoes">Questões</span>
   </div>
 </div>
 
@@ -196,7 +199,13 @@ footer{font-size:12px;color:var(--muted);text-align:center;padding:28px 20px 14p
     <div id="outrosWrap"></div>
   </section>
 
-  <section>
+  <section id="tab-questoes" class="hidden">
+    <h2>Banco de questões</h2>
+    <p class="lede">Questões comentadas por disciplina, direto no app de estudos. Toque para abrir.</p>
+    <div id="questoesWrap"></div>
+  </section>
+
+  <section id="secaoComoFunciona">
     <h2>Como funciona</h2>
     <p class="lede">Do pedido até o PDF na sua mão, em 3 passos simples.</p>
     <div class="steps">
@@ -206,7 +215,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;padding:28px 20px 14p
     </div>
   </section>
 
-  <section>
+  <section id="secaoFaq">
     <h2>Perguntas frequentes</h2>
     <div id="faqList"></div>
   </section>
@@ -572,6 +581,9 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
   document.getElementById('tab-kits').classList.toggle('hidden', t.dataset.tab!=='kits');
   document.getElementById('tab-avulsas').classList.toggle('hidden', t.dataset.tab!=='avulsas');
   document.getElementById('tab-outros').classList.toggle('hidden', t.dataset.tab!=='outros');
+  document.getElementById('tab-questoes').classList.toggle('hidden', t.dataset.tab!=='questoes');
+  document.getElementById('secaoComoFunciona').classList.toggle('hidden', t.dataset.tab==='questoes');
+  document.getElementById('secaoFaq').classList.toggle('hidden', t.dataset.tab==='questoes');
 }));
 
 let currentItem = null;
@@ -604,6 +616,58 @@ function sendOrder(){
   const msg = `Olá! Sou ${name} e quero pedir: ${currentItem.title} — R$ ${currentItem.price}.`;
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   closeOrder();
+}
+
+/* ---- questões (banco de questões por disciplina) ---- */
+const questoesDisciplinas = [
+  {key:"q-cp", nome:"Conhecimento Pedagógico", url:""},
+  {key:"q-leg", nome:"Legislação Educacional", url:""},
+  {key:"q-port", nome:"Língua Portuguesa", url:""},
+  {key:"q-eca", nome:"ECA", url:""},
+  {key:"q-ldb", nome:"LDB", url:""},
+  {key:"q-area", nome:"Área Educação", url:"https://concursosepss-brasil.github.io/Q.P/"}
+];
+function renderQuestoes(){
+  const wrap = document.getElementById('questoesWrap');
+  wrap.innerHTML = questoesDisciplinas.map(q=>`
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion('${q.key}', this)">
+        <span>${q.nome}</span><span class="accordion-arrow">▾</span>
+      </div>
+      <div class="accordion-body" id="acc-${q.key}">
+        <div class="kitrow" style="border:none;padding:0;background:transparent;flex-direction:column;align-items:stretch;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div class="kitname">Conteúdo exclusivo para assinantes</div>
+              <div class="kitcontent">Questões comentadas de ${q.nome}, direto no app de estudos.</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="kitprice">R$ <b>9,90</b>/mês</div>
+              <button class="order" onclick="openOrderQuestoes('${q.key}')">Assinar agora</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line);text-align:right;">
+            <button class="ghost" onclick="abrirAppQuestoes('${q.key}')">Já é assinante? Acesso às questões</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+renderQuestoes();
+function openOrderQuestoes(key){
+  const q = questoesDisciplinas.find(x=>x.key===key);
+  if(!q) return;
+  currentItem = {title:`Assinatura mensal — ${q.nome}`, price:"9,90"};
+  document.getElementById('orderItemLabel').textContent = currentItem.title;
+  document.getElementById('orderOverlay').classList.add('show');
+}
+function abrirAppQuestoes(key){
+  const q = questoesDisciplinas.find(x=>x.key===key);
+  if(q && q.url){
+    window.open(q.url, '_blank');
+  } else {
+    window.alert('Essa disciplina ainda não está disponível no app de questões. Em breve!');
+  }
 }
 
 /* ---- admin ---- */
