@@ -131,6 +131,24 @@ footer{font-size:12px;color:var(--muted);text-align:center;padding:28px 20px 14p
 .pw-box input{width:100%;padding:10px;margin:12px 0;border:1px solid var(--line);border-radius:6px;font-size:15px;background:var(--bg-alt-2);color:var(--text);}
 .pw-box button{width:100%;padding:10px;border:none;border-radius:6px;background:var(--navy);color:#fff;font-size:14px;cursor:pointer;font-weight:700;}
 .pw-msg{font-size:12.5px;color:var(--accent-2);min-height:16px;}
+
+/* painel de acessos (admin) */
+.stats-panel{position:fixed;right:16px;bottom:16px;z-index:55;width:300px;max-width:calc(100vw - 32px);background:var(--bg-alt);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:none;}
+.stats-panel.show{display:block;}
+.stats-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.stats-head b{color:var(--text);font-size:14px;}
+.stats-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px;}
+.stats-online{display:flex;align-items:center;gap:10px;background:var(--bg-alt-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;}
+.stats-dot{width:9px;height:9px;border-radius:50%;background:#34C759;box-shadow:0 0 0 4px rgba(52,199,89,.18);flex-shrink:0;}
+.stats-online b{font-size:26px;color:#34C759;font-variant-numeric:tabular-nums;}
+.stats-online span{font-size:12px;color:var(--muted);line-height:1.3;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.stats-card{background:var(--bg-alt-2);border:1px solid var(--line);border-radius:10px;padding:10px 8px;text-align:center;}
+.stats-card b{display:block;font-size:20px;color:var(--text);font-variant-numeric:tabular-nums;}
+.stats-card span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.stats-msg{font-size:11.5px;color:var(--muted);margin-top:10px;min-height:14px;}
+.stats-fab{position:fixed;right:16px;bottom:16px;z-index:54;background:var(--navy);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4);display:none;}
+.stats-fab.show{display:block;}
 </style>
 </head>
 <body>
@@ -744,6 +762,7 @@ async function checkPw(){
     document.getElementById('pwOverlay').classList.remove('show');
     document.getElementById('pwMsg').textContent = '';
     makeEditable();
+    abrirStats();
     Object.keys(outrosOpened).forEach(key=>{ if(outrosOpened[key]){ renderOutrosKits(key); } });
   } else {
     attempts++;
@@ -754,6 +773,17 @@ async function checkPw(){
       document.getElementById('pwOverlay').classList.remove('show');
     }
   }
+}
+function abrirStats(){
+  if(!adminMode) return;
+  document.getElementById('statsPanel').classList.add('show');
+  document.getElementById('statsFab').classList.remove('show');
+  if(window._iniciarStats) window._iniciarStats();
+  else document.getElementById('stMsg').textContent = '⚠️ Sem conexão com o Firebase. Recarregue a página.';
+}
+function fecharStats(){
+  document.getElementById('statsPanel').classList.remove('show');
+  document.getElementById('statsFab').classList.add('show');
 }
 function makeEditable(){
   document.body.classList.add('edit-mode');
@@ -771,6 +801,67 @@ function makeEditable(){
     };
   });
 }
+</script>
+
+<!-- PAINEL DE ACESSOS (só aparece no modo administrador) -->
+<div class="stats-panel" id="statsPanel">
+  <div class="stats-head"><b>📊 Acessos ao site</b><button class="stats-close" onclick="fecharStats()" aria-label="Fechar">✕</button></div>
+  <div class="stats-online"><div class="stats-dot"></div><b id="stOnline">–</b><span>pessoa(s) com o site<br>aberto agora</span></div>
+  <div class="stats-grid">
+    <div class="stats-card"><b id="stDia">–</b><span>Hoje</span></div>
+    <div class="stats-card"><b id="stSem">–</b><span>Semana</span></div>
+    <div class="stats-card"><b id="stMes">–</b><span>Mês</span></div>
+  </div>
+  <div class="stats-msg" id="stMsg">Hoje = últimas 24 h · Semana = 7 dias · Mês = 30 dias</div>
+</div>
+<button class="stats-fab" id="statsFab" onclick="abrirStats()">📊 Acessos</button>
+
+<!-- Firebase: contador de acessos (mesmo projeto do site da SEDUC, dados separados em gov_*) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, push, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const app = initializeApp({
+    apiKey: "AIzaSyAM7s5iHTWWtL3xF6CLKHvmfYp2nZREp1s",
+    authDomain: "concurso-publico-7b2cb.firebaseapp.com",
+    databaseURL: "https://concurso-publico-7b2cb-default-rtdb.firebaseio.com",
+    projectId: "concurso-publico-7b2cb",
+    storageBucket: "concurso-publico-7b2cb.firebasestorage.app",
+    messagingSenderId: "788794774848",
+    appId: "1:788794774848:web:8152642642088df37956a5"
+  }, 'gov-acessos');
+  const rtdb = getDatabase(app);
+
+  // Presença: quem está com o site aberto agora
+  const sessaoRef = ref(rtdb, 'gov_online/' + Math.random().toString(36).slice(2));
+  onValue(ref(rtdb, '.info/connected'), (snap) => {
+    if (snap.val()) {
+      set(sessaoRef, { ts: Date.now() }).catch(() => {});
+      onDisconnect(sessaoRef).remove();
+    }
+  });
+
+  // Registra 1 acesso por abertura da página
+  push(ref(rtdb, 'gov_acessos'), { ts: Date.now() }).catch(e => console.warn('Acesso não registrado:', e));
+
+  // Leitura dos números — só começa quando o admin entra
+  let ouvindo = false;
+  window._iniciarStats = function () {
+    if (ouvindo) return; ouvindo = true;
+    const msg = document.getElementById('stMsg');
+    const erro = (e) => { msg.textContent = '⛔ Sem permissão para ler os acessos (regras do Firebase).'; console.warn(e); };
+    onValue(ref(rtdb, 'gov_online'), (snap) => {
+      document.getElementById('stOnline').textContent = Object.keys(snap.val() || {}).length;
+    }, erro);
+    onValue(ref(rtdb, 'gov_acessos'), (snap) => {
+      const lista = Object.values(snap.val() || {});
+      const agora = Date.now();
+      const conta = (ms) => lista.filter(a => a && agora - a.ts < ms).length;
+      document.getElementById('stDia').textContent = conta(86400000);
+      document.getElementById('stSem').textContent = conta(604800000);
+      document.getElementById('stMes').textContent = conta(2592000000);
+    }, erro);
+  };
 </script>
 </body>
 </html>
