@@ -816,19 +816,19 @@ function makeEditable(){
 </div>
 <button class="stats-fab" id="statsFab" onclick="abrirStats()">📊 Acessos</button>
 
-<!-- Firebase: contador de acessos (projeto concursos-e-pss-brasil, dados em gov_*) -->
+<!-- Firebase: contador de acessos (projeto concurso-publico, dados separados em gov_*) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, set, push, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const app = initializeApp({
-    apiKey: "AIzaSyB-sUbVkpKtYy6rbeKhUScb9ZYgeHJRtEo",
-    authDomain: "concursos-e-pss-brasil.firebaseapp.com",
-    databaseURL: "https://concursos-e-pss-brasil-default-rtdb.firebaseio.com",
-    projectId: "concursos-e-pss-brasil",
-    storageBucket: "concursos-e-pss-brasil.firebasestorage.app",
-    messagingSenderId: "1048580005293",
-    appId: "1:1048580005293:web:89772ac8ef2388599d5524"
+    apiKey: "AIzaSyAM7s5iHTWWtL3xF6CLKHvmfYp2nZREp1s",
+    authDomain: "concurso-publico-7b2cb.firebaseapp.com",
+    databaseURL: "https://concurso-publico-7b2cb-default-rtdb.firebaseio.com",
+    projectId: "concurso-publico-7b2cb",
+    storageBucket: "concurso-publico-7b2cb.firebasestorage.app",
+    messagingSenderId: "788794774848",
+    appId: "1:788794774848:web:8152642642088df37956a5"
   }, 'gov-acessos');
   const rtdb = getDatabase(app);
 
