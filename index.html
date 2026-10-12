@@ -70,6 +70,11 @@ h2{font-size:19px;margin:0 0 4px;font-weight:800;color:var(--text);}
 .kitprice b{color:var(--text);font-size:16px;}
 button.order{background:var(--wpp);color:#fff;border:none;padding:9px 16px 9px 12px;display:inline-flex;align-items:center;gap:7px;border-radius:6px;font-size:12.5px;font-weight:800;letter-spacing:.02em;cursor:pointer;white-space:nowrap;}
 button.order:hover{background:var(--wpp-2);}
+.buybox{display:flex;flex-direction:column;gap:8px;align-items:stretch;}
+.buybox button.order{justify-content:center;}
+.access-btn{display:block;text-align:center;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--text);font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap;}
+.access-btn:hover{border-color:var(--muted);background:var(--bg-alt-2);}
+.access-btn:focus-visible{outline:2px solid var(--wpp);outline-offset:2px;}
 button.order::before,.btn-send::before{content:'';width:16px;height:16px;flex-shrink:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.8-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 2.9 2.9 0 0 0-.9 2.2 5.1 5.1 0 0 0 1.1 2.7 11.6 11.6 0 0 0 4.4 3.9c1.6.7 2.3.8 3.1.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3Z'/%3E%3C/svg%3E") center/contain no-repeat;}
 button.ghost{background:transparent;color:var(--accent-2);border:1px solid var(--line);padding:9px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 button.ghost:hover{border-color:var(--accent-2);}
@@ -268,7 +273,10 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>29,90</b></div>
-          <button class="order" onclick="openOrderInterativa()">Pedir pelo WhatsApp</button>
+          <div class="buybox">
+            <button class="order" onclick="openOrderInterativa()">Pedir pelo WhatsApp</button>
+            <a class="access-btn" href="https://profaprovado-12.github.io/ap-interativa-ped/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
+          </div>
         </div>
       </div>
     </div>
