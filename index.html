@@ -339,13 +339,29 @@ document.getElementById('themeBtn').addEventListener('click', function(){
     </div>
   </section>
 
+  <section id="secaoComoFuncionaIA" class="hidden">
+    <h2>Como funciona a apostila interativa</h2>
+    <p class="lede">Um aplicativo de estudos no seu celular ou computador, liberado para o seu e-mail.</p>
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><div><b>Peça pelo WhatsApp</b><p>Toque em "Pedir pelo WhatsApp", confirme seu nome e combine o pagamento com o nosso atendimento.</p></div></div>
+      <div class="step"><div class="step-n">2</div><div><b>Solicite o acesso com seu e-mail</b><p>Toque em "Já comprei — acessar a apostila" e informe o mesmo e-mail que você passou na compra.</p></div></div>
+      <div class="step"><div class="step-n">3</div><div><b>Nós liberamos o seu e-mail</b><p>Assim que o pagamento for confirmado, liberamos o acesso. É só abrir o link de novo e a apostila já abre.</p></div></div>
+      <div class="step"><div class="step-n">4</div><div><b>Estude como num aplicativo</b><p>Teoria por módulos, questões comentadas, simulados com tempo, diagnóstico e plano de estudos. Dá para instalar na tela inicial do celular.</p></div></div>
+    </div>
+  </section>
+
+  <section id="secaoFaqIA" class="hidden">
+    <h2>Perguntas frequentes</h2>
+    <div id="faqListIA"></div>
+  </section>
+
   <section id="secaoFaq">
     <h2>Perguntas frequentes</h2>
     <div id="faqList"></div>
   </section>
 
   <div class="howto hidden" id="howtoDisclaimer">
-    Material independente de estudo. A Concursos e PSS Brasil não possui vínculo oficial com SEDUC-AM, SEDUC-PA, SEDUC-CE, SEMED Porto Velho, nem com as bancas organizadoras. Consulte sempre o edital vigente do seu concurso.
+    Material independente de estudo. A Concursos e PSS Brasil não possui vínculo oficial com secretarias de educação nem com as bancas organizadoras. Consulte sempre o edital vigente do seu concurso.
   </div>
 </div>
 
@@ -633,8 +649,23 @@ const faqs = [
   {id:"f2", q:"Como eu recebo o material?", a:"Depois de confirmado o pedido pelo WhatsApp e combinada a forma de pagamento, enviamos o PDF direto por lá."},
   {id:"f3", q:"Posso estudar pelo celular ou imprimir?", a:"Pode! É um PDF, então funciona no celular, no tablet e no computador — e dá pra imprimir se preferir."},
   {id:"f4", q:"As apostilas seguem o edital do meu concurso?", a:"Sim, mas sempre confira o edital vigente do seu concurso — alguns ainda não foram publicados oficialmente e podem ter ajustes."},
-  {id:"f5", q:"Tem apostila para outros concursos além da SEDUC-AM?", a:"Tem sim — veja a aba \"Outros Concursos\" (SEDUC Pará, SEDUC Ceará e SEMED Porto Velho)."}
+  {id:"f5", q:"Serve para qual concurso?", a:"Para concursos e processos seletivos da área da educação em todo o Brasil. Na aba \"Outros Concursos\" você também encontra kits organizados por cargo de editais específicos."}
 ];
+const faqsIA = [
+  {id:"i1", q:"Qual a diferença entre a apostila interativa e a apostila em PDF?", a:"A interativa é um aplicativo: além da teoria, tem questões comentadas que corrigem na hora, simulados com tempo de prova, diagnóstico dos seus pontos fracos e plano de estudos até a data da prova. O seu progresso fica salvo."},
+  {id:"i2", q:"Como eu recebo o acesso?", a:"Depois do pagamento, toque em \"Já comprei — acessar a apostila\" e informe o e-mail usado na compra. Assim que liberarmos, é só abrir o link de novo."},
+  {id:"i3", q:"Posso usar no celular e no computador?", a:"Pode, um aparelho por vez. Se abrir em outro aparelho, o anterior é desconectado e você escolhe onde continuar — sem precisar pedir liberação de novo."},
+  {id:"i4", q:"Preciso instalar alguma coisa?", a:"Não. Funciona direto no navegador. Se quiser, dá para adicionar à tela inicial do celular e usar como um aplicativo."},
+  {id:"i5", q:"Serve para qual concurso?", a:"Para concursos e processos seletivos da área da educação em todo o Brasil, com questões no estilo das bancas de concurso."}
+];
+const faqHTML = list => list.map(f=>`
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion('${f.id}', this)">
+      <span>${f.q}</span><span class="accordion-arrow">▾</span>
+    </div>
+    <div class="accordion-body" id="acc-${f.id}"><p class="lede" style="margin:0;">${f.a}</p></div>
+  </div>`).join('');
+document.getElementById('faqListIA').innerHTML = faqHTML(faqsIA);
 document.getElementById('faqList').innerHTML = faqs.map(f=>`
   <div class="accordion-item">
     <div class="accordion-header" onclick="toggleAccordion('${f.id}', this)">
@@ -698,8 +729,10 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{
   document.getElementById('tab-outros').classList.toggle('hidden', t.dataset.tab!=='outros');
   document.getElementById('tab-questoes').classList.toggle('hidden', t.dataset.tab!=='questoes');
   document.getElementById('tab-assinatura').classList.toggle('hidden', t.dataset.tab!=='assinatura');
-  document.getElementById('secaoComoFunciona').classList.toggle('hidden', t.dataset.tab==='questoes' || t.dataset.tab==='assinatura' || t.dataset.tab==='outros');
-  document.getElementById('secaoFaq').classList.toggle('hidden', t.dataset.tab==='questoes' || t.dataset.tab==='assinatura' || t.dataset.tab==='outros');
+  document.getElementById('secaoComoFunciona').classList.toggle('hidden', t.dataset.tab==='questoes' || t.dataset.tab==='assinatura' || t.dataset.tab==='outros' || t.dataset.tab==='interativas');
+  document.getElementById('secaoFaq').classList.toggle('hidden', t.dataset.tab==='questoes' || t.dataset.tab==='assinatura' || t.dataset.tab==='outros' || t.dataset.tab==='interativas');
+  document.getElementById('secaoComoFuncionaIA').classList.toggle('hidden', t.dataset.tab!=='interativas');
+  document.getElementById('secaoFaqIA').classList.toggle('hidden', t.dataset.tab!=='interativas');
   document.getElementById('howtoDisclaimer').classList.add('hidden');
 }));
 
