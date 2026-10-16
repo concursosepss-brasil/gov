@@ -1185,6 +1185,7 @@ body.edu-open #edu-btn{display:none}
   const disc = () => (typeof questoesDisciplinas !== 'undefined' ? questoesDisciplinas.map(q => q.nome) : ['Conhecimento Pedagógico', 'Legislação Educacional']);
   const kitPrice = area => { try { const l = licenciaturas.find(x => x.area === area); const k = kits && kits.find(x => x.slug === l.slug); return parseFloat(String(k ? k.price : '29,90').replace(',', '.')) || 29.9; } catch(e) { return 29.9; } };
   const shortArea = a => NOMEG[a] || a;
+  const cargo = a => { try { const l = licenciaturas.find(x => x.area === a); if (l) return l.kit.replace(/^Kit\s+/i, ''); } catch(e) {} return a; };
   const isTeacher = a => a && !/merendeiro|tecnico|administrativ/i.test(N0(a));
 
   /* ---------- estado ---------- */
@@ -1216,7 +1217,7 @@ body.edu-open #edu-btn{display:none}
     if (mem.nome){
       st.nome = mem.nome;
       await bot(`Oi de novo, <b>${E(st.nome)}</b>! 😊 Que bom te ver por aqui.`);
-      if (mem.area){ st.area = mem.area; await bot(`Ainda estudando para <b>${E(shortArea(st.area))}</b>?`); chips(['Sim, isso mesmo', 'Mudei de área'], (v, i) => i ? pickArea() : askPrazo()); return; }
+      if (mem.area){ st.area = mem.area; await bot(`Ainda estudando para <b>${E(cargo(st.area))}</b>?`); chips(['Sim, isso mesmo', 'Mudei de cargo'], (v, i) => i ? pickArea() : askPrazo()); return; }
       return pickArea();
     }
     await bot('Oi! 👋 Eu sou o <b>Edu</b>, consultor virtual da <b>Concursos e PSS Brasil</b>.');
@@ -1225,8 +1226,10 @@ body.edu-open #edu-btn{display:none}
   }
   async function pickArea(first){
     await bot(first ? `Prazer, <b>${E(st.nome)}</b>! 🤝 Para qual cargo ou área você vai prestar concurso?` : 'Para qual cargo ou área você vai prestar concurso?');
-    chips(areas().concat(['Outra']), v => {
-      if (v === 'Outra'){ bot('Qual é o cargo ou a área?').then(() => ask('Ex.: Pedagogo, Professor de Artes…', a => { st.area = a; remember(); askPrazo(); })); return; }
+    const AR = areas();
+    chips(AR.map(cargo).concat(['Outro cargo']), (v, idx) => {
+      if (idx < AR.length) v = AR[idx];
+      if (v === 'Outro cargo'){ bot('Qual é o cargo ou a área?').then(() => ask('Ex.: Pedagogo, Professor de Artes…', a => { st.area = a; remember(); askPrazo(); })); return; }
       st.area = v; remember(); askPrazo();
     });
   }
@@ -1248,7 +1251,7 @@ body.edu-open #edu-btn{display:none}
     if (urg) await bot(urg);
     const k = recoKeys();
     const nomes = k.slice(0, 2).map(x => '<b>' + E(IA[x].nome) + '</b>').join(' e ');
-    await bot(`${E(st.nome)}, para <b>${E(shortArea(st.area))}</b> eu recomendo começar pelas nossas <b>Apostilas Interativas</b> ⭐ de ${nomes}${isTeacher(st.area) ? ', que caem em praticamente toda prova da educação' : ''}.`);
+    await bot(`${E(st.nome)}, para <b>${E(cargo(st.area))}</b> eu recomendo começar pelas nossas <b>Apostilas Interativas</b> ⭐ de ${nomes}${isTeacher(st.area) ? ', que caem em praticamente toda prova da educação' : ''}.`);
     await bot(`<div class="edu-list"><div>📱 Funciona como um <b>app</b> no celular e no computador</div><div>✅ <b>Questões comentadas</b> no estilo das bancas</div><div>⏱️ <b>Simulados</b> com tempo de prova</div><div>📊 <b>Diagnóstico</b> mostra onde você precisa melhorar</div><div>🗓️ <b>Plano de estudos</b> até o dia da prova</div><div>👩‍🏫 A <b>Bia</b>, tutora virtual, tira suas dúvidas na hora</div></div>
       <div style="margin-top:8px">Tudo isso por <b>${money(IA.cp.preco)}</b> cada — acesso pelo seu e-mail.</div>`);
     chips(['👀 Ver como é por dentro', '⭐ Quero a apostila interativa', `📦 Prefiro o kit completo de ${shortArea(st.area)}`, '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [showPreview, chooseIA, chooseKit, faq, otherMenu][i]());
@@ -1295,7 +1298,7 @@ body.edu-open #edu-btn{display:none}
     const tot = st.cart.reduce((s, x) => s + (x.preco || 0), 0);
     const itens = st.cart.map(x => `<div>• ${E(x.nome)}${x.preco ? ' — ' + money(x.preco) : ''}</div>`).join('');
     const msg = `Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nQuero garantir:\n` + st.cart.map(x => '• ' + x.nome + (x.preco ? ' (' + money(x.preco) + ')' : '')).join('\n') +
-      (tot ? `\nTotal: ${money(tot)}` : '') + (st.area ? `\nÁrea: ${st.area}` : '') + (st.concurso ? `\nSeleção: ${st.concurso}` : '') + (st.prazo ? `\nProva: ${st.prazo}` : '');
+      (tot ? `\nTotal: ${money(tot)}` : '') + (st.area ? `\nCargo: ${cargo(st.area)}` : '') + (st.concurso ? `\nSeleção: ${st.concurso}` : '') + (st.prazo ? `\nProva: ${st.prazo}` : '');
     await bot(`Perfeito, <b>${E(st.nome)}</b>! Seu pedido ficou assim: <div class="edu-sum">${itens}${tot ? `<div style="margin-top:6px"><b>Total: ${money(tot)}</b></div>` : ''}</div>
       <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 Finalizar pelo WhatsApp</a>`);
     await bot('É só tocar no botão: a mensagem já vai pronta. A nossa equipe confirma e te envia o pagamento, e o acesso é liberado no seu e-mail. 😉');
@@ -1325,7 +1328,7 @@ body.edu-open #edu-btn{display:none}
     });
   }
   async function human(){
-    const msg = `Olá! Meu nome é ${st.nome || ''}. Vim pelo assistente virtual Edu e tenho uma dúvida.` + (st.area ? `\nÁrea: ${st.area}` : '');
+    const msg = `Olá! Meu nome é ${st.nome || ''}. Vim pelo assistente virtual Edu e tenho uma dúvida.` + (st.area ? `\nCargo: ${cargo(st.area)}` : '');
     await bot(`Sem problema! Fala direto com a nossa equipe: <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 Falar no WhatsApp</a>`);
   }
 
@@ -1387,7 +1390,7 @@ body.edu-open #edu-btn{display:none}
     if (/alfabetiza|molde|painel|paineis|imprimir|impressao|decorac|aplicativo|loja/.test(t)) return loja();
     if (/acess|comprei|login|entrar/.test(t)) return jaComprei();
     if (/atendente|humano|pessoa|falar com/.test(t)) return human();
-    const a = areas().find(x => t.includes(N0(x).split(/[ /(]/)[0]));
+    const a = areas().find(x => t.includes(N0(x).split(/[ /(]/)[0]) || t.includes(N0(cargo(x)).split(' ').pop()));
     if (a) { st.area = a; remember(); return recommend(); }
     if (/obrigad|valeu/.test(t)) return bot(`Por nada${st.nome ? ', ' + E(st.nome) : ''}! Bons estudos e conta com a gente. 💛`);
     await bot('Entendi! Para eu te ajudar melhor, escolhe uma das opções:');
