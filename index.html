@@ -1184,7 +1184,7 @@ body.edu-open #edu-btn{display:none}
   const GRUPOS = {
     'Pedagogia': 'https://chat.whatsapp.com/CnpNA7NSBdu9UrWxHU531Q', 'Anos Iniciais (1º ao 5º ano)': 'https://chat.whatsapp.com/K586oLr9Pbd8HyGWENcVgl', 'Educação Infantil': 'https://chat.whatsapp.com/JhO2UQOEfNDF3vd2wm0nTj', 'História': 'https://chat.whatsapp.com/BjAtDrTrVLuFaw9pUX7FtH', 'Geografia': 'https://chat.whatsapp.com/JGMnMuEgbem7nP8Pg1clV9', 'Matemática': 'https://chat.whatsapp.com/IJ6l1yegks1JQ1M0YYoy6i',
     'Letras / Português': 'https://chat.whatsapp.com/IuKZjpHOpsrFol6iqhsyGn', 'Língua Inglesa': 'https://chat.whatsapp.com/IPzq3VjlpZv4xzql5uvHdh', 'Ciências Biológicas': 'https://chat.whatsapp.com/JazoV8fA5Z3DIirnID64hx', 'Física': 'https://chat.whatsapp.com/HqsKIgBDWmc3HrPyenWPLQ', 'Química': 'https://chat.whatsapp.com/FMXrXFiUTCAD5rk6RO9Jpl', 'Educação Física': 'https://chat.whatsapp.com/LXJxI4mKQjc3wYnaKHrSlO',
-    'Artes': 'https://chat.whatsapp.com/BbPkGGcyssDEVsZvziuSSn', 'Sociologia': 'https://chat.whatsapp.com/HtCo7uGjwVc0C4maLoyL1v', 'Filosofia': 'https://chat.whatsapp.com/JNADn3YzOlU79OQSFOLwVZ', 'Ensino Religioso': 'https://chat.whatsapp.com/DKUMJSUrpuoIyYjfelFuQC', 'Língua Espanhola': 'https://chat.whatsapp.com/FZPSL7FuKDL2JfWIGfaeve', 'Merendeiro': '', 'Técnico Administrativo': '',
+    'Artes': 'https://chat.whatsapp.com/BbPkGGcyssDEVsZvziuSSn', 'Sociologia': 'https://chat.whatsapp.com/HtCo7uGjwVc0C4maLoyL1v', 'Filosofia': 'https://chat.whatsapp.com/JNADn3YzOlU79OQSFOLwVZ', 'Ensino Religioso': 'https://chat.whatsapp.com/DKUMJSUrpuoIyYjfelFuQC', 'Língua Espanhola': 'https://chat.whatsapp.com/FZPSL7FuKDL2JfWIGfaeve', 'Merendeiro': 'https://chat.whatsapp.com/GueK0b0GZcXD3XOuok53vo', 'Técnico Administrativo': 'https://chat.whatsapp.com/GLyaGDu26h495eXsZnVHuT',
     'geral': 'https://chat.whatsapp.com/FeTSP3ywKsk1MUACKpRkN2'
   };
   const ALIAS = { 'Língua Portuguesa': 'Letras / Português', 'Conhecimento Pedagógico': 'Pedagogia' };
@@ -1747,8 +1747,14 @@ body.edu-open #edu-btn{display:none}
   }
   async function grupo(){
     const ga = GRUPOS[st.area] ? st.area : (ALIAS[st.area] && GRUPOS[ALIAS[st.area]] ? ALIAS[st.area] : null);
-    const g = ga ? { nome: 'de ' + shortArea(ga), url: GRUPOS[ga] } : (GRUPOS.geral ? { nome: 'geral da Concursos e PSS Brasil', url: GRUPOS.geral } : null);
-    if (g) await bot(`🎁 Bônus: entra no nosso grupo ${E(g.nome)} para receber dicas, materiais gratuitos e avisos de concursos: <a class="edu-wpp" style="background:#0D2B55" href="${E(g.url)}" target="_blank" rel="noopener">👥 Entrar no grupo ${E(g.nome)}</a>`);
+    const btn = (url, txt, cor) => `<a class="edu-wpp" style="background:${cor};display:block;margin-top:8px" href="${E(url)}" target="_blank" rel="noopener">${txt}</a>`;
+    const geral = GRUPOS.geral ? btn(GRUPOS.geral, '🇧🇷 Grupo da Educação · todo o Brasil', '#0D2B55') : '';
+    if (ga) {
+      await bot(`🎁 Bônus: entra no nosso grupo de <b>${E(shortArea(ga))}</b> para receber dicas, materiais gratuitos e avisos de concursos:` + btn(GRUPOS[ga], '👥 Entrar no grupo de ' + E(shortArea(ga)), '#0D2B55'));
+      if (geral) await bot(`Se quiser, entra também no nosso grupo de <b>Concursos Públicos da Área da Educação de todo o Brasil</b> 🇧🇷, com avisos de concursos e processos seletivos de todos os estados. É opcional: pode ficar só no grupo da sua área. 😉` + geral);
+    } else if (geral) {
+      await bot(`🎁 Bônus: entra no nosso grupo de <b>Concursos Públicos da Área da Educação de todo o Brasil</b> 🇧🇷 para receber dicas, materiais gratuitos e avisos de concursos e processos seletivos de todos os estados:` + geral);
+    }
   }
 
   /* ---------- dúvidas (objeções) ---------- */
