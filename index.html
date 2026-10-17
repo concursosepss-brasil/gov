@@ -1524,7 +1524,7 @@ body.edu-open #edu-btn{display:none}
     W.y += 2; doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.text('Total', 14, W.y); doc.text(money(tot), 196, W.y, { align: 'right' }); W.y += 10;
     doc.setFillColor(255, 244, 204); doc.roundedRect(14, W.y - 5, 182, 24, 3, 3, 'F');
     W.p('Status: aguardando confirmação do pagamento.', { bold: true, x: 18, w: 174, gap: 0 });
-    W.p('Finalize pelo WhatsApp (92) 98447-8798 informando o número do pedido. Após a confirmação, as apostilas interativas são liberadas no seu e-mail e os materiais em PDF são enviados pelo WhatsApp.', { x: 18, w: 174, size: 9.5 });
+    W.p('Finalize pelo WhatsApp (92) 98447-8798 informando o número do pedido. Após a confirmação do pagamento, ' + entrega() + '.', { x: 18, w: 174, size: 9.5 });
     W.foot(); doc.save(`comprovante-pedido-${st.pedido}.pdf`);
   }
   function planData(){ const P = st.pl; return { n: st.nome || '', a: st.area || '', di: P.disc, s: P.sem, t: P.semTxt, h: P.h, d: P.d }; }
@@ -1716,6 +1716,19 @@ body.edu-open #edu-btn{display:none}
     await bot('Para eu já deixar anotado: que tipo de seleção você vai fazer?');
     chips(['Concurso federal', 'Concurso estadual', 'Concurso municipal', 'Processo seletivo (PSS)', 'Ainda não sei'], v => { st.concurso = v; close_(); });
   }
+  /* como cada item é entregue: e-mail (interativas, questões, loja) ou WhatsApp (kit/avulsa em PDF) */
+  function entrega(){
+    const c = st.cart || [], ia = c.some(x => x.ia), q = c.some(x => /^Assinatura de questões/.test(x.nome)), loja = c.some(x => /Loja do Professor/.test(x.nome));
+    const pdf = c.some(x => /^(Kit completo|Apostila avulsa)/.test(x.nome)), aula = c.some(x => /^Aulas em vídeo/.test(x.nome)), outro = c.some(x => /^Material para/.test(x.nome));
+    const iaN = c.filter(x => x.ia).length;
+    const mail = [ia && (iaN > 1 ? 'as apostilas interativas' : 'a apostila interativa'), q && 'o banco de questões', loja && 'os materiais da Loja do Professor'].filter(Boolean);
+    const verbo = mail.length > 1 ? ' são liberados' : ia ? (iaN > 1 ? ' são liberadas' : ' é liberada') : q ? ' é liberado' : ' são liberados';
+    const p = [];
+    if (mail.length) p.push((mail.length > 1 ? mail.slice(0, -1).join(', ') + ' e ' + mail.slice(-1) : mail[0]) + verbo + ' no seu e-mail');
+    if (pdf) p.push((c.filter(x => /^(Kit completo|Apostila avulsa)/.test(x.nome)).length > 1 ? 'os materiais em PDF são enviados' : (c.some(x => /^Kit completo/.test(x.nome)) ? 'o kit em PDF é enviado' : 'a apostila em PDF é enviada')) + ' no seu WhatsApp');
+    if (aula || outro) p.push('a equipe te passa as orientações de acesso pelo WhatsApp');
+    return p.length ? p.join('; ') : 'a equipe te passa as orientações pelo WhatsApp';
+  }
   async function close_(){
     const tot = st.cart.reduce((s, x) => s + (x.preco || 0), 0);
     const itens = st.cart.map(x => `<div>• ${E(x.nome)}${x.preco ? ' — ' + money(x.preco) : ''}</div>`).join('');
@@ -1728,7 +1741,7 @@ body.edu-open #edu-btn{display:none}
     await bot(`Perfeito, <b>${E(st.nome)}</b>! Seu pedido <b>nº ${st.pedido}</b> ficou assim: <div class="edu-sum">${itens}${bonus}${tot ? `<div style="margin-top:6px"><b>Total: ${money(tot)}</b></div>` : ''}</div>
       <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 Finalizar pelo WhatsApp</a>
       <a class="edu-link" href="#" data-receipt>📄 Baixar comprovante do pedido (PDF)</a>`);
-    await bot('É só tocar no botão: a mensagem já vai pronta com o número do pedido. A nossa equipe confirma e te envia o pagamento, e o acesso é liberado no seu e-mail. 😉');
+    await bot(`É só tocar no botão: a mensagem já vai pronta com o número do pedido. A nossa equipe combina o pagamento com você e, depois da confirmação, ${entrega()}. 😉`);
     await grupo();
     chipsP(['➕ Adicionar mais um material', '🗑️ Refazer o pedido', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [addMore, () => { st.cart = []; st.pedido = null; chooseIA(); }, faq, otherMenu][i]());
   }
