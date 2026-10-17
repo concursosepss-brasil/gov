@@ -1756,10 +1756,13 @@ body.edu-open #edu-btn{display:none}
     const p = kitPrice(st.area);
     addItem({ nome: 'Kit completo — ' + cargo(st.area), preco: p });
     const cv = samplesFor(st.area).kit;
-    await bot(`Ótimo! O kit de <b>${E(cargo(st.area))}</b> sai por <b>${money(p)}</b> e reúne conhecimentos específicos, conhecimento pedagógico e legislação em PDF.` + (cv ? `<img class="edu-img" src="${cv}" alt="Capa do kit" style="max-width:200px">` : ''));
-    if (isTeacher(st.area) && !(st.cart || []).some(x => x.ia === 'cp')){
-      await bot(`Quer turbinar? Com a <b>Apostila Interativa de Conhecimento Pedagógico</b> (+${money(IA.cp.preco)}) você treina com questões comentadas, simulados e a Bia, além de ler o PDF. 🚀`);
-      chips(['⭐ Sim, incluir a interativa', 'Só o kit'], (v, i) => { if (i === 0) addItem(iaItem('cp')); askConcurso(); });
+    let kc = null; try { const l = licenciaturas.find(x => x.area === st.area); const k = kits && kits.find(x => x.slug === l.slug); kc = k && k.conteudo; } catch(e) {}
+    const desc = kc ? 'traz ' + E(kc.replace(/^(\d+ apostilas):/, '$1 em PDF:')) : 'reúne conhecimentos específicos, conhecimento pedagógico e legislação em PDF';
+    await bot(`Ótimo! O kit de <b>${E(cargo(st.area))}</b> sai por <b>${money(p)}</b> e ${desc}.` + (cv ? `<img class="edu-img" src="${cv}" alt="Capa do kit" style="max-width:200px">` : ''));
+    const up = /merend/.test(N0(st.area || '')) ? 'mer' : (isTeacher(st.area) ? 'cp' : null);
+    if (up && !(st.cart || []).some(x => x.ia === up)){
+      await bot(`Quer turbinar? Com a <b>Apostila Interativa de ${E(IA[up].nome)}</b> (+${money(IA[up].preco)}) você treina com questões comentadas, simulados e a Bia, além de ler o PDF. 🚀`);
+      chips(['⭐ Sim, incluir a interativa', 'Só o kit'], (v, i) => { if (i === 0) addItem(iaItem(up)); askConcurso(); });
     } else askConcurso();
   }
   async function chooseAvulsa(){
