@@ -1326,6 +1326,7 @@ body.edu-open #edu-btn{display:none}
     const k = recoKeys();
     const nomes = k.slice(0, 2).map(x => '<b>' + E(IA[x].nome) + '</b>').join(' e ');
     await bot(`${E(st.nome)}, para <b>${E(cargo(st.area))}</b> eu recomendo começar pelas nossas <b>Apostilas Interativas</b> ⭐ de ${nomes}${isTeacher(st.area) ? ', que caem em praticamente toda prova da educação' : ''}.`);
+    if (k[0] === 'mer') await bot('Ela já reúne <b>Língua Portuguesa</b>, <b>Matemática e Raciocínio Lógico</b> e os <b>Conhecimentos Específicos</b> do merendeiro (higiene, segurança alimentar, estoque, preparo, EPIs e relações interpessoais), com <b>510 questões comentadas</b>, incluindo um <b>banco final de 300 questões</b>. 🍲');
     await bot(`<div class="edu-list"><div>📱 Funciona como um <b>app</b> no celular e no computador</div><div>✅ <b>Questões comentadas</b> no estilo das bancas</div><div>⏱️ <b>Simulados</b> com tempo de prova</div><div>📊 <b>Diagnóstico</b> mostra onde você precisa melhorar</div><div>🗓️ <b>Plano de estudos</b> até o dia da prova</div><div>👩‍🏫 A <b>Bia</b>, tutora virtual, tira suas dúvidas na hora</div></div>
       <div style="margin-top:8px">Tudo isso por <b>${money(IA.cp.preco)}</b> cada — acesso pelo seu e-mail.</div>`);
     chips(['👀 Ver como é por dentro', '⭐ Quero a apostila interativa', '🗓️ Montar meu plano de estudos grátis', '🧠 Testar meus conhecimentos (quiz)', `📦 Prefiro o kit completo de ${cargo(st.area)}`, '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [showPreview, chooseIA, plano, quiz, chooseKit, faq, otherMenu][i]());
@@ -1528,6 +1529,7 @@ body.edu-open #edu-btn{display:none}
     draw();
   }
   async function upsellIA(key){
+    if (key === 'mer') return askConcurso();
     const pair = key === 'cp' ? 'leg' : 'cp';
     if (!IA[pair] || (st.cart || []).some(x => x.ia === pair)) return askConcurso();
     await bot(`Boa escolha! 👏 Uma dica: <b>${E(IA[pair].nome)}</b> costuma cair junto na mesma prova. Vale a pena levar as duas e estudar tudo com o mesmo método.`);
