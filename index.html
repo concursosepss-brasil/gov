@@ -1148,6 +1148,7 @@ body.edu-open #edu-btn{display:none}
 #edu-f button{width:44px;height:44px;border-radius:50%;border:0;background:#F2B705;color:#1B1400;font-size:18px;cursor:pointer}
 @media (max-width:600px){#edu-pan{inset:0;width:auto;height:auto;border-radius:0;border:0;left:0;bottom:0}#edu-btn{width:58px;height:58px;left:12px;bottom:calc(12px + env(safe-area-inset-bottom))}}
 .edu-chip.star{background:#F2B705;color:#1B1400;border-color:#F2B705}
+.edu-chip[disabled]{opacity:.55;cursor:not-allowed}
 .edu-img{display:block;width:100%;border-radius:10px;margin-top:8px;border:1px solid var(--line,rgba(0,0,0,.1))}
 .edu-list div{margin:4px 0}
 .edu-q small{display:block;color:#B07F00;font-weight:800;font-size:12px;margin-bottom:4px}.edu-q p{margin:0 0 8px;font-weight:600}.edu-q div{margin:4px 0;font-size:14px}
@@ -1282,21 +1283,6 @@ body.edu-open #edu-btn{display:none}
     await bot('À esquerda, o seu painel de progresso. À direita, a Bia respondendo uma dúvida com o conteúdo da apostila. Você estuda, treina e acompanha tudo num lugar só.');
     chipsP(['⭐ Quero a apostila interativa', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [chooseIA, faq, otherMenu][i]());
   }
-  async function chooseIA(){
-    const k = recoKeys();
-    await bot('Qual você quer garantir?');
-    const opts = [`⭐ As 3 interativas (${money(IA.cp.preco * 3)})`].concat(k.map(x => `${IA[x].nome} (${money(IA[x].preco)})`));
-    chips(opts, (v, i) => {
-      if (i === 0) { st.cart = ['cp', 'leg', 'lp'].map(x => ({ nome: 'Apostila interativa — ' + IA[x].nome, preco: IA[x].preco })); return askConcurso(); }
-      const key = k[i - 1]; st.cart = [{ nome: 'Apostila interativa — ' + IA[key].nome, preco: IA[key].preco }];
-      upsellIA(key);
-    });
-  }
-  async function upsellIA(key){
-    const pair = key === 'cp' ? 'leg' : key === 'leg' ? 'cp' : 'cp';
-    await bot(`Boa escolha! 👏 Uma dica: <b>${E(IA[pair].nome)}</b> costuma cair junto na mesma prova. Vale a pena levar as duas e estudar tudo com o mesmo método.`);
-    chips([`Incluir ${IA[pair].nome} (+${money(IA[pair].preco)})`, 'Só essa por enquanto'], (v, i) => { if (i === 0) st.cart.push({ nome: 'Apostila interativa — ' + IA[pair].nome, preco: IA[pair].preco }); askConcurso(); });
-  }
   function samplesFor(area){
     const out = { kit: null, av: [] };
     try {
@@ -1416,15 +1402,15 @@ body.edu-open #edu-btn{display:none}
       sm.map(d => `${d.n}: ${d.itens.join(', ')}`).join('\n') + `\n\n${mensal ? 'MÊS A MÊS' : 'SEMANA A SEMANA'}:\n` + fs.map(f => `${f[0]}: ${f[1].replace(/<[^>]+>/g, '')}`).join('\n') +
       `\n\nPlano feito pelo Edu · Concursos e PSS Brasil`;
     st.planTxt = txt;
-    await bot(`🎁 Quer receber esse plano <b>no seu WhatsApp</b>, organizado para seguir até o dia da prova? Ele vai <b>de bônus</b> para quem garante a apostila interativa! <div class="edu-lock">🔒 Plano de estudos no WhatsApp · bônus da compra</div>`);
+    await bot(`🎁 Quer esse plano em <b>PDF</b>, bonitinho para imprimir e seguir até o dia da prova? Ele vai <b>de bônus</b> no seu WhatsApp para quem garante a apostila interativa! <div class="edu-lock">🔒 Plano de estudos em PDF · bônus da compra</div>`);
     const ias = [];
     if (P.disc.includes('Conhecimento Pedagógico')) ias.push('cp');
     if (P.disc.includes('Legislação Educacional (LDB, ECA, CF)')) ias.push('leg');
     if (P.disc.includes('Língua Portuguesa')) ias.push('lp');
     if (ias.length){
       await bot(`E pra colocar esse plano em prática: as <b>Apostilas Interativas</b> ⭐ de ${ias.map(k => '<b>' + E(IA[k].nome) + '</b>').join(', ')} já têm <b>plano de estudos com calendário</b>, questões comentadas, simulados e a Bia, e marcam o seu progresso a cada tópico. É só seguir! 🚀`);
-      chips(['⭐ Quero as apostilas + o plano no WhatsApp', '👀 Ver a interativa por dentro', 'Refazer o plano', 'Ver outras opções'], (v, i) => {
-        if (i === 0){ st.cart = ias.map(k => ({ nome: 'Apostila interativa — ' + IA[k].nome, preco: IA[k].preco })); return askConcurso(); }
+      chips(['⭐ Quero as apostilas + o plano em PDF', '👀 Ver a interativa por dentro', 'Refazer o plano', 'Ver outras opções'], (v, i) => {
+        if (i === 0) return chooseIA(ias);
         [null, showPreview, plano, otherMenu][i]();
       });
     } else chips(['⭐ Ver as apostilas interativas (+ plano no WhatsApp)', 'Refazer o plano', 'Ver outras opções'], (v, i) => [chooseIA, plano, otherMenu][i]());
@@ -1457,40 +1443,288 @@ body.edu-open #edu-btn{display:none}
     await bot(`<div class="edu-score"><div class="sc">${pct}%</div><div>${z.ok} de ${QUIZ.length} acertos</div></div>${nv[0]} ${nv[1]}`);
     await bot(`Na <b>Apostila Interativa de Conhecimento Pedagógico</b> ⭐ você tem <b>223 questões comentadas</b> como essas, simulados com tempo e um <b>diagnóstico</b> que mostra exatamente onde melhorar, por ${money(IA.cp.preco)}.`);
     chipsP(['⭐ Quero melhorar minha nota', 'Refazer o quiz', 'Ver outras opções'], (v, i) => {
-      if (i === 0){ st.cart = [{ nome: 'Apostila interativa — ' + IA.cp.nome, preco: IA.cp.preco }]; return upsellIA('cp'); }
+      if (i === 0) return chooseIA(['cp']);
       [null, quiz, otherMenu][i]();
     });
   }
+  /* ---------- CARRINHO ---------- */
+  const iaItem = k => ({ nome: 'Apostila interativa — ' + IA[k].nome, preco: IA[k].preco, ia: k });
+  function addItem(it){ st.cart = st.cart || []; if (!st.cart.some(x => x.nome === it.nome)) st.cart.push(it); }
+  async function chooseIA(pre){
+    const keys = Object.keys(IA);
+    const sel = new Set((pre && pre.length) ? pre : (st.cart || []).filter(x => x.ia).map(x => x.ia));
+    if (!sel.size) sel.add(recoKeys()[0]);
+    await bot(`Monte o seu pedido: marque <b>quantas apostilas interativas quiser</b> (1, 2, 3…). Cada uma sai por <b>${money(IA.cp.preco)}</b>.`);
+    const d = say('', 'chips');
+    const draw = () => {
+      const tot = [...sel].reduce((s, k) => s + IA[k].preco, 0);
+      d.innerHTML = keys.map(k => `<button type="button" class="edu-chip sel${sel.has(k) ? ' on' : ''}" data-k="${k}">${sel.has(k) ? '✅' : '⬜'} ${E(IA[k].nome)} — ${money(IA[k].preco)}</button>`).join('') +
+        `<button type="button" class="edu-chip star" data-ok ${sel.size ? '' : 'disabled'}>${sel.size ? `Continuar com ${sel.size} apostila${sel.size > 1 ? 's' : ''} · ${money(tot)} ›` : 'Marque pelo menos 1'}</button>`;
+      d.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; sel.has(k) ? sel.delete(k) : sel.add(k); draw(); });
+      d.querySelector('[data-ok]').onclick = () => {
+        if (!sel.size) return; clearChips();
+        const arr = keys.filter(k => sel.has(k));
+        say(E(arr.map(k => IA[k].nome).join(' + ')), 'me');
+        st.cart = (st.cart || []).filter(x => !x.ia).concat(arr.map(iaItem));
+        if (arr.length === 1 && keys.length > 1) upsellIA(arr[0]); else askConcurso();
+      };
+      scrollEnd();
+    };
+    draw();
+  }
+  async function upsellIA(key){
+    const pair = key === 'cp' ? 'leg' : 'cp';
+    if (!IA[pair] || (st.cart || []).some(x => x.ia === pair)) return askConcurso();
+    await bot(`Boa escolha! 👏 Uma dica: <b>${E(IA[pair].nome)}</b> costuma cair junto na mesma prova. Vale a pena levar as duas e estudar tudo com o mesmo método.`);
+    chips([`Incluir ${IA[pair].nome} (+${money(IA[pair].preco)})`, 'Só essa por enquanto'], (v, i) => { if (i === 0) addItem(iaItem(pair)); askConcurso(); });
+  }
+  async function addMore(){
+    await bot('O que você quer adicionar ao pedido?');
+    chips(['⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '✅ Questões (assinatura)', '↩️ Voltar ao meu pedido'], (v, i) => {
+      if ((i === 1 || i === 2) && !st.area) return pickArea();
+      [chooseIA, chooseKit, chooseAvulsa, () => subs('ques'), close_][i]();
+    });
+  }
+
+  /* ---------- PDF (comprovante e plano) ---------- */
+  function loadPDF(){
+    if (window.jspdf) return Promise.resolve();
+    return new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+  }
+  const noEmoji = s => String(s).replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{2B50}\u{2B06}\u{2194}-\u{21FF}]/gu, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  function pdfBase(titulo, sub){
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    doc.setFillColor(13, 43, 85); doc.rect(0, 0, 210, 30, 'F');
+    doc.setFillColor(242, 183, 5); doc.rect(0, 30, 210, 2, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.text('Concursos e PSS Brasil', 14, 14);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.text(titulo, 14, 22);
+    if (sub){ doc.setFontSize(9); doc.text(sub, 196, 22, { align: 'right' }); }
+    doc.setTextColor(20, 33, 61);
+    const W = { y: 42, doc };
+    W.h = (t, size) => { W.ensure(10); doc.setFont('helvetica', 'bold'); doc.setFontSize(size || 12); doc.setTextColor(13, 43, 85); doc.text(noEmoji(t), 14, W.y); W.y += (size || 12) * .55; doc.setTextColor(20, 33, 61); };
+    W.p = (t, opt) => { opt = opt || {}; doc.setFont('helvetica', opt.bold ? 'bold' : 'normal'); doc.setFontSize(opt.size || 10.5); const lines = doc.splitTextToSize(noEmoji(t), opt.w || 182); lines.forEach(l => { W.ensure(6); doc.text(l, opt.x || 14, W.y); W.y += (opt.size || 10.5) * .48; }); W.y += opt.gap == null ? 2 : opt.gap; };
+    W.ensure = n => { if (W.y + n > 282){ doc.addPage(); W.y = 18; } };
+    W.foot = () => { const n = doc.getNumberOfPages(); for (let i = 1; i <= n; i++){ doc.setPage(i); doc.setFontSize(8.5); doc.setTextColor(110, 120, 140); doc.text('Concursos e PSS Brasil · WhatsApp (92) 98447-8798 · @concursos_pss', 14, 290); doc.text(`Página ${i} de ${n}`, 196, 290, { align: 'right' }); } };
+    return W;
+  }
+  async function pdfComprovante(){
+    try { await loadPDF(); } catch(e) { return bot('Não consegui gerar o PDF agora. Verifique a internet e tente de novo. 🙏'); }
+    const tot = st.cart.reduce((s, x) => s + (x.preco || 0), 0), dt = new Date();
+    const W = pdfBase('Comprovante de pedido', 'Pedido nº ' + st.pedido), doc = W.doc;
+    W.h('Resumo do pedido', 13); W.y += 2;
+    W.p('Data: ' + dt.toLocaleDateString('pt-BR') + ' às ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+    W.p('Nome: ' + (st.nome || ''));
+    if (st.area) W.p('Cargo: ' + cargo(st.area));
+    if (st.concurso) W.p('Seleção: ' + st.concurso);
+    W.y += 3; W.h('Itens');
+    doc.setDrawColor(220, 227, 238);
+    st.cart.forEach(x => { W.ensure(9); doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); const ls = doc.splitTextToSize(noEmoji(x.nome), 140); ls.forEach((l, i) => { doc.text(l, 14, W.y + i * 5); }); if (x.preco) doc.text(money(x.preco), 196, W.y, { align: 'right' }); W.y += ls.length * 5 + 2; doc.line(14, W.y - 3, 196, W.y - 3); });
+    if (st.planTxt && st.cart.some(x => x.ia)){ W.p('Bônus: plano de estudos personalizado (enviado após a confirmação do pagamento)', { size: 10 }); }
+    W.y += 2; doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.text('Total', 14, W.y); doc.text(money(tot), 196, W.y, { align: 'right' }); W.y += 10;
+    doc.setFillColor(255, 244, 204); doc.roundedRect(14, W.y - 5, 182, 24, 3, 3, 'F');
+    W.p('Status: aguardando confirmação do pagamento.', { bold: true, x: 18, w: 174, gap: 0 });
+    W.p('Finalize pelo WhatsApp (92) 98447-8798 informando o número do pedido. Após a confirmação, as apostilas interativas são liberadas no seu e-mail e os materiais em PDF são enviados pelo WhatsApp.', { x: 18, w: 174, size: 9.5 });
+    W.foot(); doc.save(`comprovante-pedido-${st.pedido}.pdf`);
+  }
+  function planData(){ const P = st.pl; return { n: st.nome || '', a: st.area || '', di: P.disc, s: P.sem, t: P.semTxt, h: P.h, d: P.d }; }
+  const b64e = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const b64d = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/')))));
+  const LOGO_PLANO = 'data:image/jpeg;base64,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';
+  async function pdfPlano(D){
+    await loadPDF();
+    const prevA = st.area; st.area = D.a || st.area;
+    const sm = semanaModeloBlocks(D.di, D.h, D.d);
+    const cg = cargo(D.a); st.area = prevA;
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    const NAVY = [17, 59, 114], TXT = [30, 41, 59], MUT = [90, 102, 125];
+    const CARD = [[44, 98, 196], [0, 128, 104], [124, 79, 180], [196, 82, 40]];
+    const TINT = [[235, 242, 252], [229, 244, 238], [241, 235, 250], [253, 238, 230]];
+    const STRIPE = [[242, 184, 42], [31, 179, 124], [70, 147, 244], [172, 119, 221]];
+    const tot = D.h * D.d * D.s, mensal = D.s > 12, nome = noEmoji(D.n || 'Aluno(a)');
+    const dias = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+    const ultimo = dias[D.d - 1].toLowerCase();
+    const set = (c) => doc.setTextColor(c[0], c[1], c[2]);
+    const fill = (c) => doc.setFillColor(c[0], c[1], c[2]);
+    const font = (w, s) => { doc.setFont('helvetica', w); doc.setFontSize(s); };
+    const wrap = (t, w) => doc.splitTextToSize(noEmoji(t), w);
+    function header(sec, titulo, sub, n){
+      STRIPE.forEach((c, i) => { fill(c); doc.rect(i * 52.5, 0, 52.5, 1.6, 'F'); });
+      fill(NAVY); doc.rect(0, 1.6, 210, 22, 'F');
+      try { doc.addImage(LOGO_PLANO, 'JPEG', 10, 4, 16, 16); } catch(e) {}
+      set([255, 255, 255]); font('bold', 11); doc.text('CONCURSOS E PSS BRASIL', 31, 10);
+      set([242, 184, 42]); font('bold', 6.8); doc.text('CONCURSOS PÚBLICOS • ÁREA DA EDUCAÇÃO', 31, 14.5);
+      set([210, 220, 235]); font('normal', 6.8); doc.text('PLANO PERSONALIZADO  |  ' + noEmoji(cg).toUpperCase(), 31, 18.6);
+      set([0, 128, 104]); font('bold', 7.5); doc.text(sec, 13, 33);
+      set(NAVY); font('bold', 21); doc.text(titulo, 13, 43);
+      set(MUT); font('normal', 9); doc.text(wrap(sub, 184), 13, 50);
+      // rodapé
+      fill(NAVY); doc.rect(0, 278, 210, 19, 'F'); fill([242, 184, 42]); doc.rect(13, 277, 184, 0.8, 'F');
+      set([255, 255, 255]); font('bold', 8.5); doc.text('WhatsApp (92) 98447-8798', 13, 285); font('normal', 7.5); doc.text('Instagram: @concursos_pss', 13, 290);
+      font('bold', 8.5); doc.text(n + ' / 3', 197, 287, { align: 'right' });
+    }
+    function secTitle(num, t, y, color){
+      fill(color || CARD[0]); doc.rect(13, y - 4.6, 6.5, 6.5, 'F'); set([255, 255, 255]); font('bold', 7.5); doc.text(num, 16.25, y - 0.4, { align: 'center' });
+      set(NAVY); font('bold', 12); doc.text(t, 23, y);
+    }
+    function box(y, titulo, texto, bg, bar){
+      const ls = wrap(texto, 172), h = 8 + ls.length * 4.2 + (titulo ? 5 : 0);
+      fill(bg); doc.rect(13, y, 184, h, 'F'); fill(bar); doc.rect(13, y, 1.4, h, 'F');
+      let yy = y + 6;
+      if (titulo){ set([0, 110, 90]); font('bold', 7.5); doc.text(titulo, 18, yy); yy += 5; }
+      set(TXT); font('normal', 8.6); doc.text(ls, 18, yy); return y + h;
+    }
+    /* ---------- PÁGINA 1 ---------- */
+    header('01 / ORGANIZAÇÃO', 'Um plano para avançar', `Aluno(a): ${nome} • Preparação para o cargo de ${noEmoji(cg)}`, 1);
+    const cards = [[String(D.s), 'SEMANAS'], [D.h + 'h', 'POR DIA'], [String(D.d), 'DIAS / SEMANA'], [tot + 'h', 'NO CICLO']];
+    cards.forEach((c, i) => { const x = 13 + i * 46.5; fill(CARD[i]); doc.rect(x, 58, 43, 22, 'F'); set([255, 255, 255]); font('bold', 18); doc.text(c[0], x + 4, 69); font('bold', 6.5); doc.text(c[1], x + 4, 76); });
+    set(TXT); font('normal', 8.5); doc.text(`Carga planejada: ${D.h * D.d} horas por semana, durante ${D.s} semanas (${noEmoji(D.t)}).`, 13, 87);
+    secTitle('01', 'Sua semana de estudos', 98, CARD[0]);
+    const nb = Math.min(D.h, 5), colW = (184 - 22) / nb, rowH = nb > 3 ? 13 : 10.5;
+    let y = 103;
+    fill(NAVY); doc.rect(13, y, 184, 8, 'F'); set([255, 255, 255]); font('bold', 6.8); doc.text('DIA', 16, y + 5.2);
+    for (let b = 0; b < nb; b++) doc.text(`BLOCO ${b + 1} • 60 MIN`, 35 + b * colW + 2, y + 5.2);
+    y += 8.6;
+    const subjColor = {}; let ci = 0;
+    D.di.forEach(x => { subjColor[x] = ci++ % 4; });
+    sm.forEach(dy => {
+      fill(NAVY); doc.rect(13, y, 21, rowH, 'F'); set([255, 255, 255]); font('bold', 7.5); doc.text(dy.n.toUpperCase(), 16, y + rowH / 2 + 1.2);
+      for (let b = 0; b < nb; b++){
+        const x0 = 35 + b * colW, it = dy.b[b];
+        const k = it == null ? null : (it.rev ? 1 : subjColor[it.d]);
+        fill(k == null ? [247, 248, 250] : TINT[k]); doc.rect(x0, y, colW - 0.6, rowH, 'F');
+        if (k != null){ fill(CARD[k]); doc.rect(x0, y, 0.9, rowH, 'F'); set(CARD[k]); font('normal', nb > 3 ? 6.6 : 7.6); doc.text(wrap(it.label, colW - 5), x0 + 3, y + 4.6); }
+      }
+      y += rowH + 0.6;
+    });
+    if (D.h > nb){ set(MUT); font('normal', 7.2); doc.text(`* Com ${D.h}h por dia, repita os blocos da linha seguindo a mesma ordem (${D.h - nb}h extras por dia).`, 13, y + 3); y += 5; }
+    y += 7; secTitle('02', 'Como usar cada bloco', y, CARD[1]); y += 7;
+    set(TXT); font('bold', 8.8); doc.text('40 min', 13, y); font('normal', 8.8);
+    doc.text(wrap('     para estudar o tópico • 15 min para resolver questões • 5 min para registrar erros e o próximo passo.', 172), 24, y); y += 10;
+    const folga = D.d === 5 ? 'Sábado e domingo ficam livres para descanso ou reposição pontual, sem ampliar a carga prevista.' : D.d === 6 ? 'O domingo fica livre para descanso ou reposição pontual, sem ampliar a carga prevista.' : 'Como você estuda todos os dias, deixe um deles mais leve para não acumular cansaço.';
+    box(y, null, `Rotina sustentável: faça uma pausa breve entre os blocos, fora das ${D.h} hora${D.h > 1 ? 's' : ''} líquida${D.h > 1 ? 's' : ''}. ${folga}`, [255, 246, 214], [242, 184, 42]);
+    /* ---------- PÁGINA 2 ---------- */
+    doc.addPage();
+    const f1 = D.s <= 2 ? 1 : Math.max(1, Math.round(D.s * .5)), f2 = D.s <= 2 ? 0 : Math.max(1, Math.round(D.s * .25)), f3 = Math.max(1, D.s - f1 - f2);
+    const U = mensal ? 'meses' : 'semanas', uni = n => mensal ? Math.max(1, Math.round(n / 4.33)) : n;
+    const tituloP2 = mensal ? `O caminho em ${Math.max(3, Math.round(D.s / 4.33))} meses` : `O caminho em ${D.s} semana${D.s > 1 ? 's' : ''}`;
+    header('02 / EXECUÇÃO', tituloP2, 'Repita os horários da página anterior e ajuste o foco conforme a etapa.', 2);
+    const M = Math.max(3, Math.round(D.s / 4.33)); let m1 = Math.max(1, Math.round(M * .5)); const m2 = Math.max(1, Math.round(M * .25)), m3 = Math.max(1, M - m1 - m2);
+    if (m1 + m2 + m3 > M) m1 = Math.max(1, M - m2 - m3);
+    const mr = { 1: [1, m1], 2: [m1 + 1, m1 + m2], 3: [m1 + m2 + 1, m1 + m2 + m3] };
+    const rngM = k => mr[k][0] === mr[k][1] ? `mês ${mr[k][0]}` : `meses ${mr[k][0]} a ${mr[k][1]}`;
+    const rng = (a, b, k) => { if (mensal) return rngM(k); return a === b ? `semana ${a}` : `semanas ${a} a ${b}`; };
+    y = 62; secTitle('01', 'Base e compreensão | ' + rng(1, f1, 1), y, CARD[0]); y += 8;
+    const passos = [['Diagnóstico e organização', 'Liste os tópicos do edital por disciplina, resolva questões iniciais e identifique suas maiores dificuldades.'],
+      ['Construção da base', 'Avance nos tópicos selecionados e faça resumos curtos com palavras-chave e exemplos.'],
+      ['Continuidade e retomada', 'Siga a lista de conteúdos e retome os erros e os pontos esquecidos das etapas anteriores.'],
+      ['Consolidação da primeira etapa', 'Revise os tópicos estudados, confira as pendências e avalie quais matérias exigem mais atenção.']];
+    const np = Math.min(4, Math.max(2, f1));
+    const usar = np === 4 ? passos : np === 3 ? [passos[0], passos[1], passos[3]] : [passos[0], passos[3]];
+    usar.forEach((p, i) => {
+      fill(CARD[i]); doc.rect(13, y - 4, 10, 10, 'F'); set([255, 255, 255]); font('bold', 9); doc.text(String(i + 1).padStart(2, '0'), 18, y + 2.4, { align: 'center' });
+      set(NAVY); font('bold', 9.2); doc.text(p[0], 27, y); set(TXT); font('normal', 8.2); const ls = wrap(p[1], 168); doc.text(ls, 27, y + 4.6); y += 8 + ls.length * 4 + 5;
+    });
+    set([0, 128, 104]); font('bold', 8.4); doc.text('Meta de prática:', 27, y); set(TXT); font('normal', 8.4); doc.text(`${D.h >= 2 ? 10 : 5} questões por dia, divididas entre os blocos, com correção.`, 53, y); y += 12;
+    if (f2){
+      secTitle('02', 'Aprofundamento | ' + rng(f1 + 1, f1 + f2, 2), y, CARD[1]); y += 7;
+      set(TXT); font('normal', 8.6); let ls = wrap(`Priorize erros recorrentes, conteúdos de maior peso no edital e as dificuldades do diagnóstico. Continue a teoria que ainda estiver pendente. Busque ${D.h >= 2 ? 20 : 10} questões por dia, conforme seu tempo de correção.`, 184); doc.text(ls, 13, y); y += ls.length * 4.2 + 10;
+    }
+    secTitle(f2 ? '03' : '02', 'Revisão e simulados | ' + rng(f1 + f2 + 1, D.s, 3), y, CARD[2]); y += 7;
+    set(TXT); font('normal', 8.6); let ls2 = wrap(`Use os blocos para revisão ativa, questões e simulados parciais cronometrados. Registre os erros e refaça-os. Se a duração da prova exceder ${D.h} hora${D.h > 1 ? 's' : ''}, reserve outro horário para um simulado completo.`, 184); doc.text(ls2, 13, y); y += ls2.length * 4.2 + 8;
+    set(MUT); font('normal', 7.4); doc.text(`As metas de questões cabem nas ${D.h} hora${D.h > 1 ? 's' : ''} diárias; reduza a quantidade quando a correção exigir mais tempo.`, 13, y);
+    /* ---------- PÁGINA 3 ---------- */
+    doc.addPage();
+    header('03 / ACOMPANHAMENTO', 'Veja sua evolução', `Preencha ao final de cada ${mensal ? 'mês' : 'semana'} e use os resultados para planejar o próximo período.`, 3);
+    y = 62; secTitle('01', mensal ? 'Controle mensal' : 'Controle semanal', y, CARD[0]); y += 5;
+    const linhas = mensal ? Math.max(3, Math.round(D.s / 4.33)) : D.s, horasLinha = mensal ? Math.round(D.h * D.d * 4.33) : D.h * D.d;
+    const rH = Math.min(7, (160 - 20) / Math.max(linhas, 1));
+    fill(NAVY); doc.rect(13, y, 184, 8, 'F'); set([255, 255, 255]); font('bold', 6.6);
+    const cols = [[mensal ? 'MÊS' : 'SEM.', 16], ['HORAS¹', 34], ['QUESTÕES', 66], ['ACERTOS', 96], ['TAXA²', 124], ['REVISÃO³', 150]];
+    cols.forEach(c => doc.text(c[0], c[1], y + 5.2)); y += 8.4;
+    for (let r = 0; r < linhas; r++){
+      const k = r % 4; fill(TINT[k]); doc.rect(13, y, 184, rH, 'F'); fill(CARD[k]); doc.rect(13, y, 16, rH, 'F');
+      set([255, 255, 255]); font('bold', 7.4); doc.text(String(r + 1).padStart(2, '0'), 21, y + rH / 2 + 1.3, { align: 'center' });
+      set(MUT); font('normal', 7.4); const yy = y + rH / 2 + 1.3;
+      doc.text(`____ / ${horasLinha}h`, 34, yy); doc.text('_______', 66, yy); doc.text('______', 96, yy); doc.text('____ %', 124, yy); doc.text('Sim / Não', 150, yy);
+      y += rH + 0.5;
+    }
+    set(MUT); font('normal', 6.8); doc.text('¹ Horas líquidas realizadas. ² Acertos ÷ questões respondidas × 100. ³ Revisão dos erros concluída.', 13, y + 4); y += 13;
+    secTitle('02', 'Transforme seus erros em revisão', y, CARD[1]); y += 7;
+    set(TXT); font('normal', 8.6); const le = wrap(`Anote o tema, o motivo do erro (conteúdo, interpretação ou atenção) e a regra correta. Na revisão de ${ultimo}, refaça as questões sem consultar a resposta.`, 184); doc.text(le, 13, y); y += le.length * 4.2 + 6;
+    if (y < 250) box(y, 'AJUSTE DO PRÓXIMO PERÍODO', 'Se houver atraso, priorize as pendências essenciais. Se uma matéria concentrar os erros, redistribua os blocos da semana seguinte. A distribuição inicial deve ser ajustada aos pesos e conteúdos do edital.', [255, 246, 214], [242, 184, 42]);
+    doc.save(`plano-de-estudos-${(D.n || 'aluno').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-')}.pdf`);
+  }
+  // blocos por dia (para a tabela do PDF)
+  function semanaModeloBlocks(disc, h, d){
+    const days = DIAS.slice(0, d).map(n => ({ n, b: [] }));
+    const rev = Math.max(1, Math.round(h / 2)), total = h * d - rev;
+    const w = disc.map(x => DISC_W[x] || 1), sw = w.reduce((a, b) => a + b, 0);
+    let alloc = w.map(x => Math.max(1, Math.floor(total * x / sw)));
+    let left = total - alloc.reduce((a, b) => a + b, 0);
+    const order = w.map((x, i) => i).sort((a, b) => w[b] - w[a]);
+    for (let k = 0; left > 0; k++, left--) alloc[order[k % order.length]]++;
+    while (alloc.reduce((a, b) => a + b, 0) > total){ const i = alloc.indexOf(Math.max(...alloc)); alloc[i]--; }
+    const queue = []; let any = true;
+    while (any){ any = false; disc.forEach((x, i) => { if (alloc[i] > 0){ queue.push(x); alloc[i]--; any = true; } }); }
+    let qi = 0;
+    days.forEach((dy, di) => {
+      const slots = di === d - 1 ? h - rev : h;
+      for (let s = 0; s < slots && qi < queue.length; s++) dy.b.push({ d: queue[qi], label: discLabel(queue[qi++]) });
+      if (di === d - 1) for (let r = 0; r < rev; r++) dy.b.push({ rev: 1, label: 'Revisão semanal e questões' });
+    });
+    while (qi < queue.length){ const dy = days[qi % Math.max(1, d - 1)]; dy.b.push({ d: queue[qi], label: discLabel(queue[qi++]) }); }
+    return days;
+  }
+  // link do plano (para a equipe gerar o PDF e enviar ao aluno após o pagamento)
+  (function(){
+    let code = null; try { code = new URLSearchParams(location.search).get('plano'); } catch(e) {}
+    if (!code) return;
+    let D = null; try { D = b64d(code); } catch(e) { return; }
+    const ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;z-index:9600;background:rgba(5,10,20,.88);display:flex;align-items:center;justify-content:center;padding:16px';
+    ov.innerHTML = `<div style="background:#fff;color:#14213D;border-radius:14px;padding:20px;max-width:420px;width:100%;text-align:center;font-family:system-ui,sans-serif">
+      <div style="font-size:40px">🗓️</div><h3 style="margin:6px 0">Plano de estudos de ${E(D.n || 'aluno(a)')}</h3>
+      <p style="margin:0 0 14px;color:#56627C">${E(cargo(D.a))} · ${E(D.t)} · ${D.h}h/dia · ${D.d} dias/semana</p>
+      <button type="button" id="pl-dl" style="width:100%;padding:13px;border:0;border-radius:12px;background:#168A47;color:#fff;font-weight:800;font-size:15px;cursor:pointer">📄 Baixar o PDF do plano</button>
+      <button type="button" id="pl-x" style="margin-top:8px;width:100%;padding:11px;border:1px solid #ccd;border-radius:12px;background:#fff;cursor:pointer">Fechar</button></div>`;
+    document.body.appendChild(ov);
+    ov.querySelector('#pl-x').onclick = () => ov.remove();
+    ov.querySelector('#pl-dl').onclick = () => pdfPlano(D).catch(() => alert('Não foi possível gerar o PDF. Verifique a internet.'));
+  })();
   async function chooseKit(){
     const p = kitPrice(st.area);
-    st.cart = [{ nome: 'Kit completo — ' + cargo(st.area), preco: p }];
+    addItem({ nome: 'Kit completo — ' + cargo(st.area), preco: p });
     const cv = samplesFor(st.area).kit;
     await bot(`Ótimo! O kit de <b>${E(cargo(st.area))}</b> sai por <b>${money(p)}</b> e reúne conhecimentos específicos, conhecimento pedagógico e legislação em PDF.` + (cv ? `<img class="edu-img" src="${cv}" alt="Capa do kit" style="max-width:200px">` : ''));
-    if (isTeacher(st.area)){
+    if (isTeacher(st.area) && !(st.cart || []).some(x => x.ia === 'cp')){
       await bot(`Quer turbinar? Com a <b>Apostila Interativa de Conhecimento Pedagógico</b> (+${money(IA.cp.preco)}) você treina com questões comentadas, simulados e a Bia, além de ler o PDF. 🚀`);
-      chips(['⭐ Sim, incluir a interativa', 'Só o kit'], (v, i) => { if (i === 0) st.cart.push({ nome: 'Apostila interativa — ' + IA.cp.nome, preco: IA.cp.preco }); askConcurso(); });
+      chips(['⭐ Sim, incluir a interativa', 'Só o kit'], (v, i) => { if (i === 0) addItem(iaItem('cp')); askConcurso(); });
     } else askConcurso();
   }
   async function chooseAvulsa(){
-    st.cart = [{ nome: 'Apostila avulsa — ' + cargo(st.area || 'a definir'), preco: P_AVULSA }];
+    addItem({ nome: 'Apostila avulsa — ' + cargo(st.area || 'a definir'), preco: P_AVULSA });
     await bot(`A apostila avulsa sai por <b>${money(P_AVULSA)}</b>. Por só ${money(IA.cp.preco - P_AVULSA)} a mais, a <b>interativa</b> vem com questões comentadas, simulados e a Bia. Quer trocar?`);
-    chips(['⭐ Quero a interativa', 'Fico com a avulsa'], (v, i) => i === 0 ? chooseIA() : askConcurso());
+    chips(['⭐ Quero a interativa', 'Fico com a avulsa'], (v, i) => { if (i === 0){ st.cart = st.cart.filter(x => !/^Apostila avulsa/.test(x.nome)); return chooseIA(); } askConcurso(); });
   }
   async function askConcurso(){
+    if (st.concurso) return close_();
     await bot('Para eu já deixar anotado: que tipo de seleção você vai fazer?');
     chips(['Concurso estadual', 'Concurso municipal', 'Processo seletivo (PSS)', 'Ainda não sei'], v => { st.concurso = v; close_(); });
   }
   async function close_(){
     const tot = st.cart.reduce((s, x) => s + (x.preco || 0), 0);
     const itens = st.cart.map(x => `<div>• ${E(x.nome)}${x.preco ? ' — ' + money(x.preco) : ''}</div>`).join('');
-    const msg = `Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nQuero garantir:\n` + st.cart.map(x => '• ' + x.nome + (x.preco ? ' (' + money(x.preco) + ')' : '')).join('\n') +
-      (tot ? `\nTotal: ${money(tot)}` : '') + (st.area ? `\nCargo: ${cargo(st.area)}` : '') + (st.concurso ? `\nSeleção: ${st.concurso}` : '') + (st.prazo ? `\nProva: ${st.prazo}` : '') + (st.quizRes ? `\nQuiz de Conhecimento Pedagógico: ${st.quizRes}` : '') + (st.planTxt && st.cart.some(x => /interativa/i.test(x.nome)) ? `\n\n🎁 Quero receber meu plano de estudos (bônus):\n${st.planTxt}` : '');
-    const bonus = st.planTxt && st.cart.some(x => /interativa/i.test(x.nome)) ? '<div>🎁 Bônus: seu plano de estudos personalizado no WhatsApp</div>' : '';
-    await bot(`Perfeito, <b>${E(st.nome)}</b>! Seu pedido ficou assim: <div class="edu-sum">${itens}${bonus}${tot ? `<div style="margin-top:6px"><b>Total: ${money(tot)}</b></div>` : ''}</div>
-      <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 Finalizar pelo WhatsApp</a>`);
-    await bot('É só tocar no botão: a mensagem já vai pronta. A nossa equipe confirma e te envia o pagamento, e o acesso é liberado no seu e-mail. 😉');
+    if (!st.cart || !st.cart.length) return otherMenu();
+    st.pedido = st.pedido || ('CPS' + Date.now().toString(36).slice(-5).toUpperCase());
+    const temIA = st.cart.some(x => x.ia), planLink = st.pl && st.planTxt && temIA ? (location.origin + location.pathname + '?plano=' + b64e(planData())) : '';
+    const msg = `Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nPedido nº ${st.pedido}\nQuero garantir:\n` + st.cart.map(x => '• ' + x.nome + (x.preco ? ' (' + money(x.preco) + ')' : '')).join('\n') +
+      (tot ? `\nTotal: ${money(tot)}` : '') + (st.area ? `\nCargo: ${cargo(st.area)}` : '') + (st.concurso ? `\nSeleção: ${st.concurso}` : '') + (st.prazo ? `\nProva: ${st.prazo}` : '') + (st.quizRes ? `\nQuiz de Conhecimento Pedagógico: ${st.quizRes}` : '') + (planLink ? `\n\n🎁 Bônus: plano de estudos personalizado.\n(Equipe: após o pagamento, abra o link, baixe o PDF e envie ao aluno)\n${planLink}` : '');
+    const bonus = planLink ? '<div>🎁 Bônus: seu plano de estudos em PDF, enviado no WhatsApp após o pagamento</div>' : '';
+    await bot(`Perfeito, <b>${E(st.nome)}</b>! Seu pedido <b>nº ${st.pedido}</b> ficou assim: <div class="edu-sum">${itens}${bonus}${tot ? `<div style="margin-top:6px"><b>Total: ${money(tot)}</b></div>` : ''}</div>
+      <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 Finalizar pelo WhatsApp</a>
+      <a class="edu-link" href="#" data-receipt>📄 Baixar comprovante do pedido (PDF)</a>`);
+    await bot('É só tocar no botão: a mensagem já vai pronta com o número do pedido. A nossa equipe confirma e te envia o pagamento, e o acesso é liberado no seu e-mail. 😉');
     await grupo();
-    chipsP(['💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => i ? otherMenu() : faq());
+    chipsP(['➕ Adicionar mais um material', '🗑️ Refazer o pedido', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [addMore, () => { st.cart = []; st.pedido = null; chooseIA(); }, faq, otherMenu][i]());
   }
   async function grupo(){
     const ga = GRUPOS[st.area] ? st.area : (ALIAS[st.area] && GRUPOS[ALIAS[st.area]] ? ALIAS[st.area] : null);
@@ -1533,11 +1767,11 @@ body.edu-open #edu-btn{display:none}
   async function subs(kind){
     const q = kind === 'ques';
     await bot(q ? 'As questões são por assinatura de <b>R$ 9,90/mês</b> por disciplina. Qual te interessa?' : 'As aulas em vídeo são por assinatura de <b>R$ 59,90/mês</b>. Qual disciplina te interessa mais?');
-    chips(disc(), v => { st.cart = [{ nome: (q ? 'Assinatura de questões — ' : 'Aulas em vídeo — ') + v, preco: q ? 9.9 : 59.9 }]; askConcurso(); });
+    chips(disc(), v => { addItem({ nome: (q ? 'Assinatura de questões — ' : 'Aulas em vídeo — ') + v, preco: q ? 9.9 : 59.9 }); askConcurso(); });
   }
   async function outro(){
     await bot('Para qual concurso ou cargo você está estudando? Me conta que a equipe verifica o material certo pra você.');
-    ask('Ex.: Merendeiro, Secretário escolar…', v => { st.concurso = v; st.cart = [{ nome: 'Material para ' + v, preco: 0 }]; close_(); });
+    ask('Ex.: Merendeiro, Secretário escolar…', v => { st.concurso = v; addItem({ nome: 'Material para ' + v, preco: 0 }); close_(); });
   }
   async function loja(){
     const N = st.nome ? ', ' + E(st.nome) : '';
@@ -1596,6 +1830,7 @@ body.edu-open #edu-btn{display:none}
   function close(){ pan.hidden = true; document.body.classList.remove('edu-open'); }
   btn.onclick = open; document.getElementById('edu-x').onclick = close;
   addEventListener('keydown', e => { if (e.key === 'Escape' && !pan.hidden) close(); });
+  log.addEventListener('click', e => { const r = e.target.closest('a[data-receipt]'); if (!r) return; e.preventDefault(); pdfComprovante(); });
   log.addEventListener('click', e => { const im = e.target.closest('img[data-zoom], .edu-thumbs img, img.edu-img'); if (!im) return;
     const z = document.createElement('div'); z.className = 'edu-zoom'; z.innerHTML = '<button type="button" aria-label="Fechar">✕</button><img src="' + im.src + '" alt="">'; z.onclick = () => z.remove(); document.body.appendChild(z); });
   log.addEventListener('click', e => { const a = e.target.closest('a[data-tab]'); if (!a) return; e.preventDefault(); const tab = document.querySelector('.tab[data-tab="' + a.dataset.tab + '"]'); if (tab){ tab.click(); close(); } });
