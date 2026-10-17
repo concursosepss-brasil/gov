@@ -1764,7 +1764,9 @@ body.edu-open #edu-btn{display:none}
     chipsP(['➕ Adicionar mais um material', '🗑️ Refazer o pedido', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [addMore, () => { st.cart = []; st.pedido = null; chooseIA(); }, faq, otherMenu][i]());
   }
   async function grupo(){
-    const ga = GRUPOS[st.area] ? st.area : (ALIAS[st.area] && GRUPOS[ALIAS[st.area]] ? ALIAS[st.area] : null);
+    let ga = GRUPOS[st.area] ? st.area : (ALIAS[st.area] && GRUPOS[ALIAS[st.area]] ? ALIAS[st.area] : null);
+    if (!ga && st.area){ const a = N0(st.area); ga = Object.keys(GRUPOS).find(k => k !== 'geral' && a.includes(N0(k).split(/[ /(]/)[0])) || null; }
+    if (!ga){ const IAG = { mat: 'Matemática', lp: 'Letras / Português', cp: 'Pedagogia' }; const k = ['mat', 'lp', 'cp'].find(k => (st.cart || []).some(x => x.ia === k) && GRUPOS[IAG[k]]); if (k) ga = IAG[k]; }
     const btn = (url, txt, cor) => `<a class="edu-wpp" style="background:${cor};display:block;margin-top:8px" href="${E(url)}" target="_blank" rel="noopener">${txt}</a>`;
     const geral = GRUPOS.geral ? btn(GRUPOS.geral, '🇧🇷 Grupo da Educação · todo o Brasil', '#0D2B55') : '';
     if (ga) {
