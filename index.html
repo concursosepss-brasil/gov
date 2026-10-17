@@ -1335,7 +1335,14 @@ body.edu-solo .edu-cat{display:inline-block}
     }
     await bot('Oi! 👋 Eu sou o <b>Edu</b>, consultor virtual da <b>Concursos e PSS Brasil</b>.');
     await bot('Vou te ajudar a montar o material certo para a sua aprovação, em menos de 1 minuto. Como posso te chamar?');
-    ask('Digite seu nome…', v => { st.nome = firstName(v) || v.trim().split(/\s+/)[0]; remember(); pickArea(true); });
+    const askNome = () => ask('Digite seu nome…', async v => {
+      const n = firstName(v) || v.trim().split(/\s+/)[0];
+      if (!n || /^(quero|queria|gostaria|preciso|bom|boa|tudo|sim|nao|não|ok|apostila|apostilas|informacao|informação|ajuda|duvida|dúvida|ola|olá|oi|eae|opa|como|qual|quanto|tem|vc|voce|você|boa noite|bom dia)$/i.test(n)) {
+        await bot('Desculpa, não entendi seu nome 😅 Como posso te chamar? (só o primeiro nome)'); return askNome();
+      }
+      st.nome = n; remember(); pickArea(true);
+    });
+    askNome();
   }
   async function pickArea(first){
     await bot(first ? `Prazer, <b>${E(st.nome)}</b>! 🤝 Para qual cargo ou área você vai prestar concurso?` : 'Para qual cargo ou área você vai prestar concurso?');
