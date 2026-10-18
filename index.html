@@ -1322,11 +1322,15 @@ body.edu-solo .edu-cat{display:inline-block}
   /* ---------- interface ---------- */
   const scrollEnd = () => { log.scrollTop = log.scrollHeight; };
   function say(html, who){ const d = document.createElement('div'); d.className = 'edu-m ' + (who || 'bot'); d.innerHTML = html; log.appendChild(d); scrollEnd(); return d; }
-  function bot(html){ const t = say('<span class="edu-typing"><i></i><i></i><i></i></span>'); return new Promise(r => setTimeout(() => { t.remove(); r(say(html)); }, 450 + Math.min(900, html.replace(/<[^>]+>/g, '').length * 9))); }
+  function bot(html){ const t = say('<span class="edu-typing"><i></i><i></i><i></i></span>'); const n = html.replace(/<[^>]+>/g, '').length; return new Promise(r => setTimeout(() => { t.remove(); r(say(html)); }, 380 + Math.min(1300, n * 11) + Math.random() * 260)); }
   function clearChips(){ log.querySelectorAll('.edu-m.chips').forEach(c => c.remove()); }
+  // lembrete carinhoso se a pessoa ficar parada (só uma vez por conversa)
+  let nudgeT = null, nudged = false;
+  function nudge(){ clearTimeout(nudgeT); if (nudged) return; nudgeT = setTimeout(() => { if (nudged || pan.hidden || !log.querySelector('.edu-m.chips')) return; nudged = true; bot(pick([`Ainda tá por aí${st.nome ? ', ' + E(st.nome) : ''}? 😊 Se bateu alguma dúvida, é só me perguntar, tá? Tô aqui!`, 'Psiu! 👀 Fiquei aqui esperando você, kkk. Qualquer dúvida, pode mandar que eu respondo rapidinho 😄'])); }, 75000); }
   function chips(list, cb){
+    nudge();
     const d = say(list.map((c, i) => `<button type="button" class="edu-chip${/⭐/.test(c) ? ' star' : ''}" data-i="${i}">${E(c)}</button>`).join(''), 'chips');
-    d.querySelectorAll('.edu-chip').forEach(b => b.onclick = () => { clearChips(); waiting = null; inp.placeholder = 'Digite aqui…'; say(E(list[+b.dataset.i]), 'me'); cb(list[+b.dataset.i], +b.dataset.i); });
+    d.querySelectorAll('.edu-chip').forEach(b => b.onclick = () => { clearTimeout(nudgeT); clearChips(); waiting = null; inp.placeholder = 'Digite aqui…'; say(E(list[+b.dataset.i]), 'me'); cb(list[+b.dataset.i], +b.dataset.i); });
   }
   const PLAN_OPT = '🗓️ Montar meu plano de estudos grátis';
   function chipsP(list, cb){
@@ -1337,7 +1341,7 @@ body.edu-solo .edu-cat{display:inline-block}
   function ask(ph, cb){ waiting = cb; inp.placeholder = ph; setTimeout(() => inp.focus(), 50); }
   document.getElementById('edu-f').onsubmit = e => {
     e.preventDefault(); const v = inp.value.trim(); if (!v) return; inp.value = '';
-    clearChips(); say(E(v), 'me');
+    clearTimeout(nudgeT); clearChips(); say(E(v), 'me');
     if (waiting){ const w = waiting; waiting = null; inp.placeholder = 'Digite aqui…'; w(v); } else freeText(v);
   };
   const firstName = s => { s = String(s).replace(/^(oi|ola|olá)[,!\s]+/i, '').replace(/^(meu nome [eé]|me chamo|pode me chamar de|sou [oa]|eu sou)\s+/i, '').trim().split(/\s+/)[0] || ''; s = s.replace(/[^\p{L}'-]/gu, ''); return s ? s[0].toUpperCase() + s.slice(1).toLowerCase() : ''; };
@@ -1349,23 +1353,23 @@ body.edu-solo .edu-cat{display:inline-block}
     started = true;
     if (mem.nome){
       st.nome = mem.nome;
-      await bot(pick([`Olha quem voltou! Oi, <b>${E(st.nome)}</b> 😄`, `Ei, <b>${E(st.nome)}</b>! Que alegria te ver de novo 😊`, `Oi de novo, <b>${E(st.nome)}</b>! Senti sua falta por aqui 💛`]));
-      if (mem.area){ st.area = mem.area; await bot(`E aí, como andam os estudos? Ainda é <b>${E(cargo(st.area))}</b> o seu foco?`); chips(['Sim, isso mesmo', 'Mudei de cargo'], (v, i) => i ? pickArea() : askPrazo()); return; }
+      await bot(pick([`Olha quem voltou!! Oi, <b>${E(st.nome)}</b>! 😄 Que alegria!`, `Eeei, <b>${E(st.nome)}</b>! Tava torcendo pra você aparecer de novo 🤩`, `<b>${E(st.nome)}</b>!! Que bom te ver de novo! Senti sua falta por aqui 💛`]));
+      if (mem.area){ st.area = mem.area; await bot(`Me conta, como andam os estudos? Ainda tá firme no foco de <b>${E(cargo(st.area))}</b>? 💪`); chips(['Sim, isso mesmo', 'Mudei de cargo'], (v, i) => i ? pickArea() : askPrazo()); return; }
       return pickArea();
     }
-    await bot(pick(['Oi, tudo bem? 👋 Aqui é o <b>Edu</b>, da <b>Concursos e PSS Brasil</b>.', 'Olá! 👋 Que bom que você apareceu! Eu sou o <b>Edu</b>, da <b>Concursos e PSS Brasil</b>.']));
-    await bot('Tô aqui pra te ajudar a escolher o material certo pra sua aprovação, sem enrolação e em menos de 1 minutinho. Mas antes: como você se chama? 😊');
+    await bot(pick(['Oi, oi! 👋 Que alegria ter você por aqui! Eu sou o <b>Edu</b>, da <b>Concursos e PSS Brasil</b> 😄', 'Olá! 👋 Seja muito bem-vindo(a)! Eu sou o <b>Edu</b>, da <b>Concursos e PSS Brasil</b>, e já vou avisando: adoro conversar com quem sonha com a aprovação! 😄']));
+    await bot('Bora achar o material perfeito pra você passar? É rapidinho, menos de 1 minuto, prometo! Mas antes, me conta: como você se chama? 😊');
     const askNome = () => ask('Digite seu nome…', async v => {
       const n = firstName(v) || v.trim().split(/\s+/)[0];
       if (!n || n.length < 2 || NAO_NOME.test(n)) {
-        await bot('Opa, acho que não peguei o seu nome 😅 Me diz só o primeiro nome, por favor?'); return askNome();
+        await bot('Opa, acho que me enrolei aqui 😅 Me diz só o seu primeiro nome, por favor?'); return askNome();
       }
       st.nome = n; remember(); pickArea(true);
     });
     askNome();
   }
   async function pickArea(first){
-    await bot(first ? pick([`Que prazer, <b>${E(st.nome)}</b>! 🤝`, `Prazer em te conhecer, <b>${E(st.nome)}</b>! 😊`, `Muito prazer, <b>${E(st.nome)}</b>! 💛`]) + ' Me conta: você vai prestar concurso pra qual cargo ou área?' : 'Me conta: qual é o cargo ou a área do seu concurso?');
+    await bot(first ? pick([`<b>${E(st.nome)}</b>! Que nome lindo! 🤩`, `Muito prazer, <b>${E(st.nome)}</b>! Já gostei de você 😄`, `Que prazer, <b>${E(st.nome)}</b>! 🤝 Agora a gente já é amigo(a)!`]) + ' Me conta: você vai prestar concurso pra qual cargo ou área?' : 'Me conta: qual é o cargo ou a área do seu concurso?');
     const AR = areas();
     chips(AR.map(cargo).concat(['Outro cargo']), (v, idx) => {
       if (idx < AR.length) v = AR[idx];
@@ -1377,10 +1381,10 @@ body.edu-solo .edu-cat{display:inline-block}
     if (react){
       const a = N0(st.area || '');
       await bot(/merend/.test(a) ? 'Que bacana! O merendeiro tem um papel enorme na escola, e sempre tem seleção saindo por aí 🍲'
-        : isTeacher(st.area) ? pick(['Ótima escolha! A educação precisa de gente como você 💛', 'Que massa! Área linda e com muito concurso pelo Brasil 👏', 'Adoro! Quem escolhe a educação faz diferença na vida de muita gente 💛'])
+        : isTeacher(st.area) ? pick(['Aaah, que demais! A educação precisa de gente como você 💛', 'Que massa!! Área linda e com muito concurso pelo Brasil 👏', 'Adoro!! Quem escolhe a educação muda a vida de muita gente, sabia? 💛'])
         : 'Show! Anotado aqui ✍️');
     }
-    await bot('E a prova, já tem data marcada? Pergunto porque isso muda o jeito certo de estudar 😉');
+    await bot('E a prova, já tem data marcada? Pergunto porque isso muda totalmente o jeito certo de estudar 😉');
     chips(['Menos de 1 mês', 'De 1 a 3 meses', 'Mais de 3 meses', 'Ainda não tem data'], v => { st.prazo = v; recommend(); });
   }
   function recoKeys(){
@@ -1402,18 +1406,18 @@ body.edu-solo .edu-cat{display:inline-block}
     if (urg) await bot(urg);
     const k = recoKeys();
     const nomes = k.slice(0, 2).map(x => '<b>' + E(IA[x].nome) + '</b>').join(' e ');
-    await bot(`${E(st.nome)}, pelo que você me contou, se eu fosse você começaria pelas nossas <b>Apostilas Interativas</b> ⭐ de ${nomes}${isTeacher(st.area) ? '. Elas caem em praticamente toda prova da educação' : ''}.`);
+    await bot(`Olha, ${E(st.nome)}, vou te falar o que eu faria no seu lugar 👇 Eu começaria pelas nossas <b>Apostilas Interativas</b> ⭐ de ${nomes}${isTeacher(st.area) ? '. Elas caem em praticamente toda prova da educação, então é ponto garantido pra estudar' : ''}!`);
     if (k[0] === 'mer') await bot('E o melhor: ela já reúne <b>Língua Portuguesa</b>, <b>Matemática e Raciocínio Lógico</b> e os <b>Conhecimentos Específicos</b> do merendeiro (higiene, segurança alimentar, estoque, preparo, EPIs e relações interpessoais), com <b>510 questões comentadas</b>, incluindo um <b>banco final de 300 questões</b>. 🍲');
     await bot(`${k.length > 1 ? 'Olha só o que vem em cada uma 👇' : 'Olha só o que vem nela 👇'}<div class="edu-list" style="margin-top:6px"><div>📱 Funciona como um <b>app</b> no celular e no computador</div><div>✅ <b>Questões comentadas</b> no estilo das bancas</div><div>⏱️ <b>Simulados</b> com tempo de prova</div><div>📊 <b>Diagnóstico</b> mostra onde você precisa melhorar</div><div>🗓️ <b>Plano de estudos</b> até o dia da prova</div><div>👩‍🏫 A <b>Bia</b>, tutora virtual, tira suas dúvidas na hora</div></div>
-      <div style="margin-top:8px">Tudo isso por <b>${money(IA.cp.preco)}</b> cada, menos que uma pizza 🍕, com acesso pelo seu e-mail.</div>`);
+      <div style="margin-top:8px">E o melhor: tudo isso por <b>${money(IA.cp.preco)}</b> cada. Menos que uma pizza 🍕, e com acesso pelo seu e-mail na hora que a equipe liberar!</div>`);
     if (isTeacher(st.area)) await bot('✍️ Ah, e uma dica de amigo: se a sua prova tiver <b>redação ou questão discursiva</b>, temos a <b>Apostila Interativa de Redação</b>: teoria completa, 130 questões e <b>100 temas da educação</b> para você montar o seu texto e receber a correção da Bia na hora.');
     await biaCard();
-    await bot(pick(['E aí, o que achou? Quer dar uma olhadinha por dentro primeiro? 👀', 'Me diz: por onde você quer começar? 😊']));
+    await bot(pick(['E aí, curtiu? 😄 Quer dar uma espiadinha por dentro primeiro? 👀', 'Me diz: por onde a gente começa? Tô animado aqui! 😄']));
     chips(['👀 Ver como é por dentro', '⭐ Quero a apostila interativa', '🗓️ Montar meu plano de estudos grátis', '🧠 Testar meus conhecimentos (quiz)', `📦 Prefiro o kit completo de ${cargo(st.area)}`, '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [showPreview, chooseIA, plano, quiz, chooseKit, faq, otherMenu][i]());
   }
   async function showPreview(){
     await bot(`Olha só como ela é por dentro 👇<img class="edu-img" src="${PREVIEW}" alt="Tela da apostila interativa e da Bia">`);
-    await bot('Na esquerda fica o seu painel de progresso, e na direita a Bia tirando uma dúvida com o conteúdo da própria apostila. Você estuda, treina e acompanha tudo num lugar só. Bem prático, né? 😄');
+    await bot('Na esquerda fica o seu painel de progresso, e na direita a Bia tirando uma dúvida com o conteúdo da própria apostila. Você estuda, treina e acompanha tudo num lugar só. Eu acho lindo demais, sério 😍');
     await biaCard();
     chipsP(['⭐ Quero a apostila interativa', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [chooseIA, faq, otherMenu][i]());
   }
@@ -1469,7 +1473,7 @@ body.edu-solo .edu-cat{display:inline-block}
   async function plano(){
     if (!st.area){ await bot('Bora montar esse plano! 🗓️ Só me diz antes: qual é o seu cargo?'); const AR = areas(); return chips(AR.map(cargo), (v, i) => { st.area = AR[i]; remember(); plano(); }); }
     st.pl = {};
-    await bot(`Adoro essa parte! 😄 Vamos montar o seu <b>plano de estudos personalizado</b>${st.nome ? ', ' + E(st.nome) : ''}. É de graça e leva uns 30 segundinhos 🗓️`);
+    await bot(`Ahh, essa é a minha parte favorita! 😄 Vamos montar o seu <b>plano de estudos personalizado</b>${st.nome ? ', ' + E(st.nome) : ''}. É de graça e leva uns 30 segundinhos 🗓️`);
     await bot('Primeiro: quais matérias caem na sua prova? Pode marcar todas 👇');
     const L = discList(); const pre = L.slice(0, isTeacher(st.area) ? 4 : 3);
     multiChips(L, pre, async arr => {
@@ -1526,19 +1530,18 @@ body.edu-solo .edu-cat{display:inline-block}
   async function gerarPlano(){
     const P = st.pl, sm = semanaModelo(P.disc, P.h, P.d), fs = fases(P.sem);
     const tot = P.h * P.d * P.sem, mensal = P.sem > 8;
-    await bot(`Prontinho${st.nome ? ', ' + E(st.nome) : ''}! Fiz com carinho, olha só ✨`);
-    await bot(`<div class="edu-plan"><div class="pt">🗓️ Plano de estudos · ${E(cargo(st.area))}</div>
+    await bot(`Tcharaaam! ✨ Prontinho${st.nome ? ', ' + E(st.nome) : ''}! Fiz com todo carinho, olha só:`);
+    let img = ''; try { img = await planoImg(planData()); } catch(x) {}
+    if (img) await bot(`<div class="edu-plan"><div class="pt">🗓️ Plano de estudos · ${E(cargo(st.area))}</div><div class="pm">${E(P.semTxt)} · ${P.h}h por dia · ${P.d} dias por semana · <b>${tot} horas</b> no total</div></div><img class="edu-img" src="${img}" alt="Prévia colorida do seu plano de estudos em PDF"><div style="font-size:12px;color:var(--muted,#666);margin-top:4px">👆 Toca na imagem pra ampliar</div>`);
+    else await bot(`<div class="edu-plan"><div class="pt">🗓️ Plano de estudos · ${E(cargo(st.area))}</div>
       <div class="pm">${E(P.semTxt)} · ${P.h}h por dia · ${P.d} dias por semana · <b>${tot} horas</b> no total</div>
       <div class="ps">Sua semana de estudos</div>
-      <table>${sm.map(d => `<tr><th>${d.n}</th><td>${d.itens.map(E).join('<br>')}</td></tr>`).join('')}</table>
-      <div class="ps">${mensal ? 'Seu plano mês a mês' : 'Seu plano semana a semana'}</div>
-      ${fs.map(f => `<div class="pf"><b>${f[0]}</b><span>${f[1]}</span></div>`).join('')}
-      <div class="pd">💡 Dica: estude a matéria mais difícil no seu horário de maior energia e termine cada sessão com questões.</div></div>`);
+      <table>${sm.map(d => `<tr><th>${d.n}</th><td>${d.itens.map(E).join('<br>')}</td></tr>`).join('')}</table></div>`);
     const txt = `🗓️ MEU PLANO DE ESTUDOS — ${cargo(st.area)}\n${P.semTxt} · ${P.h}h/dia · ${P.d} dias/semana · ${tot}h no total\n\nSEMANA:\n` +
       sm.map(d => `${d.n}: ${d.itens.join(', ')}`).join('\n') + `\n\n${mensal ? 'MÊS A MÊS' : 'SEMANA A SEMANA'}:\n` + fs.map(f => `${f[0]}: ${f[1].replace(/<[^>]+>/g, '')}`).join('\n') +
       `\n\nPlano feito pelo Edu · Concursos e PSS Brasil`;
     st.planTxt = txt;
-    await bot(`🎁 E tem mais: quer esse plano em <b>PDF</b>, caprichado pra imprimir e colar na parede? Ele vai <b>de presente</b> no seu WhatsApp pra quem garante a apostila interativa! <div class="edu-lock">🔒 Plano de estudos em PDF · bônus da compra</div>`);
+    await bot(`Essa é a <b>página 1</b> do seu plano 😍 O <b>PDF completo</b> tem mais 2 páginas: <b>o caminho até a prova, etapa por etapa</b>, e uma <b>tabela pra acompanhar a sua evolução</b>. 🎁 Ele vai <b>de presente</b> no seu WhatsApp pra quem garante a apostila interativa! <div class="edu-lock">🔒 Plano de estudos em PDF · bônus da compra</div>`);
     const ias = [];
     if (P.disc.includes('Conhecimento Pedagógico')) ias.push('cp');
     if (P.disc.includes('Legislação Educacional (LDB, ECA, CF)')) ias.push('leg');
@@ -1561,7 +1564,7 @@ body.edu-solo .edu-cat{display:inline-block}
   const QUIZ = [{"m": "Avaliação da Aprendizagem", "t": "Em sua obra \"Avaliação da Aprendizagem Escolar\", Cipriano Luckesi argumenta que aquilo que a escola tradicionalmente pratica sob o nome de \"avaliação\" é, na verdade:", "o": ["regulação proativa da aprendizagem", "avaliação mediadora", "um exame, de caráter pontual e classificatório", "avaliação diagnóstica contínua", "avaliação formativa"], "a": 2, "e": "Para Luckesi, o que a escola tradicionalmente pratica como \"avaliação\" é, na verdade, um exame: um ato pontual, classificatório, sem compromisso com a retomada das dificuldades identificadas."}, {"m": "Avaliação da Aprendizagem", "t": "São características da avaliação mediadora, segundo Jussara Hoffmann, EXCETO:", "o": ["resultar em um julgamento definitivo e autoritário sobre o desempenho do aluno, sem espaço para diálogo", "ser investigativa, buscando compreender as hipóteses e os raciocínios do aluno", "ser dialógica, valorizando o diálogo constante entre professor e aluno", "ser contínua e processual, acompanhando o aluno ao longo de toda a trajetória de aprendizagem", "estar voltada à ação, gerando intervenções pedagógicas concretas"], "a": 0, "e": "Essa opção descreve a avaliação SENTENCIVA, que Hoffmann critica — e não uma característica da avaliação mediadora, que ela defende."}, {"m": "Gestão Democrática", "t": "A base legal para a existência dos Conselhos Escolares, como mecanismo de participação da comunidade na gestão democrática, está prevista no", "o": ["art. 12 da LDB, sobre incumbências dos estabelecimentos de ensino.", "art. 13 da LDB, sobre incumbências dos docentes.", "art. 80 da LDB, sobre educação a distância.", "art. 14, II, da LDB, que prevê a participação das comunidades escolar e local em conselhos escolares ou equivalentes.", "art. 35 da LDB, sobre o ensino médio."], "a": 3, "e": "O art. 14, II, da LDB estabelece a participação das comunidades escolar e local em conselhos escolares ou equivalentes como um dos princípios mínimos da gestão democrática do ensino público."}, {"m": "História da Educação", "t": "A Reforma Pombalina, promovida pelo Marquês de Pombal em 1759, resultou na expulsão dos jesuítas dos domínios portugueses e na instituição de um novo modelo de ensino. Esse novo modelo é corretamente caracterizado como:", "o": ["a manutenção integral do currículo humanista-clássico jesuítico, sem qualquer alteração administrativa", "as Aulas Régias, aulas avulsas e desconectadas entre si, custeadas pelo subsídio literário", "um sistema nacional de ensino, unificado e sequencial, financiado integralmente pela Coroa", "o Ratio Studiorum, adaptado e mantido sob controle direto do Estado português", "a criação da primeira universidade brasileira, sediada na Bahia"], "a": 1, "e": "As Aulas Régias eram aulas avulsas e desconectadas entre si, custeadas pelo \"subsídio literário\", substituindo o ensino jesuítico organizado — por isso não formavam um sistema coeso."}, {"m": "Organização Curricular", "t": "O currículo organizado por disciplinas/conteúdos estrutura-se, fundamentalmente, a partir da", "o": ["ausência de qualquer conteúdo sistematizado, priorizando exclusivamente vivências espontâneas dos alunos.", "eliminação de qualquer grade horária fixa nas instituições de ensino.", "articulação obrigatória entre diferentes componentes curriculares em torno de um mesmo problema.", "definição de competências gerais transversais a todas as áreas do conhecimento.", "lógica interna de cada campo científico/disciplinar, com ênfase no aprofundamento conceitual próprio de cada matéria."], "a": 4, "e": "O modelo disciplinar organiza o currículo a partir da lógica interna de cada campo científico, priorizando o aprofundamento conceitual próprio de cada disciplina — diferentemente da organização por áreas, que busca articulação entre componentes afins."}, {"m": "Projeto Político-Pedagógico", "t": "Sobre a origem etimológica da palavra 'projeto', Veiga destaca que ela significa 'lançar para diante', o que implica", "o": ["um plano definitivo e imutável, elaborado uma única vez.", "a mera repetição de práticas já consolidadas na escola.", "rupturas com o presente e promessas para o futuro.", "a subordinação da escola às determinações do sistema central de ensino.", "a ausência de qualquer intencionalidade pedagógica."], "a": 2, "e": "Para a autora, todo projeto supõe rupturas com o presente e promessas para o futuro — daí seu caráter de intencionalidade e de busca por transformação, e não de mera manutenção do que já existe."}, {"m": "Ensino-Aprendizagem", "t": "Na teoria piagetiana, o processo pelo qual o sujeito incorpora um novo objeto ou situação aos esquemas cognitivos que já possui é denominado", "o": ["equilibração.", "assimilação.", "zona de desenvolvimento proximal.", "mediação simbólica.", "acomodação."], "a": 1, "e": "A assimilação é o processo pelo qual o sujeito interpreta e incorpora uma novidade a partir de esquemas cognitivos que já possui — distinto da acomodação, em que os esquemas é que se transformam para dar conta do novo."}, {"m": "Psicologia da Educação", "t": "O chamado 'ensino programado', aplicação pedagógica direta do behaviorismo skinneriano, caracteriza-se por", "o": ["concentrar-se exclusivamente na dimensão afetiva do aluno, ignorando o conteúdo cognitivo.", "priorizar a construção coletiva e espontânea do conhecimento, sem qualquer sequência pré-definida de conteúdos.", "aplicar-se apenas ao ensino superior, sendo incompatível com a Educação Básica.", "dividir o conteúdo em pequenos passos sequenciais, oferecendo reforço imediato a cada resposta correta do aluno.", "eliminar totalmente a necessidade de qualquer estímulo ou consequência no processo de aprendizagem."], "a": 3, "e": "O ensino programado, decorrente das ideias de Skinner, organiza o conteúdo em pequenos passos sequenciais, com reforço imediato a cada resposta correta — uma aplicação direta da lógica do condicionamento operante à sala de aula."}, {"m": "Tendências Pedagógicas", "t": "A Pedagogia Progressista LIBERTÁRIA, segundo Libâneo, valoriza sobretudo", "o": ["a autogestão, as assembleias e a vivência grupal, com o professor se misturando ao grupo sem exercer coação.", "a exposição verbal sistemática dos conteúdos culturais universais.", "a instrução programada e o uso de tecnologia educacional.", "a formação de atitudes por meio de técnicas de sensibilização psicológica.", "a autoridade centralizada do professor sobre o grupo de alunos."], "a": 0, "e": "A Pedagogia Libertária, associada a autores como Freinet e Lobrot, valoriza a autogestão institucional, as assembleias e a vivência grupal, com o professor integrando-se ao grupo sem exercer coação — o conteúdo formal fica em segundo plano."}, {"m": "Tendências Pedagógicas", "t": "Na Pedagogia Crítico-Social dos Conteúdos, o papel do professor é descrito por Libâneo como", "o": ["limitado à aplicação de reforços e punições comportamentais.", "dispensável, já que o aluno deveria construir sozinho todo o conhecimento.", "restrito à condução de assembleias e vivências grupais autogeridas.", "voltado exclusivamente à formação de atitudes psicológicas, sem qualquer preocupação com o conteúdo.", "mediador insubstituível entre os conteúdos culturais universais e a realidade social concreta do aluno."], "a": 4, "e": "Nessa tendência, o professor é mediador insubstituível entre os conteúdos culturais universais (sistematizados, vivos e concretos) e a realidade social do aluno — nem mera autoridade transmissora (Tradicional), nem facilitador ausente (Não-Diretiva)."}];
   async function quiz(){
     st.qz = { i: 0, ok: 0 };
-    await bot(`Adoro um desafio${st.nome ? ', ' + E(st.nome) : ''}! 🧠 São <b>10 questões de Conhecimento Pedagógico</b> no estilo das provas de concurso da educação, tiradas das nossas apostilas.`);
+    await bot(`Ihuul, adoro um desafio${st.nome ? ', ' + E(st.nome) : ''}! 🧠 São <b>10 questões de Conhecimento Pedagógico</b> no estilo das provas de concurso da educação, tiradas das nossas apostilas.`);
     await bot('Sem pressão, tá? Responde com calma que no final eu te mostro a sua porcentagem. Valendo! 🚀');
     quizQ();
   }
@@ -1570,7 +1573,7 @@ body.edu-solo .edu-cat{display:inline-block}
     await bot(`<div class="edu-q"><small>Questão ${z.i + 1} de ${QUIZ.length} · ${E(q.m)}</small><p>${E(q.t)}</p>${q.o.map((o, i) => `<div><b>${L[i]})</b> ${E(o)}</div>`).join('')}</div>`);
     chips(q.o.map((o, i) => L[i]), async (v, i) => {
       const certo = i === q.a; if (certo) z.ok++;
-      await bot((certo ? pick(['✅ <b>Isso aí, acertou!</b> ', '✅ <b>Mandou bem!</b> ', '✅ <b>Certinho!</b> ']) : pick(['❌ <b>Quase!</b> ', '❌ <b>Essa pegou, né?</b> ', '❌ <b>Ops, não foi dessa vez.</b> ']) + `A resposta certa é a <b>${L[q.a]}</b>. `) + E(q.e));
+      await bot((certo ? pick(['✅ <b>Isso aí, acertou!</b> 🎉 ', '✅ <b>Mandou muito bem!</b> ', '✅ <b>Certinho! Tá voando!</b> ', '✅ <b>Uau, arrasou!</b> ']) : pick(['❌ <b>Quase!</b> ', '❌ <b>Essa pegou, né?</b> ', '❌ <b>Ops, não foi dessa vez.</b> ']) + `A resposta certa é a <b>${L[q.a]}</b>. `) + E(q.e));
       z.i++;
       if (z.i < QUIZ.length) chips(['Próxima questão ›'], () => quizQ()); else quizFim();
     });
@@ -1597,7 +1600,7 @@ body.edu-solo .edu-cat{display:inline-block}
     const sel = new Set((pre && pre.length) ? pre : (st.cart || []).filter(x => x.ia).map(x => x.ia));
     if (!sel.size) sel.add(recoKeys()[0]);
     await biaCard();
-    await bot(`Show! Agora é só marcar as que você quer, <b>quantas quiser</b> (1, 2, 3…). Cada uma sai por <b>${money(IA.cp.preco)}</b> 👇`);
+    await bot(`Ebaaa! 🎉 Agora é só marcar as que você quer, <b>quantas quiser</b> (1, 2, 3…). Cada uma sai por <b>${money(IA.cp.preco)}</b> 👇`);
     const d = say('', 'chips');
     const draw = () => {
       const tot = [...sel].reduce((s, k) => s + IA[k].preco, 0);
@@ -1619,7 +1622,7 @@ body.edu-solo .edu-cat{display:inline-block}
     if (key === 'mer') return askConcurso();
     const pair = key === 'cp' ? 'leg' : 'cp';
     if (!IA[pair] || (st.cart || []).some(x => x.ia === pair)) return askConcurso();
-    await bot(pick(['Ótima escolha! 👏', 'Boa! 👏']) + ` Só uma dica de quem conhece as provas: <b>${E(IA[pair].nome)}</b> costuma cair junto. Vale muito a pena levar as duas e estudar tudo com o mesmo método. Quer incluir?`);
+    await bot(pick(['Ótima escolha! 👏', 'Boaaa! 👏', 'Isso que é decisão de quem vai passar! 😄']) + ` Só uma dica de quem conhece as provas: <b>${E(IA[pair].nome)}</b> costuma cair junto. Vale muito a pena levar as duas e estudar tudo com o mesmo método. Quer incluir?`);
     chips([`Incluir ${IA[pair].nome} (+${money(IA[pair].preco)})`, 'Só essa por enquanto'], (v, i) => { if (i === 0) addItem(iaItem(pair)); askConcurso(); });
   }
   async function addMore(){
@@ -1799,6 +1802,80 @@ body.edu-solo .edu-cat{display:inline-block}
     if (y < 250) box(y, 'AJUSTE DO PRÓXIMO PERÍODO', 'Se houver atraso, priorize as pendências essenciais. Se uma matéria concentrar os erros, redistribua os blocos da semana seguinte. A distribuição inicial deve ser ajustada aos pesos e conteúdos do edital.', [255, 246, 214], [242, 184, 42]);
     doc.save(`plano-de-estudos-${(D.n || 'aluno').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-')}.pdf`);
   }
+  // prévia colorida da página 1 do PDF do plano (desenhada em imagem, no próprio aparelho)
+  function planoImg(D){
+    const prevA = st.area; st.area = D.a || st.area;
+    const sm = semanaModeloBlocks(D.di, D.h, D.d);
+    const cg = cargo(D.a); st.area = prevA;
+    const K = 4, cv = document.createElement('canvas'); cv.width = 210 * K; cv.height = 297 * K;
+    const c = cv.getContext('2d');
+    const NAVY = [17, 59, 114], TXT = [30, 41, 59], MUT = [90, 102, 125];
+    const CARD = [[44, 98, 196], [0, 128, 104], [124, 79, 180], [196, 82, 40]];
+    const TINT = [[235, 242, 252], [229, 244, 238], [241, 235, 250], [253, 238, 230]];
+    const STRIPE = [[242, 184, 42], [31, 179, 124], [70, 147, 244], [172, 119, 221]];
+    const rgb = a => `rgb(${a[0]},${a[1]},${a[2]})`;
+    const rect = (x, y, w, h, col) => { c.fillStyle = rgb(col); c.fillRect(x * K, y * K, w * K, h * K); };
+    const font = (w, pt) => { c.font = `${w === 'bold' ? '700' : '400'} ${(pt * 0.3528 * K).toFixed(1)}px Helvetica, Arial, sans-serif`; };
+    const text = (t, x, y, col, al) => { c.fillStyle = rgb(col); c.textAlign = al || 'left'; c.fillText(noEmoji(t), x * K, y * K); };
+    const wrap = (t, w) => { const ws = noEmoji(t).split(' '), out = []; let l = ''; ws.forEach(x => { const s = l ? l + ' ' + x : x; if (c.measureText(s).width > w * K && l){ out.push(l); l = x; } else l = s; }); if (l) out.push(l); return out; };
+    const tot = D.h * D.d * D.s, nome = noEmoji(D.n || 'Aluno(a)');
+    return new Promise(res => {
+      const logo = new Image();
+      const draw = ok => {
+        rect(0, 0, 210, 297, [255, 255, 255]);
+        STRIPE.forEach((s, i) => rect(i * 52.5, 0, 52.5, 1.6, s));
+        rect(0, 1.6, 210, 22, NAVY);
+        if (ok) try { c.drawImage(logo, 10 * K, 4 * K, 16 * K, 16 * K); } catch(e) {}
+        font('bold', 11); text('CONCURSOS E PSS BRASIL', 31, 10, [255, 255, 255]);
+        font('bold', 6.8); text('CONCURSOS PÚBLICOS • ÁREA DA EDUCAÇÃO', 31, 14.5, [242, 184, 42]);
+        font('normal', 6.8); text('PLANO PERSONALIZADO  |  ' + noEmoji(cg).toUpperCase(), 31, 18.6, [210, 220, 235]);
+        font('bold', 7.5); text('01 / ORGANIZAÇÃO', 13, 33, [0, 128, 104]);
+        font('bold', 21); text('Um plano para avançar', 13, 43, NAVY);
+        font('normal', 9); wrap(`Aluno(a): ${nome} • Preparação para o cargo de ${noEmoji(cg)}`, 184).forEach((l, i) => text(l, 13, 50 + i * 4, MUT));
+        [[String(D.s), 'SEMANAS'], [D.h + 'h', 'POR DIA'], [String(D.d), 'DIAS / SEMANA'], [tot + 'h', 'NO CICLO']].forEach((cd, i) => {
+          const x = 13 + i * 46.5; rect(x, 58, 43, 22, CARD[i]); font('bold', 18); text(cd[0], x + 4, 69, [255, 255, 255]); font('bold', 6.5); text(cd[1], x + 4, 76, [255, 255, 255]); });
+        font('normal', 8.5); text(`Carga planejada: ${D.h * D.d} horas por semana, durante ${D.s} semanas (${noEmoji(D.t)}).`, 13, 87, TXT);
+        const sec = (num, t, y, col) => { rect(13, y - 4.6, 6.5, 6.5, col); font('bold', 7.5); text(num, 16.25, y - 0.4, [255, 255, 255], 'center'); font('bold', 12); text(t, 23, y, NAVY); };
+        sec('01', 'Sua semana de estudos', 98, CARD[0]);
+        const nb = Math.min(D.h, 5), colW = (184 - 22) / nb, rowH = nb > 3 ? 13 : 10.5;
+        let y = 103;
+        rect(13, y, 184, 8, NAVY); font('bold', 6.8); text('DIA', 16, y + 5.2, [255, 255, 255]);
+        for (let b = 0; b < nb; b++) text(`BLOCO ${b + 1} • 60 MIN`, 35 + b * colW + 2, y + 5.2, [255, 255, 255]);
+        y += 8.6;
+        const sc = {}; let ci = 0; D.di.forEach(x => { sc[x] = ci++ % 4; });
+        sm.forEach(dy => {
+          rect(13, y, 21, rowH, NAVY); font('bold', 7.5); text(dy.n.toUpperCase(), 16, y + rowH / 2 + 1.2, [255, 255, 255]);
+          for (let b = 0; b < nb; b++){
+            const x0 = 35 + b * colW, it = dy.b[b], k = it == null ? null : (it.rev ? 1 : sc[it.d]);
+            rect(x0, y, colW - 0.6, rowH, k == null ? [247, 248, 250] : TINT[k]);
+            if (k != null){ rect(x0, y, 0.9, rowH, CARD[k]); font('normal', nb > 3 ? 6.6 : 7.6); wrap(it.label, colW - 5).slice(0, 3).forEach((l, i) => text(l, x0 + 3, y + 4.6 + i * 2.9, CARD[k])); }
+          }
+          y += rowH + 0.6;
+        });
+        y += 7; sec('02', 'Como usar cada bloco', y, CARD[1]); y += 7;
+        font('bold', 8.8); text('40 min', 13, y, TXT); font('normal', 8.8);
+        wrap('para estudar o tópico • 15 min para resolver questões • 5 min para registrar erros e o próximo passo.', 172).forEach((l, i) => text(l, 25, y + i * 4.2, TXT));
+        y += 9;
+        const folga = D.d === 5 ? 'Sábado e domingo ficam livres para descanso ou reposição pontual.' : D.d === 6 ? 'O domingo fica livre para descanso ou reposição pontual.' : 'Como você estuda todos os dias, deixe um deles mais leve para não acumular cansaço.';
+        font('normal', 8.6); const bl = wrap(`Rotina sustentável: faça uma pausa breve entre os blocos, fora das ${D.h} hora${D.h > 1 ? 's' : ''} de estudo. ${folga}`, 172);
+        const bh = 8 + bl.length * 4.2; rect(13, y, 184, bh, [255, 246, 214]); rect(13, y, 1.4, bh, [242, 184, 42]);
+        bl.forEach((l, i) => text(l, 18, y + 6 + i * 4.2, TXT)); y += bh + 7;
+        // selo de prévia
+        c.save(); c.translate(105 * K, (y / 2 + 30) * K); c.rotate(-0.42); c.globalAlpha = .07; font('bold', 70); text('PRÉVIA', 0, 0, NAVY, 'center'); c.restore();
+        // corta o espaço em branco e coloca o rodapé logo abaixo do conteúdo
+        const out = document.createElement('canvas'); out.width = cv.width; out.height = Math.round((y + 19) * K);
+        const o = out.getContext('2d'); o.drawImage(cv, 0, 0, cv.width, y * K, 0, 0, cv.width, y * K);
+        o.fillStyle = rgb(NAVY); o.fillRect(0, y * K, 210 * K, 19 * K); o.fillStyle = 'rgb(242,184,42)'; o.fillRect(13 * K, (y - 1) * K, 184 * K, 0.8 * K);
+        o.fillStyle = '#fff'; o.textAlign = 'left';
+        o.font = `700 ${(8.5 * 0.3528 * K).toFixed(1)}px Helvetica, Arial, sans-serif`; o.fillText('WhatsApp (92) 98447-8798', 13 * K, (y + 7) * K);
+        o.font = `400 ${(7.5 * 0.3528 * K).toFixed(1)}px Helvetica, Arial, sans-serif`; o.fillText('Instagram: @concursos_pss', 13 * K, (y + 12) * K);
+        o.font = `700 ${(8.5 * 0.3528 * K).toFixed(1)}px Helvetica, Arial, sans-serif`; o.textAlign = 'right'; o.fillText('Página 1 de 3', 197 * K, (y + 9) * K);
+        res(out.toDataURL('image/jpeg', .9)); return;
+        res(cv.toDataURL('image/jpeg', .9));
+      };
+      logo.onload = () => draw(true); logo.onerror = () => draw(false); logo.src = LOGO_PLANO;
+    });
+  }
   // blocos por dia (para a tabela do PDF)
   function semanaModeloBlocks(disc, h, d){
     const days = DIAS.slice(0, d).map(n => ({ n, b: [] }));
@@ -1886,10 +1963,10 @@ body.edu-solo .edu-cat{display:inline-block}
     const msg = `Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nPedido nº ${st.pedido}\nQuero garantir:\n` + st.cart.map(x => '• ' + x.nome + (x.preco ? ' (' + money(x.preco) + ')' : '')).join('\n') +
       (tot ? `\nTotal: ${money(tot)}` : '') + (st.area ? `\nCargo: ${cargo(st.area)}` : '') + (st.concurso ? `\nSeleção: ${st.concurso}` : '') + (st.prazo ? `\nProva: ${st.prazo}` : '') + (st.quizRes ? `\nQuiz de Conhecimento Pedagógico: ${st.quizRes}` : '') + (planLink ? `\n\n🎁 Bônus: plano de estudos personalizado (enviado após a confirmação do pagamento)\nCódigo interno: ${planLink}` : '');
     const bonus = planLink ? '<div>🎁 Bônus: seu plano de estudos em PDF, enviado no WhatsApp após o pagamento</div>' : '';
-    await bot(`Prontinho, <b>${E(st.nome)}</b>! 🎉 Seu pedido <b>nº ${st.pedido}</b> ficou assim: <div class="edu-sum">${itens}${bonus}${tot ? `<div style="margin-top:6px"><b>Total: ${money(tot)}</b></div>` : ''}</div>
+    await bot(`Uhuul, <b>${E(st.nome)}</b>! 🎉 Seu pedido <b>nº ${st.pedido}</b> ficou assim: <div class="edu-sum">${itens}${bonus}${tot ? `<div style="margin-top:6px"><b>Total: ${money(tot)}</b></div>` : ''}</div>
       <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 Finalizar pelo WhatsApp</a>
       <a class="edu-link" href="#" data-receipt>📄 Baixar comprovante do pedido (PDF)</a>`);
-    await bot(`Agora é só tocar no botão verde: a mensagem já vai prontinha com o número do pedido. A nossa equipe combina o pagamento com você e, assim que confirmar, ${entrega()}. Qualquer coisa, tô por aqui 😉`);
+    await bot(`Agora é só tocar no botão verde: a mensagem já vai prontinha com o número do pedido. A nossa equipe combina o pagamento com você e, assim que confirmar, ${entrega()}. Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉`);
     await grupo();
     chipsP(['➕ Adicionar mais um material', '🗑️ Refazer o pedido', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [addMore, () => { st.cart = []; st.pedido = null; chooseIA(); }, faq, otherMenu][i]());
   }
@@ -1984,8 +2061,33 @@ body.edu-solo .edu-cat{display:inline-block}
     if (/pagina|folhear|dentro da apostila|dentro do pdf|como e o pdf|ver o pdf/.test(t)) return showPages();
     if (/amostra|capa|exemplo|ver o kit|ver as apostilas|como e o kit|como e a apostila/.test(t)) return showSamples();
     if (/\bbia\b|tutora/.test(t)) { await biaCard(true); return chipsP(['⭐ Quero a apostila interativa', '👀 Ver como é por dentro', 'Ver outras opções'], (v, i) => [chooseIA, showPreview, otherMenu][i]()); }
-    if (/^(oi+|ola|eae|e ai|opa|bom dia|boa tarde|boa noite|tudo bem|td bem)\b/.test(t)) { await bot(`Oi${st.nome ? ', ' + E(st.nome) : ''}! Tudo ótimo por aqui, e com você? 😊 Me fala como eu posso te ajudar:`); return otherMenu(); }
-    if (/caro|desconto|mais barato|sem dinheiro|apertad/.test(t)) { await bot(`Entendo total, cada real conta 💛 Por isso a interativa custa <b>${money(IA.cp.preco)}</b>: num mês de estudo, dá menos de R$ 1 por dia, e já vem com questões comentadas, simulados, plano de estudos e a Bia. Se o orçamento estiver bem apertado, a <b>apostila avulsa</b> em PDF sai por ${money(P_AVULSA)}.`); return chipsP(['⭐ Quero a apostila interativa', '📘 Ver a avulsa', '💬 Falar com um atendente'], (x, i) => [chooseIA, () => st.area ? chooseAvulsa() : pickArea(), human][i]()); }
+    if (/^(oi+|ola|eae|e ai|opa|bom dia|boa tarde|boa noite|tudo bem|td bem)\b/.test(t)) { await bot(pick([`Oiii${st.nome ? ', ' + E(st.nome) : ''}! 😄 Tudo ótimo por aqui, e com você?`, `Opa${st.nome ? ', ' + E(st.nome) : ''}! Tudo maravilhoso, ainda mais agora com você aqui 😄`]) + ' Me fala como eu posso te ajudar:'); return otherMenu(); }
+    if (/vou pensar|pensar melhor|depois eu (vejo|compro|volto)|agora nao|mais tarde|outra hora|outro dia|talvez|nao sei se/.test(t)) {
+      await bot(pick(['Claro, sem pressão nenhuma! 😊 Decisão boa é decisão pensada.', 'Tranquilo! 😊 Pensa com calma, tá? Eu vou estar aqui.']));
+      await bot('Só uma coisinha antes de você ir: que tal levar o seu <b>plano de estudos grátis</b>? Assim você já começa hoje mesmo, e quando decidir, a apostila tá aqui te esperando 😉');
+      return chips(['🗓️ Quero o plano grátis', '🧠 Fazer o quiz rapidinho', '👀 Ver a interativa por dentro', '💬 Tirar uma dúvida com a equipe'], (x, i) => [plano, quiz, showPreview, human][i]());
+    }
+    if (/nao sei qual|qual (eu )?escolh|qual (a )?melhor|me ajuda a escolher|qual comprar|qual voce indica|o que voce indica/.test(t)) {
+      await bot('Deixa comigo! 😎 Escolher material é comigo mesmo.');
+      return st.area ? recommend() : pickArea();
+    }
+    if (/confiavel|golpe|seguro|e verdade|e real|da certo|funciona mesmo/.test(t)) {
+      await bot('Super justa a sua pergunta, viu? 💛 Hoje em dia todo cuidado é pouco!');
+      await bot('A gente é a <b>Concursos e PSS Brasil</b>: atende pelo WhatsApp e pelo Instagram <b>@concursos_pss</b>. O pedido é fechado conversando com a nossa equipe, que combina o pagamento com você, e a apostila interativa é liberada no seu e-mail. E você ainda pode ver a apostila por dentro antes de decidir 😉');
+      return chips(['👀 Ver a interativa por dentro', '💬 Falar com a equipe no WhatsApp', '⭐ Quero a apostila interativa'], (x, i) => [showPreview, human, chooseIA][i]());
+    }
+    if (/redacao|discursiva|dissertat/.test(t)) {
+      await bot('Ahh, redação! ✍️ Essa é uma das que eu mais amo indicar!');
+      await bot('A <b>Apostila Interativa de Redação</b> tem a teoria completa, 130 questões comentadas e <b>100 temas da educação</b> pra você montar o seu texto parte por parte e receber a <b>correção da Bia na hora</b>, com nota e dicas. É treinar e ver a evolução!');
+      return chips(['⭐ Quero a de Redação', '💬 Tenho uma dúvida', 'Ver outras opções'], (x, i) => [() => chooseIA(['red']), faq, otherMenu][i]());
+    }
+    if (/\bpss\b|processo seletivo|seletivo/.test(t) && !/^(processo seletivo \(pss\))$/.test(t)) {
+      await bot('Serve sim, e muito! 🙌 O nosso material é feito pra concursos e <b>processos seletivos (PSS)</b> da área da educação. O conteúdo é o mesmo que as bancas cobram.');
+      return st.area ? chipsP(['⭐ Quero a apostila interativa', '👀 Ver como é por dentro', 'Ver outras opções'], (x, i) => [chooseIA, showPreview, otherMenu][i]()) : pickArea();
+    }
+    if (/^(k{3,}|(ha){2,}|(rs){2,}|hehe|kkk)/.test(t)) { await bot(pick(['Kkkkk adoro gente bem-humorada! 😂', 'Hahaha você é das minhas! 😄'])); return otherMenu(); }
+    if (/^(tchau|ate mais|ate logo|falou|flw|bye)/.test(t)) { return bot(pick([`Tchau${st.nome ? ', ' + E(st.nome) : ''}! Foi um prazer enorme conversar com você 💛 Bons estudos e volta sempre!`, 'Até mais! 👋 Tô torcendo muito pela sua aprovação. Quando quiser, é só voltar aqui 😉'])); }
+    if (/caro|desconto|mais barato|sem dinheiro|apertad/.test(t)) { await bot(`Te entendo total, cada real conta 💛 Por isso a interativa custa <b>${money(IA.cp.preco)}</b>: num mês de estudo, dá menos de R$ 1 por dia, e já vem com questões comentadas, simulados, plano de estudos e a Bia. Se o orçamento estiver bem apertado, a <b>apostila avulsa</b> em PDF sai por ${money(P_AVULSA)}.`); return chipsP(['⭐ Quero a apostila interativa', '📘 Ver a avulsa', '💬 Falar com um atendente'], (x, i) => [chooseIA, () => st.area ? chooseAvulsa() : pickArea(), human][i]()); }
     if (/preco|valor|quanto|custa|barato/.test(t)) { await bot(`As <b>apostilas interativas</b> custam <b>${money(IA.cp.preco)}</b> cada, a apostila avulsa ${money(P_AVULSA)} e o kit completo a partir de ${money(29.9)}. Quer que eu te indique a melhor opção pra você? 😉`); return chipsP(['⭐ Quero a apostila interativa', '📦 Ver o kit completo', 'Ver outras opções'], (x, i) => [chooseIA, chooseKit, otherMenu][i]()); }
     if (/pagamento|pix|cartao|boleto/.test(t)) return bot(FAQ[5][1]).then(() => chipsP(['⭐ Quero a apostila interativa', 'Ver outras opções'], (x, i) => [chooseIA, otherMenu][i]()));
     if (/celular|app|instal/.test(t)) return bot(FAQ[2][1]).then(() => chipsP(['⭐ Quero a apostila interativa', 'Ver outras opções'], (x, i) => [chooseIA, otherMenu][i]()));
@@ -2001,7 +2103,7 @@ body.edu-solo .edu-cat{display:inline-block}
     const a = areas().find(x => { const k1 = N0(x).split(/[ /(]/)[0], k2 = N0(cargo(x)).split(' ').pop(); return t.includes(k1) || t.includes(k2) || (k1.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k1))) || (k2.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k2))); });
     if (a) { st.area = a; remember(); return recommend(); }
     if (/obrigad|valeu/.test(t)) return bot(pick([`Imagina${st.nome ? ', ' + E(st.nome) : ''}! Bons estudos e conta comigo 💛`, `Por nada! Tô torcendo muito pela sua aprovação 🍀`, `Eu que agradeço! Qualquer coisa, é só chamar 😉`]));
-    await bot('Hmm, acho que não entendi direitinho 😅 Pra eu te ajudar melhor, escolhe uma dessas opções:');
+    await bot(pick(['Hmm, acho que não entendi direitinho 😅 Pra eu te ajudar melhor, escolhe uma dessas opções:', 'Opa, essa eu não peguei 🙈 Me ajuda escolhendo uma dessas opções aqui:']));
     otherMenu();
   }
 
