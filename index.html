@@ -224,6 +224,29 @@ footer{font-size:12px;color:var(--muted);text-align:center;padding:28px 20px 14p
 .lp-empty{text-align:center;padding:30px 16px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
 .lp-empty b{display:block;color:var(--text);font-size:18px;margin:10px 0 6px}
 .lp-soon{display:inline-block;background:#F2B705;color:#1B1400;font-weight:900;letter-spacing:.08em;font-size:14px;padding:7px 16px;border-radius:99px}
+
+/* ===== Loja automática (PagBank) — só aparece com a loja ligada ===== */
+.loja-on{display:none !important;}
+body.loja button.loja-on,body.loja a.loja-on{display:inline-flex !important;}
+button.order.buy-now{background:var(--navy);justify-content:center;}
+button.order.buy-now:hover{background:var(--navy-2);}
+button.order.buy-now::before{display:none;}
+body.loja .buybox button.order.zap{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:700;}
+:root[data-theme="light"] body.loja .buybox button.order.zap::before{filter:invert(1);}
+#lojaOverlay{z-index:2147483000;}
+.loja-sheet{max-height:85vh;overflow:auto;}
+.loja-sheet .item{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;background:var(--bg-alt-2);}
+.loja-sheet .item b{display:block;color:var(--text);font-size:14px;}
+.loja-sheet .item small{color:var(--muted);font-size:12.5px;}
+.loja-sheet .st{display:inline-block;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:99px;margin-top:6px;}
+.loja-sheet .st.ok{background:rgba(22,138,71,.18);color:#3fd17f;}
+.loja-sheet .abrir{display:block;margin-top:10px;text-align:center;padding:10px;border-radius:6px;background:var(--navy);color:#fff;font-weight:800;text-decoration:none;font-size:13.5px;}
+.loja-sheet .btn-google{width:100%;padding:12px;border-radius:6px;border:1px solid var(--line);background:#fff;color:#1f1f1f;font-weight:700;font-size:14.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;}
+.loja-sheet .aviso{font-size:12.5px;color:var(--muted);margin:12px 0 0;line-height:1.45;}
+.loja-sheet .erro{color:var(--accent-2);font-size:13px;margin-top:10px;}
+.loja-spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--navy);border-radius:50%;animation:lojaspin 1s linear infinite;margin:14px auto;}
+@keyframes lojaspin{to{transform:rotate(360deg);}}
+.badge-icon.minhas{background:var(--navy);}
 </style>
 </head>
 <body>
@@ -267,6 +290,10 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <a class="badge-chip" href="https://wa.me/5592995151529" target="_blank">
           <span class="badge-icon whatsapp"><svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.2.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.5 4 3.5.6.2 1 .4 1.3.5.6.2 1.1.1 1.5-.1.5-.2 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.5-.3Z"/></svg></span>
           <span class="badge-label">(92) 99515-1529</span>
+        </a>
+        <a class="badge-chip loja-on" href="#minhas-apostilas" onclick="lojaMinhas();return false;">
+          <span class="badge-icon minhas"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/></svg></span>
+          <span class="badge-label">Minhas Apostilas</span>
         </a>
         <button class="badge-chip install-chip" id="installBtn" type="button" hidden>
           <span class="badge-icon install"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>
@@ -325,7 +352,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Conhecimento Pedagógico')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-cp')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Conhecimento Pedagógico')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-pedagogico.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -340,7 +368,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Legislação Educacional + LDB + ECA')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-leg')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Legislação Educacional + LDB + ECA')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-legislacao.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -355,7 +384,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Língua Portuguesa')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-lp')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Língua Portuguesa')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-portugues.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -370,7 +400,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Redação')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-red')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Redação')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-redacao.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -385,7 +416,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Matemática')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-mat')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Matemática')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-matematica.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -400,7 +432,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Educação Física')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-ef')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Educação Física')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-educacao-fisica.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -415,7 +448,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Biologia')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-bio')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Biologia')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-biologia.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -430,7 +464,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de História')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-his')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de História')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-historia.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -445,7 +480,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="kitprice">R$ <b>24,90</b></div>
           <div class="buybox">
-            <button class="order" onclick="openOrderInterativa('Apostila Interativa de Merendeiro Escolar')">Pedir pelo WhatsApp</button>
+            <button class="order buy-now loja-on" onclick="lojaComprar('apostila-mer')">Comprar agora — Pix ou cartão</button>
+            <button class="order zap" onclick="openOrderInterativa('Apostila Interativa de Merendeiro Escolar')">Pedir pelo WhatsApp</button>
             <a class="access-btn" href="https://apostila-merendeiro.web.app/" target="_blank" rel="noopener">Já comprei — acessar a apostila</a>
           </div>
         </div>
@@ -2128,5 +2164,135 @@ body.edu-solo .edu-cat{display:inline-block}
 </script>
 <!-- ===== FIM EDU ===== -->
 
+
+<!-- ===================== LOJA AUTOMÁTICA (PagBank) ===================== -->
+<div class="overlay" id="lojaOverlay" onclick="if(event.target===this)lojaFechar()">
+  <div class="sheet loja-sheet" id="lojaSheet"></div>
+</div>
+<script>
+/* Liga os botões "Comprar agora".
+   Enquanto LOJA_PARA_TODOS = false, só aparecem para quem abrir o site com ?loja=1 (modo teste).
+   Para ligar para todos os clientes, troque false por true. */
+window.LOJA_PARA_TODOS = false;
+(function(){
+  var q = new URLSearchParams(location.search), teste = false;
+  try {
+    if (q.get('loja') === '1') localStorage.setItem('loja_teste', '1');
+    if (q.get('loja') === '0') localStorage.removeItem('loja_teste');
+    teste = localStorage.getItem('loja_teste') === '1';
+  } catch(e) { teste = q.get('loja') === '1'; }
+  if (window.LOJA_PARA_TODOS || teste) document.body.classList.add('loja');
+})();
+// enquanto o login ainda está carregando (ou se a internet falhar), avisa em vez de não fazer nada
+window.lojaFechar = function(){ document.getElementById('lojaOverlay').classList.remove('show'); };
+window.lojaComprar = window.lojaMinhas = function(){
+  document.getElementById('lojaSheet').innerHTML = '<h3>Carregando…</h3><p class="small">Aguarde alguns segundos e toque de novo. Se não funcionar, peça pelo WhatsApp.</p><div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>';
+  document.getElementById('lojaOverlay').classList.add('show');
+};
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// o "carteiro" (servidor de vendas na Cloudflare) e o login das apostilas (projeto app-q-p)
+const SERVIDOR = 'https://loja-concursos.concursosepss.workers.dev';
+const app = initializeApp({ apiKey: "AIzaSyB9avRtO3rsgNnAC_9scIQRkJwf7bnRISs", authDomain: "app-q-p.firebaseapp.com", projectId: "app-q-p" }, 'loja');
+const auth = getAuth(app);
+auth.languageCode = 'pt';
+
+const sheet = document.getElementById('lojaSheet'), overlay = document.getElementById('lojaOverlay');
+let usuario = null, pronto = false, aoEntrar = null, espera = null;
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const G = '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 7l7.4 5.7c4.3-4 6.9-9.9 6.9-17.2z"/><path fill="#FBBC05" d="M10.6 28.6A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.8l-8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>';
+
+function abrir(html){ sheet.innerHTML = html; overlay.classList.add('show'); }
+window.lojaFechar = () => { overlay.classList.remove('show'); clearInterval(espera); espera = null; };
+const esperarPronto = () => pronto ? Promise.resolve() : new Promise(r => { const i = setInterval(() => { if (pronto) { clearInterval(i); r(); } }, 100); });
+
+async function api(caminho, corpo){
+  const t = await usuario.getIdToken();
+  const r = await fetch(SERVIDOR + caminho, { method: corpo ? 'POST' : 'GET', headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: corpo ? JSON.stringify(corpo) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.erro || 'erro');
+  return j;
+}
+
+function telaLogin(motivo){
+  abrir('<h3>Entre para continuar</h3><p class="small">' + esc(motivo) + '</p>'
+    + '<button class="btn-google" id="lojaGoogle">' + G + ' Entrar com Google</button>'
+    + '<p class="aviso">Use a <b>mesma conta Google</b> com que você vai abrir a apostila. É nela que o acesso é liberado.</p>'
+    + '<p class="erro" id="lojaErro"></p>'
+    + '<div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Cancelar</button></div>');
+  document.getElementById('lojaGoogle').onclick = async () => {
+    try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+    catch (e) {
+      console.warn(e);
+      document.getElementById('lojaErro').textContent = e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request'
+        ? 'Login cancelado.' : 'Não foi possível entrar. Tente de novo ou peça pelo WhatsApp.';
+    }
+  };
+}
+
+// botão "Comprar agora"
+window.lojaComprar = async (produtoId) => {
+  await esperarPronto();
+  if (!usuario) { aoEntrar = () => lojaComprar(produtoId); telaLogin('Para receber a apostila na hora, entre com sua conta Google.'); return; }
+  abrir('<h3>Preparando seu pagamento…</h3><div class="loja-spin"></div><p class="small" style="text-align:center">Você vai para a página segura do PagBank.</p>');
+  try {
+    const r = await api('/pedido', { produtoId, retorno: location.origin + location.pathname });
+    if (r.jaTem) {
+      abrir('<h3>Você já tem esta apostila 🎉</h3><p class="small">Ela está liberada na conta <b>' + esc(usuario.email) + '</b>.</p>'
+        + '<a class="abrir" href="' + esc(r.link) + '" target="_blank" rel="noopener">Abrir apostila</a>'
+        + '<div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>');
+      return;
+    }
+    location.href = r.url;
+  } catch (e) {
+    console.warn(e);
+    abrir('<h3>Não foi possível iniciar o pagamento</h3><p class="small">Tente de novo em instantes ou peça pelo WhatsApp.</p><div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>');
+  }
+};
+
+// "Minhas Apostilas" (e a volta do PagBank, que espera a confirmação do pagamento)
+async function telaMinhas(pedidoVolta){
+  let m;
+  try { m = await api('/meus-pedidos'); }
+  catch (e) { abrir('<h3>Minhas Apostilas</h3><p class="small">Não foi possível carregar agora. Tente de novo.</p><div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>'); return; }
+  const volta = pedidoVolta && m.pedidos.find(p => p.pedidoId === pedidoVolta);
+  const aguardando = volta && !volta.acessoLiberado && volta.status === 'AGUARDANDO';
+  let topo = '';
+  if (aguardando) topo = '<div class="item"><b>Confirmando seu pagamento…</b><div class="loja-spin"></div><small>Assim que o PagBank confirmar, sua apostila aparece aqui. No Pix costuma levar poucos segundos. Pode deixar esta janela aberta.</small></div>';
+  else if (volta && volta.acessoLiberado) topo = '<div class="item"><b>Pagamento confirmado! 🎉</b><small>Sua apostila já está liberada. Toque em "Abrir apostila" e entre com a conta <b style="display:inline">' + esc(m.email) + '</b></small></div>';
+  else if (volta && volta.status === 'RECUSADO') topo = '<div class="item"><b>O pagamento não foi aprovado</b><small>Nenhum valor foi cobrado. Você pode tentar de novo com outra forma de pagamento.</small></div>';
+  const liberadas = m.pedidos.filter(p => p.acessoLiberado);
+  abrir('<h3>Minhas Apostilas</h3><p class="small">Conta: <b>' + esc(m.email) + '</b> · <a href="#" id="lojaSair" style="color:var(--muted)">sair</a></p>' + topo
+    + (liberadas.map(p => '<div class="item"><b>' + esc(p.produtoNome) + '</b><span class="st ok">Liberada</span><a class="abrir" href="' + esc(p.link) + '" target="_blank" rel="noopener">Abrir apostila</a></div>').join('')
+       || (topo ? '' : '<p class="small">Você ainda não tem apostilas compradas nesta conta.</p>'))
+    + '<p class="aviso">Na apostila, entre com a mesma conta Google (<b>' + esc(m.email) + '</b>).</p>'
+    + '<div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>');
+  document.getElementById('lojaSair').onclick = async ev => { ev.preventDefault(); await signOut(auth); lojaFechar(); };
+  if (aguardando && !espera) {
+    let n = 0;
+    espera = setInterval(() => { if (++n > 60) { clearInterval(espera); espera = null; return; } telaMinhas(pedidoVolta); }, 5000);
+  } else if (!aguardando && espera) { clearInterval(espera); espera = null; }
+}
+
+window.lojaMinhas = async () => {
+  await esperarPronto();
+  if (!usuario) { aoEntrar = () => telaMinhas(); telaLogin('Entre com a conta Google que você usou na compra.'); return; }
+  abrir('<h3>Minhas Apostilas</h3><div class="loja-spin"></div>');
+  telaMinhas();
+};
+
+const pedidoVolta = new URLSearchParams(location.search).get('pedido');
+onAuthStateChanged(auth, u => {
+  usuario = u; const primeira = !pronto; pronto = true;
+  if (u && aoEntrar) { const f = aoEntrar; aoEntrar = null; f(); return; }
+  if (primeira && pedidoVolta) {
+    if (u) { abrir('<h3>Minhas Apostilas</h3><div class="loja-spin"></div>'); telaMinhas(pedidoVolta); }
+    else { aoEntrar = () => telaMinhas(pedidoVolta); telaLogin('Entre com a mesma conta Google da compra para ver sua apostila.'); }
+  }
+});
+</script>
 </body>
 </html>
