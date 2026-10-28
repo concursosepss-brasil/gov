@@ -278,6 +278,13 @@ button.order.buy-now::before{display:none;}
 .kitname{font-size:16px;}
 .kitcontent{font-size:13.5px;line-height:1.45;}
 .kitprice b{font-size:18px;}
+/* kits completos têm pouco texto: no computador, letras maiores só nessa aba */
+@media (min-width:601px){
+  #tab-kits .kitname{font-size:19px;}
+  #tab-kits .kitcontent{font-size:15.5px;line-height:1.5;margin-top:4px;}
+  #tab-kits .kitprice b{font-size:21px;}
+  #tab-kits .kitrow .order{font-size:14px;padding:11px 18px 11px 14px;}
+}
 /* destaque da apostila de Questões (modo escuro é o padrão do site; o claro usa data-theme="light") */
 .kitrow.qc-dest{border:2px solid #F2B705;border-radius:14px;background:rgba(242,183,5,.10);}
 .qc-dest .qcd-num{font-weight:800;color:#F2B705;font-size:15px;margin:3px 0 5px;}
