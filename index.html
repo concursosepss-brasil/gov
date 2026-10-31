@@ -373,9 +373,36 @@ body.loja div.loja-banner.loja-on{display:flex !important;}
 .kitrow.card-alvo{position:relative;padding-top:38px;animation:alvoBrilho 1.6s ease-in-out infinite;border-radius:12px}
 .kitrow.card-alvo::before{content:"★ APOSTILA SELECIONADA";position:absolute;top:0;left:50%;transform:translateX(-50%);background:#F2B705;color:#0D2B55;font:800 11px/1 Arial,Helvetica,sans-serif;letter-spacing:.08em;padding:7px 16px 8px;border-radius:0 0 12px 12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 @media (prefers-reduced-motion:reduce){.kitrow.card-alvo{animation:none;box-shadow:inset 0 0 0 4px #F2B705}}
+.loja-sheet .tut-img{display:block;width:100%;max-width:460px;margin:10px auto 0;border-radius:12px;border:1px solid var(--line);}
+.loja-sheet .tut-acoes{position:sticky;bottom:-1px;background:var(--bg-alt);padding:8px 0 2px;}
 </style>
 </head>
 <body>
+<script>
+// contagem de acessos (só um número anônimo por aparelho; sem nome, e-mail ou IP guardado). Para o dono não se contar: abra o site com ?semcontar=1
+(function(){
+  window.rastro = function(){};
+  try{
+    var SERV = 'https://loja-concursos.concursosepss.workers.dev';
+    var q = new URLSearchParams(location.search);
+    if (q.get('semcontar') === '1') localStorage.setItem('sem_contar', '1');
+    if (q.get('semcontar') === '0') localStorage.removeItem('sem_contar');
+    if (localStorage.getItem('sem_contar') === '1' || navigator.webdriver) return;
+    var vid = localStorage.getItem('vid');
+    if (!/^[a-f0-9]{16}$/.test(vid || '')) { vid = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(8)), function(b){ return ('0' + b.toString(16)).slice(-2); }).join(''); localStorage.setItem('vid', vid); }
+    var dia = new Date(Date.now() - 4 * 3600e3).toISOString().slice(0, 10);   // dia no horário de Manaus
+    var novo = localStorage.getItem('vdia') !== dia; localStorage.setItem('vdia', dia);
+    function envia(e, extra){
+      try { fetch(SERV + '/visita', { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ v: vid, e: e }, extra || {})), keepalive: true }).catch(function(){}); } catch (x) {}
+    }
+    window.rastro = function(e, p){ envia(e, p ? { p: p } : {}); };
+    var o = q.get('o');
+    envia('visita', { n: novo ? 1 : 0, o: /^[a-z-]{1,30}$/.test(o || '') ? o : undefined });
+    var n = 0;
+    setInterval(function(){ if (document.visibilityState === 'visible' && ++n <= 25) envia('ping'); }, 60000);
+  } catch (x) {}
+})();
+</script>
 
 <nav>
   <div class="wrap">
@@ -2592,9 +2619,19 @@ function telaLinkEnviado(em){
 }
 
 // botão "Comprar agora"
-window.lojaComprar = async (produtoId) => {
+// antes de ir ao banco, mostra o tutorial de compra e pergunta se a pessoa quer seguir para o pagamento
+function mostrarTutorial(produtoId){
+  abrir('<h3 style="text-align:center">Como comprar sua apostila</h3>'
+    + '<img class="tut-img" src="tutorial-compra.jpg" alt="Tutorial de compra: 1) acesse o link, 2) confira e clique em Comprar, 3) escolha Pix ou cartão, 4) aguarde a liberação e receba o link no WhatsApp e no e-mail">'
+    + '<p style="text-align:center;font-weight:800;margin:14px 0 4px">Tudo certo? Podemos seguir para o pagamento?</p>'
+    + '<div class="actions tut-acoes"><button class="btn-google" id="lojaTutOk" style="background:#16a34a;color:#fff;border:0">Sim, ir para o pagamento</button><button class="btn-cancel" onclick="lojaFechar()">Agora não</button></div>');
+  document.getElementById('lojaTutOk').onclick = () => { if (window.rastro) window.rastro('tutorial'); window.lojaComprar(produtoId, true); };
+}
+window.lojaComprar = async (produtoId, tutorialVisto) => {
+  if (!tutorialVisto && window.rastro) window.rastro('comprar', produtoId);
+  if (!tutorialVisto && produtoId !== 'coach') { mostrarTutorial(produtoId); return; }
   await esperarPronto();
-  if (!usuario) { aoEntrar = () => lojaComprar(produtoId); telaLogin('Para receber a apostila na hora, entre com sua conta Google.'); return; }
+  if (!usuario) { aoEntrar = () => lojaComprar(produtoId, true); telaLogin('Para receber a apostila na hora, entre com sua conta Google.'); return; }
   abrir('<h3>Preparando seu pagamento…</h3><div class="loja-spin"></div><p class="small" style="text-align:center">Você vai para a página segura do PagBank.</p>');
   try {
     const r = await api('/pedido', { produtoId, retorno: location.origin + location.pathname });
