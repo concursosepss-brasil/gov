@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0A1220">
+<title>Painel | Concursos e PSS Brasil</title>
+<link rel="manifest" href="painel-manifest.json">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#0A1220;--card:#121c33;--card2:#17233f;--linha:#26365a;--txt:#e8eef8;--mut:#8C97B3;--azul:#3b6cf6;--verde:#3fd17f;--ouro:#F2B705}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+.card{min-width:0}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.4}
+.wrap{max-width:1040px;margin:0 auto;padding:14px 14px 40px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 0 14px}
+header h1{font-size:20px;margin:0;flex:1;min-width:200px}
+header h1 small{display:block;font-size:12px;font-weight:500;color:var(--mut)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:#26365a;color:var(--txt)}
+button.azul{background:var(--azul);color:#fff}
+.card{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;margin:12px 0}
+.grid{display:flex;gap:12px;flex-wrap:wrap}
+.grid>.card{flex:1;min-width:250px;margin:0}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td,th{border-bottom:1px solid var(--linha);padding:7px 6px;text-align:left}
+th{color:var(--mut);font-weight:700;font-size:12px}
+.online{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pulso{width:12px;height:12px;border-radius:50%;background:var(--verde);box-shadow:0 0 0 0 rgba(63,209,127,.7);animation:p 1.8s infinite}
+@keyframes p{70%{box-shadow:0 0 0 10px rgba(63,209,127,0)}100%{box-shadow:0 0 0 0 rgba(63,209,127,0)}}
+.login{text-align:center;padding:60px 10px}
+.login h2{margin:0 0 6px}
+.erro{color:#ff8a7a;font-weight:700}
+.mut{color:var(--mut)}
+.barras{display:flex;gap:4px;align-items:flex-end;margin-top:8px}
+@media(max-width:600px){.wrap{padding:10px 10px 30px}td,th{padding:6px 4px;font-size:12.5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📊 Painel em tempo real<small>Concursos e PSS Brasil · horário de Manaus</small></h1>
+    <span id="quem" class="mut" style="font-size:13px"></span>
+    <button id="sair" style="display:none">Sair</button>
+  </header>
+  <div id="app"><div class="login mut">Carregando…</div></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+const SERVIDOR = 'https://loja-concursos.concursosepss.workers.dev';
+const PRODS = [{"id": "apostila-cp", "nome": "Apostila Interativa de Conhecimento Pedagógico"}, {"id": "apostila-leg", "nome": "Apostila Interativa de Legislação Educacional + LDB + ECA"}, {"id": "apostila-lp", "nome": "Apostila Interativa de Língua Portuguesa"}, {"id": "apostila-red", "nome": "Apostila Interativa de Redação"}, {"id": "apostila-mat", "nome": "Apostila Interativa de Matemática"}, {"id": "apostila-ef", "nome": "Apostila Interativa de Educação Física"}, {"id": "apostila-bio", "nome": "Apostila Interativa de Biologia"}, {"id": "apostila-his", "nome": "Apostila Interativa de História"}, {"id": "apostila-mer", "nome": "Apostila Interativa de Merendeiro Escolar"}, {"id": "apostila-qc", "nome": "Apostila Interativa de Questões de Concurso"}, {"id": "apostila-fis", "nome": "Apostila Interativa de Física"}, {"id": "apostila-geo", "nome": "Apostila Interativa de Geografia"}, {"id": "apostila-adm", "nome": "Apostila Interativa de Assistente Administrativo"}];
+const app = initializeApp({ apiKey: "AIzaSyB9avRtO3rsgNnAC_9scIQRkJwf7bnRISs", authDomain: "app-q-p.firebaseapp.com", projectId: "app-q-p" }, 'painel');
+const auth = getAuth(app);
+const el = document.getElementById('app');
+const reais = c => 'R$ ' + (c / 100).toFixed(2).replace('.', ',');
+const nf = n => Number(n || 0).toLocaleString('pt-BR');
+let timer = null, usuario = null, carregando = false;
+
+async function api(caminho, corpo) {
+  const t = await usuario.getIdToken();
+  const r = await fetch(SERVIDOR + caminho, { method: corpo ? 'POST' : 'GET', headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: corpo ? JSON.stringify(corpo) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.erro || 'erro'), { status: r.status });
+  return j;
+}
+function telaLogin(msg) {
+  document.getElementById('sair').style.display = 'none'; document.getElementById('quem').textContent = '';
+  el.innerHTML = '<div class="login"><h2>Área do administrador</h2><p class="mut">Entre com a conta de administrador para ver os números.</p>'
+    + (msg ? '<p class="erro">' + msg + '</p>' : '')
+    + '<button class="azul" id="entrar" style="padding:14px 22px;font-size:16px">Entrar com Google</button></div>';
+  document.getElementById('entrar').onclick = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { telaLogin('Não foi possível entrar. Tente de novo.'); } };
+}
+function diaMenos(dia, n) { const d = new Date(dia + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().slice(0, 10); }
+function somaPeriodo(dias, de, ate, prefixo) {
+  const t = {};
+  dias.forEach(d => {
+    if (d.dia < de || d.dia > ate) return;
+    Object.keys(d).forEach(k => {
+      if (k === 'dia' || typeof d[k] !== 'number') return;
+      if (!prefixo || k.indexOf(prefixo) === 0) t[k] = (t[k] || 0) + d[k];
+    });
+  });
+  return t;
+}
+function cartaoPeriodo(titulo, sub, t) {
+  const conv = t.unicos ? ((t.pagos || 0) * 100 / t.unicos).toFixed(1).replace('.', ',') + '%' : '-';
+  const lin = (rot, val, forte) => '<tr><td>' + rot + '</td><td style="text-align:right;white-space:nowrap;' + (forte ? 'font-weight:800;color:var(--verde);font-size:16px' : 'font-weight:700') + '">' + val + '</td></tr>';
+  return '<div class="card"><b style="font-size:16px">' + titulo + '</b><br><small class="mut">' + sub + '</small><table style="margin-top:8px">'
+    + lin('Pessoas que acessaram', nf(t.unicos)) + lin('Visitas (páginas abertas)', nf(t.visitas))
+    + lin('Clicaram em Comprar', nf(t.cliques)) + lin('Seguiram após o tutorial', nf(t.tutorial))
+    + lin('Pagamentos iniciados', nf(t.pedidos)) + lin('Compras pagas', nf(t.pagos), true)
+    + lin('Faturamento', reais(t.receita || 0), true) + lin('Conversão (compras ÷ pessoas)', conv) + '</table></div>';
+}
+function listaTop(titulo, itens, vazio) {
+  return '<div class="card"><b>' + titulo + '</b>' + (itens.length ? '<table style="margin-top:6px">' + itens.join('') + '</table>' : '<p class="mut" style="margin:8px 0 0">' + vazio + '</p>') + '</div>';
+}
+function desenha(r) {
+  const hoje = r.hoje, d7 = diaMenos(hoje, 6), d30 = diaMenos(hoje, 29);
+  const tHoje = somaPeriodo(r.dias, hoje, hoje), t7 = somaPeriodo(r.dias, d7, hoje), t30 = somaPeriodo(r.dias, d30, hoje);
+  const hora = new Date(r.agora).toLocaleTimeString('pt-BR');
+  let h = '<div class="card online"><span class="pulso"></span><b style="font-size:22px">' + nf(r.online) + '</b><span>' + (r.online === 1 ? 'pessoa no site agora' : 'pessoas no site agora') + '</span>'
+    + '<span style="flex:1"></span><small class="mut">Atualiza sozinho a cada 15 s · última: ' + hora + '</small></div>';
+  h += '<div class="grid">' + cartaoPeriodo('Hoje', hoje.slice(8) + '/' + hoje.slice(5, 7), tHoje) + cartaoPeriodo('Esta semana', 'últimos 7 dias', t7) + cartaoPeriodo('Este mês', 'últimos 30 dias', t30) + '</div>';
+  const NB = innerWidth < 600 ? 7 : 14;   // no celular o gráfico mostra 7 dias
+  const dias14 = []; for (let i = 13; i >= 0; i--) dias14.push(diaMenos(hoje, i));
+  const diasGraf = dias14.slice(14 - NB);
+  const porDia = {}; r.dias.forEach(d => { porDia[d.dia] = d; });
+  let maxV = 1; diasGraf.forEach(d => { maxV = Math.max(maxV, (porDia[d] || {}).unicos || 0); });
+  const barras = diasGraf.map(d => {
+    const x = porDia[d] || {}, alt = Math.round(((x.unicos || 0) / maxV) * 110), pg = x.pagos || 0;
+    return '<div style="flex:1;text-align:center;font-size:11px"><div style="height:130px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center"><span class="mut">' + (x.unicos || 0) + '</span><div style="width:70%;max-width:26px;height:' + alt + 'px;background:var(--azul);border-radius:4px 4px 0 0"></div></div>'
+      + '<div style="color:var(--verde);font-weight:800;height:16px">' + (pg ? '🛒' + pg : '') + '</div><div class="mut">' + d.slice(8) + '/' + d.slice(5, 7) + '</div></div>';
+  }).join('');
+  h += '<div class="card"><b>Pessoas por dia (barras azuis) e compras (verde) · últimos ' + NB + ' dias</b><div class="barras">' + barras + '</div></div>';
+  const linhas = dias14.slice().reverse().map(d => { const x = porDia[d] || {};
+    return '<tr><td>' + d.slice(8) + '/' + d.slice(5, 7) + '</td><td>' + nf(x.unicos) + '</td><td>' + nf(x.visitas) + '</td><td>' + nf(x.cliques) + '</td><td>' + nf(x.pedidos) + '</td><td><b>' + nf(x.pagos) + '</b></td><td><b>' + reais(x.receita || 0) + '</b></td></tr>'; }).join('');
+  h += '<div class="card" style="overflow-x:auto"><b>Dia a dia</b><table style="margin-top:6px"><tr><th>Dia</th><th>Pessoas</th><th>Visitas</th><th>Cliques em Comprar</th><th>Pagamentos iniciados</th><th>Compras</th><th>Faturamento</th></tr>' + linhas + '</table></div>';
+  const cl = somaPeriodo(r.dias, d30, hoje, 'cl_'), pg = somaPeriodo(r.dias, d30, hoje, 'pg_'), orr = somaPeriodo(r.dias, d30, hoje, 'or_');
+  const prods = PRODS.concat([{ id: 'coach', nome: 'Coach Virtual' }]).map(p => { const k = p.id.toLowerCase().replace(/[^a-z0-9]/g, '_'); return { nome: p.nome, c: cl['cl_' + k] || 0, v: pg['pg_' + k] || 0 }; })
+    .filter(p => p.c || p.v).sort((a, b) => (b.v - a.v) || (b.c - a.c))
+    .map(p => '<tr><td>' + p.nome.replace('Apostila Interativa de ', '').replace('Apostila Interativa ', '') + '</td><td style="text-align:right">' + p.c + ' cliques</td><td style="text-align:right"><b>' + p.v + ' vendas</b></td></tr>');
+  const origens = Object.keys(orr).sort((a, b) => orr[b] - orr[a]).map(k => '<tr><td>link /a/' + k.slice(3).replace(/_/g, '-') + '/</td><td style="text-align:right"><b>' + orr[k] + ' acessos</b></td></tr>');
+  h += '<div class="grid">' + listaTop('Produtos (últimos 30 dias)', prods, 'Ainda sem cliques.') + listaTop('Links que trouxeram gente (30 dias)', origens, 'Nenhum acesso pelos links ainda.') + '</div>';
+  h += '<p><button id="atualiza">Atualizar agora</button> <button id="recalc">Incluir vendas antigas nas contas</button></p>'
+    + '<p class="mut" style="font-size:12px">Pessoas = aparelhos diferentes por dia. Quem volta em outro dia conta de novo naquele dia. Os números começam a ser contados a partir do dia em que o painel foi ligado; use "Incluir vendas antigas" uma vez para trazer as compras que já existiam.</p>';
+  el.innerHTML = h;
+  document.getElementById('atualiza').onclick = atualiza;
+  document.getElementById('recalc').onclick = async () => {
+    if (!confirm('Contar de novo todas as vendas já pagas e somar nos dias certos? Pode fazer sem medo, não duplica.')) return;
+    try { const x = await api('/admin/estat-recalcular', {}); alert('Pronto! ' + x.vendas + ' venda(s) em ' + x.dias + ' dia(s) incluídas.'); } catch (e) { alert('Erro: ' + e.message); }
+    atualiza();
+  };
+}
+async function atualiza() {
+  if (!usuario || carregando) return; carregando = true;
+  try { desenha(await api('/admin/estatisticas')); }
+  catch (e) {
+    if (e.status === 403) { await signOut(auth); telaLogin('Esta conta não é de administrador.'); }
+    else if (!document.getElementById('atualiza')) el.innerHTML = '<div class="login"><p class="erro">Não foi possível carregar agora.</p><button id="tenta">Tentar de novo</button></div>', document.getElementById('tenta').onclick = atualiza;
+  }
+  carregando = false;
+}
+onAuthStateChanged(auth, u => {
+  usuario = u; if (timer) { clearInterval(timer); timer = null; }
+  if (!u) { telaLogin(); return; }
+  document.getElementById('quem').textContent = u.email; document.getElementById('sair').style.display = '';
+  el.innerHTML = '<div class="login mut">Carregando os números…</div>';
+  atualiza();
+  timer = setInterval(() => { if (document.visibilityState === 'visible') atualiza(); }, 15000);
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') atualiza(); });
+document.getElementById('sair').onclick = () => signOut(auth);
+</script>
+</body>
+</html>
