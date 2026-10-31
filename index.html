@@ -373,15 +373,17 @@ body.loja div.loja-banner.loja-on{display:flex !important;}
 .kitrow.card-alvo{position:relative;padding-top:38px;animation:alvoBrilho 1.6s ease-in-out infinite;border-radius:12px}
 .kitrow.card-alvo::before{content:"★ APOSTILA SELECIONADA";position:absolute;top:0;left:50%;transform:translateX(-50%);background:#F2B705;color:#0D2B55;font:800 11px/1 Arial,Helvetica,sans-serif;letter-spacing:.08em;padding:7px 16px 8px;border-radius:0 0 12px 12px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 @media (prefers-reduced-motion:reduce){.kitrow.card-alvo{animation:none;box-shadow:inset 0 0 0 4px #F2B705}}
-.loja-sheet .tut-wrap{display:flex;flex-direction:column;max-height:calc(85vh - 64px);}
-.loja-sheet .tut-scroll{flex:1 1 auto;min-height:140px;overflow-y:auto;overflow-x:hidden;text-align:center;-webkit-overflow-scrolling:touch;padding-right:2px;}
-.loja-sheet .tut-foot{flex:0 0 auto;padding-top:6px;}
-.loja-sheet .tut-img{display:block;width:100%;max-width:470px;height:auto;margin:10px auto 0;border-radius:12px;border:1px solid var(--line);cursor:zoom-in;}
-.loja-sheet .tut-dica{text-align:center;font-size:12px;color:var(--muted);margin:6px 0 4px;}
-.loja-sheet .tut-acoes{margin-top:8px;}
-#lojaZoom{position:fixed;inset:0;z-index:2147483600;background:rgba(5,10,25,.92);overflow:auto;-webkit-overflow-scrolling:touch;cursor:zoom-out;}
-#lojaZoom img{display:block;width:min(100%,900px);height:auto;margin:56px auto 24px;border-radius:10px;}
-#lojaZoom button{position:fixed;top:10px;right:12px;z-index:1;background:#fff;color:#0D2B55;border:0;border-radius:99px;padding:10px 16px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);}
+#lojaTut{position:fixed;inset:0;z-index:2147483600;display:flex;flex-direction:column;background:#0D2B55;color:#fff;}
+#lojaTut .tt-topo{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#0A2144;border-bottom:1px solid rgba(255,255,255,.12);}
+#lojaTut .tt-topo b{font-size:16px;}
+#lojaTut .tt-x{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:99px;width:38px;height:38px;font-size:18px;font-weight:800;cursor:pointer;}
+#lojaTut .tt-meio{flex:1 1 auto;overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 12px 18px;text-align:center;}
+#lojaTut .tt-meio img{display:block;width:100%;max-width:820px;height:auto;margin:0 auto;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.45);}
+#lojaTut .tt-pe{flex:0 0 auto;background:#fff;color:#0D2B55;padding:12px 14px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.25);}
+#lojaTut .tt-pe p{margin:0 0 10px;text-align:center;font-weight:800;font-size:15px;}
+#lojaTut .tt-bt{display:flex;gap:10px;max-width:820px;margin:0 auto;}
+#lojaTut .tt-bt button{flex:1;padding:14px 10px;border-radius:10px;font-weight:800;font-size:15px;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#0D2B55;}
+#lojaTut .tt-bt button.tt-ok{background:#16a34a;color:#fff;border:0;flex:1.6;}
 </style>
 </head>
 <body>
@@ -2628,18 +2630,18 @@ function telaLinkEnviado(em){
 // botão "Comprar agora"
 // antes de ir ao banco, mostra o tutorial de compra e pergunta se a pessoa quer seguir para o pagamento
 function mostrarTutorial(produtoId){
-  abrir('<div class="tut-wrap"><div class="tut-scroll"><h3 style="text-align:center;margin-top:0">Como comprar sua apostila</h3>'
-    + '<p class="tut-dica" style="margin:0">Role para ver os 4 passos · toque na imagem para ampliar</p>'
-    + '<img class="tut-img" id="lojaTutImg" src="tutorial-compra.jpg" alt="Tutorial de compra: 1) acesse o link, 2) confira e clique em Comprar, 3) escolha Pix ou cartão, 4) aguarde a liberação e receba o link no WhatsApp e no e-mail">'
-    + '</div>'
-    + '<div class="tut-foot"><p style="text-align:center;font-weight:800;margin:6px 0 4px">Tudo certo? Podemos seguir para o pagamento?</p>'
-    + '<div class="actions tut-acoes"><button class="btn-google" id="lojaTutOk" style="background:#16a34a;color:#fff;border:0">Sim, ir para o pagamento</button><button class="btn-cancel" onclick="lojaFechar()">Agora não</button></div></div></div>');
-  document.getElementById('lojaTutImg').onclick = () => {
-    const z = document.createElement('div'); z.id = 'lojaZoom';
-    z.innerHTML = '<button type="button">✕ Fechar</button><img src="tutorial-compra.jpg" alt="Tutorial de compra ampliado">';
-    z.onclick = () => z.remove(); document.body.appendChild(z);
-  };
-  document.getElementById('lojaTutOk').onclick = () => { if (window.rastro) window.rastro('tutorial'); window.lojaComprar(produtoId, true); };
+  const t = document.createElement('div'); t.id = 'lojaTut';
+  const sobe = document.body.style.overflow; document.body.style.overflow = 'hidden';
+  const fecha = () => { t.remove(); document.body.style.overflow = sobe; document.removeEventListener('keydown', esc); };
+  const esc = e => { if (e.key === 'Escape') fecha(); };
+  t.innerHTML = '<div class="tt-topo"><b>Como comprar sua apostila</b><button type="button" class="tt-x" aria-label="Fechar">✕</button></div>'
+    + '<div class="tt-meio"><img src="tutorial-compra.jpg" alt="Tutorial de compra: 1) acesse o link, 2) confira e clique em Comprar, 3) escolha Pix ou cartão, 4) aguarde a liberação e receba o link no WhatsApp e no e-mail"></div>'
+    + '<div class="tt-pe"><p>Tudo certo? Podemos seguir para o pagamento?</p><div class="tt-bt"><button type="button" class="tt-nao">Agora não</button><button type="button" class="tt-ok">Sim, ir para o pagamento</button></div></div>';
+  document.body.appendChild(t); document.addEventListener('keydown', esc);
+  const img = t.querySelector('.tt-meio img'), dica = () => { const m = t.querySelector('.tt-meio'); if (m && m.scrollHeight > m.clientHeight + 2) t.querySelector('.tt-topo b').innerHTML = 'Como comprar sua apostila<br><small style="font-weight:600;opacity:.8">Role para baixo e veja os 4 passos ↓</small>'; };
+  img.complete ? dica() : (img.onload = dica);
+  t.querySelector('.tt-x').onclick = fecha; t.querySelector('.tt-nao').onclick = fecha;
+  t.querySelector('.tt-ok').onclick = () => { fecha(); if (window.rastro) window.rastro('tutorial'); window.lojaComprar(produtoId, true); };
 }
 window.lojaComprar = async (produtoId, tutorialVisto) => {
   if (!tutorialVisto && window.rastro) window.rastro('comprar', produtoId);
