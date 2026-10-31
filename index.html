@@ -726,7 +726,7 @@ document.getElementById('themeBtn').addEventListener('click', function(){
       <div class="step"><div class="step-n">2</div><div><b>Entre com sua conta Google</b><p>É só tocar no seu Gmail. É ele que identifica a sua compra, então guarde bem qual conta você usou.</p></div></div>
       <div class="step"><div class="step-n">3</div><div><b>Pague com Pix ou cartão</b><p>Você vai para a página segura do PagBank. No Pix, pague pelo app do seu banco com o QR Code ou o código copia e cola. No cartão, a aprovação costuma ser na hora.</p></div></div>
       <div class="step"><div class="step-n">4</div><div><b>Volte para o site</b><p>Depois do pagamento, o PagBank traz você de volta (se não voltar sozinho, toque em "Voltar para a loja"). A tela mostra "Confirmando seu pagamento…".</p></div></div>
-      <div class="step"><div class="step-n">5</div><div><b>Receba o link no seu WhatsApp</b><p>Em poucos segundos aparece "Pagamento confirmado! 🎉". Toque no botão verde para enviar o link da apostila para o seu WhatsApp, e guarde a mensagem.</p></div></div>
+      <div class="step"><div class="step-n">5</div><div><b>Receba o link no seu WhatsApp</b><p>Em poucos segundos aparece "Pagamento confirmado! 🎉". Toque no botão verde para enviar o link da apostila para o seu WhatsApp, e guarde a mensagem. Você também recebe o link por e-mail (olhe o spam, se precisar).</p></div></div>
       <div class="step"><div class="step-n">6</div><div><b>Acesse quando quiser</b><p>Toque no link que está no seu WhatsApp, entre com o mesmo Gmail da compra e comece a estudar. Também dá para tocar em "Já comprei — Acessar apostila", no cartão da apostila aqui no site.</p></div></div>
     </div>
     <h2 style="margin-top:28px;">Dúvidas sobre a compra</h2>
@@ -2681,6 +2681,7 @@ async function telaMinhas(pedidoVolta){
   if (volta && volta.acessoLiberado) {
     const ap = [{ produtoNome: volta.produtoNome, link: volta.link }];
     abrir('<h3>Pagamento confirmado! 🎉</h3><p class="small">Sua apostila <b>' + esc(volta.produtoNome) + '</b> já está liberada no e-mail <b>' + esc(m.email) + '</b>.</p>'
+      + '<p class="small">📧 Também enviamos o link para o seu e-mail. Se não encontrar, olhe a caixa de <b>spam</b> e toque em "Não é spam".</p>'
       + blocoZap('📲 Receba o link da sua apostila no WhatsApp')
       + '<a class="abrir" href="' + esc(volta.link) + '" target="_blank" rel="noopener">Abrir a apostila agora</a>' + FECHAR);
     ligarZap(ap, m.email);
