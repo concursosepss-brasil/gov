@@ -2749,16 +2749,35 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
 (function(){
   const abre = () => { const k = (location.hash || '').slice(1); const t = k && document.querySelector('.tab[data-tab="' + k + '"]'); if (!t) return; t.click(); setTimeout(() => { const b = document.querySelector('.tabbar'); if (b) b.scrollIntoView({ behavior: 'smooth' }); }, 150); };
   abre(); addEventListener('hashchange', abre);
-  // link direto para UMA apostila interativa (ex.: .../#apostila-geo): abre a aba, rola até o cartão e destaca
+  // link direto para UMA apostila interativa (ex.: .../#apostila-geo): abre a aba, leva até o cartão e o deixa destacado
+  // O destaque fica até a pessoa trocar de aba. A posição é reajustada enquanto a página termina de carregar
+  // (imagens e blocos que chegam depois empurram o conteúdo), e para assim que a pessoa mexe na rolagem.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  let alvoTimer = null;
   const abreCartao = () => {
     const h = (location.hash || '').slice(1);
+    document.querySelectorAll('.kitrow.card-alvo').forEach(x => x.classList.remove('card-alvo'));
+    if (alvoTimer) { clearInterval(alvoTimer); alvoTimer = null; }
     if (!/^apostila-[a-z]+$/.test(h)) return;
     const t = document.querySelector('.tab[data-tab="interativas"]'); if (t) t.click();
-    setTimeout(() => {
-      const c = document.getElementById(h); if (!c) return;
-      c.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      c.classList.add('card-alvo'); setTimeout(() => c.classList.remove('card-alvo'), 14000);
-    }, 250);
+    const c = document.getElementById(h); if (!c) return;
+    c.classList.add('card-alvo');
+    let parou = false;
+    const parar = () => { parou = true; };
+    ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => addEventListener(ev, parar, { passive: true, once: true }));
+    const alinha = () => {
+      if (parou) return;
+      const bar = document.querySelector('.tabbar');
+      const off = (bar ? bar.getBoundingClientRect().height : 0) + 12;
+      const dy = c.getBoundingClientRect().top - off;
+      if (Math.abs(dy) > 2) window.scrollTo({ top: Math.max(0, window.scrollY + dy), behavior: 'instant' });
+    };
+    alinha();
+    let n = 0;
+    alvoTimer = setInterval(() => { alinha(); if (parou || ++n > 24) { clearInterval(alvoTimer); alvoTimer = null; } }, 150);
+    addEventListener('load', () => setTimeout(alinha, 100), { once: true });
+    // o destaque sai quando a pessoa troca de aba
+    document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => c.classList.remove('card-alvo'), { once: true }));
   };
   abreCartao(); addEventListener('hashchange', abreCartao);
 })();
