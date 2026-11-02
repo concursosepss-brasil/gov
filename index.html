@@ -2631,18 +2631,21 @@ function mostrarTutorial(produtoId){
   const sobe = document.body.style.overflow; document.body.style.overflow = 'hidden';
   const fecha = () => { t.remove(); document.body.style.overflow = sobe; document.removeEventListener('keydown', esc); };
   const esc = e => { if (e.key === 'Escape') fecha(); };
-  t.innerHTML = '<div class="tt-topo"><b>Como comprar sua apostila</b><button type="button" class="tt-x" aria-label="Fechar">✕</button></div>'
-    + '<div class="tt-meio"><img src="tutorial-compra.jpg" alt="Tutorial de compra: 1) acesse o link, 2) confira e clique em Comprar, 3) escolha Pix ou cartão, 4) aguarde a liberação e receba o link no WhatsApp e no e-mail"></div>'
+  const ehPdf = /^(kit|pdf)-/.test(produtoId), tit = ehPdf ? 'Como comprar seu PDF' : 'Como comprar sua apostila';
+  t.innerHTML = '<div class="tt-topo"><b>' + tit + '</b><button type="button" class="tt-x" aria-label="Fechar">✕</button></div>'
+    + '<div class="tt-meio">' + (ehPdf
+      ? '<img src="tutorial-compra-pdf.jpg" alt="Tutorial de compra do PDF: 1) clique em Comprar agora, 2) entre com a conta Google, 3) escolha Pix ou cartão, 4) aguarde cerca de 1 minuto e receba o link no e-mail e no WhatsApp">'
+      : '<img src="tutorial-compra.jpg" alt="Tutorial de compra: 1) acesse o link, 2) confira e clique em Comprar, 3) escolha Pix ou cartão, 4) aguarde a liberação e receba o link no WhatsApp e no e-mail">') + '</div>'
     + '<div class="tt-pe"><p>Tudo certo? Podemos seguir para o pagamento?</p><div class="tt-bt"><button type="button" class="tt-nao">Agora não</button><button type="button" class="tt-ok">Sim, ir para o pagamento</button></div></div>';
   document.body.appendChild(t); document.addEventListener('keydown', esc);
-  const img = t.querySelector('.tt-meio img'), dica = () => { const m = t.querySelector('.tt-meio'); if (m && m.scrollHeight > m.clientHeight + 2) t.querySelector('.tt-topo b').innerHTML = 'Como comprar sua apostila<br><small style="font-weight:600;opacity:.8">Role para baixo e veja os 4 passos ↓</small>'; };
+  const img = t.querySelector('.tt-meio img'), dica = () => { const m = t.querySelector('.tt-meio'); if (m && m.scrollHeight > m.clientHeight + 2) t.querySelector('.tt-topo b').innerHTML = tit + '<br><small style="font-weight:600;opacity:.8">Role para baixo e veja os 4 passos ↓</small>'; };
   img.complete ? dica() : (img.onload = dica);
   t.querySelector('.tt-x').onclick = fecha; t.querySelector('.tt-nao').onclick = fecha;
   t.querySelector('.tt-ok').onclick = () => { fecha(); if (window.rastro) window.rastro('tutorial'); window.lojaComprar(produtoId, true); };
 }
 window.lojaComprar = async (produtoId, tutorialVisto) => {
   if (!tutorialVisto && window.rastro) window.rastro('comprar', produtoId);
-  if (!tutorialVisto && produtoId !== 'coach' && !/^(kit|pdf)-/.test(produtoId)) { mostrarTutorial(produtoId); return; }
+  if (!tutorialVisto && produtoId !== 'coach') { mostrarTutorial(produtoId); return; }
   await esperarPronto();
   if (!usuario) { aoEntrar = () => lojaComprar(produtoId, true); telaLogin('Para receber a apostila na hora, entre com sua conta Google.'); return; }
   abrir('<h3>Preparando seu pagamento…</h3><div class="loja-spin"></div><p class="small" style="text-align:center">Você vai para a página segura do PagBank.</p>');
