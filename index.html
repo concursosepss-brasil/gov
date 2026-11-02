@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Concursos e PSS Brasil — Apostilas Educação</title>
+<title>Concursos e PSS Brasil — Apostilas para Concursos</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Concursos PSS">
@@ -396,6 +396,33 @@ body.loja div.loja-banner.loja-on{display:flex !important;}
   #lojaTut .tt-bt button{flex:none;font-size:17px;padding:16px 10px;}
 }
 </style>
+<style id="areas-css">
+/* abas de área de concurso */
+.areabar{background:var(--bg-alt);border-bottom:1px solid var(--line);padding:12px 0;}
+.areabar .wrap{display:flex;gap:10px;justify-content:center;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.areabar .wrap::-webkit-scrollbar{display:none;}
+.areabtn{flex-shrink:0;white-space:nowrap;cursor:pointer;font:inherit;font-size:14.5px;font-weight:700;padding:10px 20px;border-radius:999px;border:1px solid var(--line);background:var(--bg-alt-2);color:var(--muted);}
+.areabtn:hover{border-color:var(--navy);color:var(--text);}
+.areabtn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+@media (max-width:600px){.areabar .wrap{justify-content:flex-start;}.areabtn{font-size:13.5px;padding:9px 16px;}}
+#areaSoon{display:none;}
+body.area-fora #areaSoon{display:block;}
+body.area-fora .tabbar,body.area-fora nav .search,body.area-fora .wrap > section:not(#areaSoon),body.area-fora .howto,body.area-fora #edu-btn,body.area-fora #edu-pan,body.area-fora #stats-btn{display:none !important;}
+body.area-fora header.hero{padding-bottom:4px;}
+.soon-card{max-width:560px;margin:18px auto 30px;text-align:center;background:var(--bg-alt);border:1px solid var(--line);border-radius:16px;padding:34px 22px;}
+.soon-ico{font-size:44px;line-height:1;margin-bottom:10px;}
+.soon-card h2{margin:0 0 8px;font-size:24px;}
+.soon-card p{margin:0 auto 20px;color:var(--muted);font-size:15px;line-height:1.55;max-width:44ch;}
+.soon-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#168A47;color:#fff;font-weight:800;font-size:15px;padding:14px 22px;border-radius:10px;text-decoration:none;}
+.soon-btn:hover{background:#12733A;}
+/* botões de produtos: centralizados; em tela larga ficam em uma linha só */
+@media (min-width:768px){.tabbar .wrap{justify-content:center;}}
+@media (min-width:1240px){.tabbar .wrap{max-width:1300px;flex-wrap:nowrap;gap:8px;}.tabbar .tab{padding:9px 13px;}}
+/* aba Outros concursos */
+.oc-pills{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 16px;}
+.oc-pill{cursor:pointer;font:inherit;font-size:14px;font-weight:700;padding:9px 18px;border-radius:999px;border:1px solid var(--line);background:var(--bg-alt-2);color:var(--muted);}
+.oc-pill.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+</style>
 </head>
 <body>
 <script>
@@ -443,6 +470,13 @@ document.getElementById('themeBtn').addEventListener('click', function(){
 });
 </script>
 
+<div class="areabar" id="areaBar"><div class="wrap">
+  <button type="button" class="areabtn active" data-area="educacao">🎓 Educação</button>
+  <button type="button" class="areabtn" data-area="policial">🛡️ Policial</button>
+  <button type="button" class="areabtn" data-area="saude">❤️ Saúde</button>
+  <button type="button" class="areabtn" data-area="tribunais">⚖️ Tribunais</button>
+</div></div>
+
 <header class="hero">
   <div class="wrap" style="text-align:center;">
     <div class="brandrow">
@@ -473,9 +507,9 @@ document.getElementById('themeBtn').addEventListener('click', function(){
 </div>
   </div>
   <div class="wrap">
-    <span class="badge">CONCURSO PÚBLICO ÁREA EDUCAÇÃO</span>
-    <h1>Kits para todas as licenciaturas</h1>
-    <p>Kits completos por licenciatura e apostilas avulsas (Legislação Educacional, Conhecimento Pedagógico e Conhecimento Específico de cada área) — direto ao edital, com compra segura pelo site e entrega por e-mail.</p>
+    <span class="badge" id="heroBadge">CONCURSO PÚBLICO ÁREA EDUCAÇÃO</span>
+    <h1 id="heroTitle">Kits para todas as licenciaturas</h1>
+    <p id="heroText">Kits completos por licenciatura e apostilas avulsas (Legislação Educacional, Conhecimento Pedagógico e Conhecimento Específico de cada área) — direto ao edital, com compra segura pelo site e entrega por e-mail.</p>
   </div>
 </header>
 
@@ -488,6 +522,7 @@ document.getElementById('themeBtn').addEventListener('click', function(){
     <span class="tab" data-tab="questoes">Questões</span>
     <span class="tab" data-tab="assinatura">Aulas em Vídeo</span>
     <span class="tab" data-tab="outros">🍎 Loja do Professor</span>
+    <span class="tab" data-tab="concursos">Outros concursos</span>
   </div>
 </div>
 
@@ -760,6 +795,13 @@ document.getElementById('themeBtn').addEventListener('click', function(){
     <div id="outrosWrap" hidden></div>
   </section>
 
+  <section id="tab-concursos" class="hidden">
+    <h2>Outros concursos</h2>
+    <p class="lede">Kits preparados para o edital de concursos específicos da área da educação. Escolha o concurso.</p>
+    <div class="oc-pills" id="ocPills"><button type="button" class="oc-pill active" data-oc="pvh">Semed Porto Velho</button></div>
+    <div class="kitlist" id="ocKits"></div>
+  </section>
+
   <section id="tab-questoes" class="hidden">
     <h2>Banco de questões</h2>
     <p class="lede">Questões comentadas por disciplina, direto no app de estudos. Toque para abrir.</p>
@@ -816,6 +858,15 @@ document.getElementById('themeBtn').addEventListener('click', function(){
   <section id="secaoFaq">
     <h2>Perguntas frequentes</h2>
     <div id="faqList"></div>
+  </section>
+
+  <section id="areaSoon">
+    <div class="soon-card">
+      <div class="soon-ico" id="soonIco">🛡️</div>
+      <h2 id="soonTit">Em breve</h2>
+      <p id="soonTxt"></p>
+      <a class="soon-btn" id="soonBtn" href="#" target="_blank" rel="noopener">📲 Quero ser avisado pelo WhatsApp</a>
+    </div>
   </section>
 
   <div class="howto hidden" id="howtoDisclaimer">
@@ -919,6 +970,7 @@ function carregarCatalogoPdf(){
     window.PDF_ATIVOS = new Set((j && j.pdfs) || []);
     renderKits((document.getElementById('searchBox') || {}).value || '');
     renderAvulsas((document.getElementById('avulsaSearch') || {}).value || '');
+    if (window.renderOutrosConcursos) window.renderOutrosConcursos();
   }).catch(() => {});
 }
 
@@ -1218,6 +1270,7 @@ document.querySelectorAll('.tab[data-tab]').forEach(t=>t.addEventListener('click
   document.getElementById('tab-interativas').classList.toggle('hidden', t.dataset.tab!=='interativas');
   document.getElementById('tab-coach').classList.toggle('hidden', t.dataset.tab!=='coach');
   document.getElementById('tab-outros').classList.toggle('hidden', t.dataset.tab!=='outros');
+  document.getElementById('tab-concursos').classList.toggle('hidden', t.dataset.tab!=='concursos');
   document.getElementById('tab-questoes').classList.toggle('hidden', t.dataset.tab!=='questoes');
   document.getElementById('tab-assinatura').classList.toggle('hidden', t.dataset.tab!=='assinatura');
   document.getElementById('secaoComoFunciona').classList.toggle('hidden', t.dataset.tab==='questoes' || t.dataset.tab==='assinatura' || t.dataset.tab==='outros' || t.dataset.tab==='interativas' || t.dataset.tab==='coach');
@@ -1226,6 +1279,7 @@ document.querySelectorAll('.tab[data-tab]').forEach(t=>t.addEventListener('click
   document.getElementById('secaoComoFuncionaIA').classList.toggle('hidden', t.dataset.tab!=='interativas');
   document.getElementById('secaoFaqIA').classList.toggle('hidden', t.dataset.tab!=='interativas');
   document.getElementById('howtoDisclaimer').classList.add('hidden');
+  if (window.atualizaHeroAba) window.atualizaHeroAba(t.dataset.tab);
 }));
 
 let currentItem = null;
@@ -2844,6 +2898,93 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => c.classList.remove('card-alvo'), { once: true }));
   };
   abreCartao(); addEventListener('hashchange', abreCartao);
+})();
+</script>
+<script>
+// abas de área de concurso (Educação / Policial / Saúde / Tribunais)
+(function(){
+  var WPP = '5592984478798';
+  var AREAS = {
+    educacao:  { badge:'CONCURSO PÚBLICO ÁREA EDUCAÇÃO' },
+    policial:  { badge:'CONCURSO PÚBLICO ÁREA POLICIAL', titulo:'Materiais preparatórios para concursos policiais', texto:'Materiais para quem sonha com a carreira na segurança pública. Em breve por aqui.', ico:'🛡️', nome:'Policial' },
+    saude:     { badge:'CONCURSO PÚBLICO ÁREA SAÚDE', titulo:'Materiais preparatórios para concursos da Saúde', texto:'Materiais para quem busca uma carreira na saúde pública. Em breve por aqui.', ico:'❤️', nome:'Saúde' },
+    tribunais: { badge:'CONCURSO PÚBLICO ÁREA TRIBUNAIS', titulo:'Materiais preparatórios para concursos de Tribunais', texto:'Materiais para quem busca uma carreira nos tribunais e no Judiciário. Em breve por aqui.', ico:'⚖️', nome:'Tribunais' }
+  };
+  // título e texto da Educação mudam conforme a aba de produto escolhida
+  var textoKits = (document.getElementById('heroText') || {}).textContent || '';
+  var ABAS = {
+    kits:        { t:'Kits para todas as licenciaturas', d:textoKits },
+    avulsas:     { t:'Apostilas avulsas para concursos públicos', d:'Escolha só o material que você precisa: Legislação Educacional, Conhecimento Pedagógico e Conhecimento Específico da sua área, em PDF e direto ao edital.' },
+    interativas: { t:'Apostilas Interativas para sua aprovação', d:'Estude pelo celular com questões comentadas, simulados, mapas mentais e a ajuda da Bia, a nossa tutora virtual.' },
+    coach:       { t:'Coach Virtual para concurseiros', d:'Orientação para organizar a rotina, definir metas e manter a motivação durante toda a sua preparação.' },
+    questoes:    { t:'Treine com questões de concursos públicos', d:'Pratique com questões organizadas por disciplina e acompanhe a sua evolução.' },
+    assinatura:  { t:'Assinatura de Aulas em Vídeo', d:'Videoaulas para estudar no seu ritmo, com assinatura mensal. Em breve.' },
+    outros:      { t:'Loja do Professor', d:'Materiais prontos para a sala de aula e ferramentas para facilitar a rotina de quem já dá aula.' },
+    concursos:   { t:'Materiais para outros concursos da Educação', d:'Kits preparados para o edital de concursos específicos da área da educação.' }
+  };
+  var area = 'educacao', aba = 'kits';
+  function hero(){
+    var d = AREAS[area], bd = document.getElementById('heroBadge'), tt = document.getElementById('heroTitle'), tx = document.getElementById('heroText');
+    if (bd) bd.textContent = d.badge;
+    var c = area === 'educacao' ? (ABAS[aba] || ABAS.kits) : { t:d.titulo, d:d.texto };
+    if (tt) tt.textContent = c.t; if (tx) tx.textContent = c.d;
+  }
+  window.atualizaHeroAba = function(t){ aba = t; hero(); };
+  function setArea(a){
+    if (!AREAS[a]) a = 'educacao';
+    var d = AREAS[a], fora = a !== 'educacao';
+    document.body.classList.toggle('area-fora', fora);
+    document.querySelectorAll('.areabtn').forEach(function(b){ b.classList.toggle('active', b.dataset.area === a); });
+    area = a; hero();
+    if (fora) {
+      document.getElementById('soonIco').textContent = d.ico;
+      document.getElementById('soonTit').textContent = 'Em breve: concursos da área ' + d.nome;
+      document.getElementById('soonTxt').textContent = 'Toque no botão e a nossa equipe avisa você assim que os materiais da área ' + d.nome + ' estiverem disponíveis.';
+      var msg = 'Olá! Tenho interesse em materiais para concursos da área ' + d.nome + '. Quero ser avisado quando estiver disponível.';
+      document.getElementById('soonBtn').href = 'https://wa.me/' + WPP + '?text=' + encodeURIComponent(msg);
+    }
+  }
+  document.querySelectorAll('.areabtn').forEach(function(b){ b.addEventListener('click', function(){ setArea(b.dataset.area); }); });
+  // links diretos: #policial, #saude, #tribunais abrem a área; qualquer outro link (#interativas, #apostila-xx...) volta para Educação
+  function doHash(){ var h = (location.hash || '').slice(1); if (AREAS[h]) setArea(h); else if (h) setArea('educacao'); }
+  doHash(); addEventListener('hashchange', doHash);
+  window.setAreaConcurso = setArea;
+})();
+</script>
+<script>
+// aba "Outros concursos": Semed Porto Velho
+(function(){
+  var OC = {
+    pvh: [
+      { id:'kit-pvh-series-iniciais', nome:'Kit Professor de Séries Iniciais — Semed Porto Velho', conteudo:'Material preparatório em PDF direcionado ao concurso da Semed Porto Velho para o cargo de Professor de Séries Iniciais.', price:'29,90', capa:function(){ return capaImgs['anos-iniciais']; } },
+      { id:'kit-pvh-agente-secretaria', nome:'Kit Agente de Secretaria — Semed Porto Velho', conteudo:'Material preparatório em PDF direcionado ao concurso da Semed Porto Velho para o cargo de Agente de Secretaria Escolar.', price:'29,90', capa:function(){ return avulsaImgs['especifico-agente-secretaria']; } }
+    ]
+  };
+  var atual = 'pvh';
+  window.openOrderOC = function(id){
+    var k = OC[atual].filter(function(x){ return x.id === id; })[0]; if (!k) return;
+    currentItem = { title:k.nome, price:k.price };
+    document.getElementById('orderItemLabel').textContent = k.nome;
+    document.getElementById('orderOverlay').classList.add('show');
+  };
+  window.renderOutrosConcursos = function(){
+    var el = document.getElementById('ocKits'); if (!el) return;
+    el.innerHTML = OC[atual].map(function(k){
+      var on = pdfAtivo(k.id), img = k.capa() || '';
+      return '<div class="kitrow">'
+        + (img ? '<img class="kit-thumb" src="' + img + '" alt="">' : '')
+        + '<div style="flex:1;min-width:120px;"><div class="kitname">' + k.nome + '</div><div class="kitcontent">' + k.conteudo + '</div></div>'
+        + '<div style="display:flex;align-items:center;gap:12px;"><div class="kitprice">R$ <b>' + k.price + '</b></div>'
+        + (on ? '<div class="buybox"><button class="order buy-now loja-on" onclick="lojaComprar(\'' + k.id + '\')">Comprar agora — Pix ou cartão</button><small class="loja-on loja-nota">Pagamento seguro pelo PagBank • Entrega por e-mail após a confirmação</small></div>' : '')
+        + '<button class="order ' + (on ? 'so-wpp' : '') + '" onclick="openOrderOC(\'' + k.id + '\')">Pedir pelo WhatsApp</button></div></div>';
+    }).join('');
+  };
+  document.querySelectorAll('.oc-pill').forEach(function(b){ b.addEventListener('click', function(){
+    atual = b.dataset.oc;
+    document.querySelectorAll('.oc-pill').forEach(function(x){ x.classList.toggle('active', x === b); });
+    window.renderOutrosConcursos();
+  }); });
+  window.renderOutrosConcursos();
 })();
 </script>
 <a class="wpp-fixo" href="https://wa.me/5592984478798?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20no%20site%20Concursos%20e%20PSS%20Brasil." target="_blank" rel="noopener" aria-label="Falar no WhatsApp"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.2-.2-.5-.3z"/></svg></a>
