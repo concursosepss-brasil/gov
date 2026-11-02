@@ -3040,11 +3040,12 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
       var bar = document.querySelector('.tabbar'), barH = (bar && getComputedStyle(bar).display !== 'none') ? bar.getBoundingClientRect().height : 0;
       var alvo = (alvoId && document.getElementById('oc-' + alvoId)) || document.getElementById(L.t === 'ed' ? 'ocPills' : 'oc2Pills');
       var dy = alvo.getBoundingClientRect().top - (barH + 12);
-      if (Math.abs(dy) > 2) window.scrollTo({ top:Math.max(0, window.scrollY + dy), behavior:'instant' });
+      if (Math.abs(dy) > 2) { try { window.scrollTo(0, Math.max(0, window.scrollY + dy)); } catch (e) {} }
     }
+    function reaplica(){ if (parou) return; alvoId = L.id || null; window.renderOutrosConcursos(); alinha(); }
     alinha();
     var iv = setInterval(function(){ alinha(); if (parou || ++n > 24) clearInterval(iv); }, 150);
-    addEventListener('load', function(){ setTimeout(alinha, 100); }, { once:true });
+    addEventListener('load', function(){ setTimeout(reaplica, 100); setTimeout(reaplica, 1200); }, { once:true });
     document.querySelectorAll('.tab, .areabtn').forEach(function(b){ b.addEventListener('click', function(){ alvoId = null; document.querySelectorAll('.card-alvo').forEach(function(x){ if (x.id && x.id.indexOf('oc-') === 0) x.classList.remove('card-alvo'); }); }, { once:true }); });
   }
   abreOC(); addEventListener('hashchange', abreOC);
