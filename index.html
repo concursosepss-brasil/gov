@@ -3058,6 +3058,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
 // links diretos dos kits por licenciatura: #kit-pedagogo, #kit-series-iniciais (abre a aba Kits e destaca o cartão)
 (function(){
   var KITS = { 'kit-pedagogo':'pedagogia', 'kit-series-iniciais':'anos-iniciais' };
+  try { licenciaturas.forEach(function(l){ if (!KITS['kit-' + l.slug]) KITS['kit-' + l.slug] = l.slug; }); } catch (e) {}
   function abreKit(){
     var h = (location.hash || '').slice(1);
     if (!Object.prototype.hasOwnProperty.call(KITS, h)) return;
