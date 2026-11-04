@@ -2570,12 +2570,54 @@ body.edu-solo .edu-cat{display:inline-block}
     chipsP(['Quero comprar outra', 'Falar com um atendente'], (v, i) => i ? human() : chooseIA());
   }
 
+  /* ---------- catálogo: o Edu conhece o nome de todos os produtos ---------- */
+  function catalogo(){
+    const out = [];
+    try { Object.keys(IA).forEach(k => out.push({ t: 'ia', nome: 'Apostila Interativa de ' + IA[k].nome, preco: IA[k].preco, kw: IA[k].nome + (k === 'adm' ? ' conhecimentos administrativos raciocinio logico informatica' : ''), ia: k })); } catch(e) {}
+    try { licenciaturas.forEach(l => out.push({ t: 'kit', nome: l.kit, preco: kitPrice(l.area), kw: l.kit + ' ' + l.area, pid: 'kit-' + l.slug, area: l.area })); } catch(e) {}
+    try { avulsas.forEach(a => { const sim = !!(a.desc && /^Simulado/.test(a.mod)); out.push({ t: sim ? 'sim' : 'av', nome: labelAv(a), preco: priceNum(a.price), kw: labelAv(a) + (sim ? ' ' + a.desc : ''), pid: 'pdf-' + a.imgKey, img: avulsaImgs[a.imgKey], desc: a.desc }); }); } catch(e) {}
+    try { const OC = window.__OC || {}; [].concat(...Object.values(OC.ED || {}), ...Object.values(OC.OUT || {})).forEach(k => out.push({ t: 'oc', nome: k.nome, preco: priceNum(k.price), kw: k.nome + ' ' + k.conteudo, pid: k.id, desc: k.conteudo, capa: k.capa })); } catch(e) {}
+    return out;
+  }
+  const STOP = new Set('quero queria gostaria gostei estudar estudo estudando para pra por sobre que uma uns umas tem voce voces vcs preciso comprar compra comprei apostila apostilas interativa interativas kit kits avulsa avulsas pdf concurso concursos material materiais professor professora simulado simulados completo completa edital prova cargo area ver mostrar mostra qual quais como sim nao ainda mais mim meu minha esse essa isso aqui quanto custa valor preco com sem dos das nos nas ele ela vai vou ser tem tenho fazer fala falar'.split(' '));
+  const toks = x => N0(String(x)).split(/[^a-z0-9]+/).filter(w => w.length >= 3);
+  function buscaProduto(t){
+    const cat = catalogo(); if (!cat.length) return null;
+    const q = toks(t).filter(w => !STOP.has(w)); if (!q.length) return null;
+    const P = cat.map(p => ({ p, w: new Set(toks(p.kw)) }));
+    const hit = (w, set) => set.has(w) || (w.length >= 6 && [...set].some(x => x.length >= 6 && x.slice(0, 6) === w.slice(0, 6)));
+    const df = {}; q.forEach(w => { df[w] = P.filter(x => hit(w, x.w)).length; });
+    const areaW = new Set(); try { licenciaturas.forEach(l => { toks(l.area).forEach(x => areaW.add(x)); toks(cargo(l.area)).forEach(x => areaW.add(x)); }); } catch(e) {}
+    const esp = q.filter(w => df[w] > 0 && df[w] <= 4 && ![...areaW].some(a => a === w || (w.length >= 6 && a.length >= 6 && a.slice(0, 6) === w.slice(0, 6))));
+    const usados = esp.length ? esp : q.filter(w => df[w] > 0);
+    if (!usados.length) return null;
+    const lista = P.map(x => ({ p: x.p, sc: usados.reduce((a, w) => a + (hit(w, x.w) ? 1 / df[w] : 0), 0) })).filter(x => x.sc > 0).sort((a, b) => b.sc - a.sc).map(x => x.p);
+    return { lista: lista.slice(0, 5), espec: esp.length > 0 };
+  }
+  const addProduto = p => {
+    if (p.t === 'ia') addItem(iaItem(p.ia));
+    else addItem({ nome: ({ kit: 'Kit completo — ' + cargo(p.area), av: 'Apostila avulsa — ' + p.nome, sim: 'Simulado em PDF — ' + p.nome, oc: 'Kit de concurso — ' + p.nome })[p.t], preco: p.preco, pid: p.pid });
+    if (p.t === 'oc') st.concurso = st.concurso || 'Concurso municipal';
+  };
+  async function mostrarProdutos(lista, t){
+    const L = lista.slice(0, 5);
+    const info = p => { let cv = null; try { cv = p.img || (p.capa && p.capa()); } catch(e) {} return `<span style="font-size:.82em;opacity:.8">${({ ia: '⭐ Apostila interativa', kit: '📦 Kit em PDF', av: '📘 Avulsa em PDF', sim: '📝 Simulado em PDF', oc: '🎯 Kit em PDF' })[p.t] || ''}</span><br><b>${E(p.nome)}</b> — <b>${money(p.preco)}</b>` + (p.desc ? `<br><span style="font-size:.92em">${E(p.desc)}</span>` : '') + (L.length === 1 && cv ? `<img class="edu-img" src="${cv}" alt="Capa" style="max-width:190px">` : ''); };
+    await bot((L.length > 1 ? 'Achei estas opções no nosso catálogo 👇' : 'Achei! É esse aqui 👇') + '<div class="edu-sum" style="margin-top:6px">' + L.map(p => `<div style="margin-bottom:8px">${info(p)}</div>`).join('') + '</div>');
+    if (/semusa/.test(N0(t)) && L.some(p => p.t === 'sim')) await bot('Pra <b>SEMUSA de Porto Velho</b>, o que eu tenho hoje é esse <b>simulado em PDF</b>, que serve para a SEMED e para a SEMUSA. Um kit completo só da SEMUSA a gente ainda não tem, tá? 😉');
+    chips(L.map(p => '✅ ' + p.nome).concat(['Ver outras opções']), (v, i) => {
+      if (i >= L.length) return otherMenu();
+      addProduto(L[i]); askConcurso();
+    });
+  }
+  const findArea = t => { const stem6 = w => (w || '').slice(0, 6); return areas().find(x => { const k1 = N0(x).split(/[ /(]/)[0], k2 = N0(cargo(x)).split(' ').pop(); return t.includes(k1) || t.includes(k2) || (k1.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k1))) || (k2.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k2))); }); };
+
   /* ---------- texto livre ---------- */
   async function freeText(v){
     const t = N0(v);
     if (/quiz|teste|testar|simulado gratis|desafio/.test(t)) return quiz();
+    { const bp = buscaProduto(t); if (bp && bp.espec) return mostrarProdutos(bp.lista, t); }
     if (/simulad/.test(t)) return simulados();
-    if (/semed|porto velho|ipam|concurso especifico|kit de concurso/.test(t)) return concursosEsp();
+    if (/concurso especifico|kit de concurso/.test(t)) return concursosEsp();
     if (/policia|policial|bombeir|guarda municipal|penitenciar|enfermeir|tribunal|oficial de justica|analista judiciario/.test(t)) return emBreve(/enfermeir/.test(t) ? 'Saúde' : /tribunal|oficial de justica|judiciario/.test(t) ? 'Tribunais' : 'Policial');
     if (/ansios|ansiedade|desanim|desmotiv|depress|triste|chorando|medo de nao passar|sem rumo|perdid[oa]|cansad/.test(t)) return coach(true);
     if (/\bcoach|\bdany\b|\bleo\b|nao consigo estudar|procrastin|preguica|disciplina|motivac|caderno de erros|acompanhamento/.test(t)) return coach();
@@ -2613,17 +2655,17 @@ body.edu-solo .edu-cat{display:inline-block}
     if (/pagamento|pix|cartao|boleto|como (eu )?(compro|pago)|como comprar/.test(t)) return bot(FAQ[6][1]).then(() => seguranca());
     if (/celular|app|instal/.test(t)) return bot(FAQ[2][1]).then(() => chipsP(['⭐ Quero a apostila interativa', 'Ver outras opções'], (x, i) => [chooseIA, otherMenu][i]()));
     if (/interativ|app/.test(t)) return chooseIA();
-    if (/\bkit/.test(t)) return st.area ? chooseKit() : pickArea();
-    if (/avulsa|pdf/.test(t)) return st.area ? chooseAvulsa() : pickArea();
+    if (/\bkit/.test(t)) { const ar = findArea(t); if (ar){ st.area = ar; remember(); } return st.area ? chooseKit() : pickArea(); }
+    if (/avulsa|pdf/.test(t)) { const ar = findArea(t); if (ar){ st.area = ar; remember(); } return st.area ? chooseAvulsa() : pickArea(); }
     if (/questo/.test(t)) return subs('ques');
     if (/video|aula/.test(t)) return subs('aula');
     if (/alfabetiza|molde|painel|paineis|imprimir|impressao|decorac|aplicativo|loja/.test(t)) return loja();
     if (/acess|comprei|login|entrar/.test(t)) return jaComprei();
     if (/atendente|humano|pessoa|falar com/.test(t)) return human();
-    const stem6 = w => (w || '').slice(0, 6);
-    const a = areas().find(x => { const k1 = N0(x).split(/[ /(]/)[0], k2 = N0(cargo(x)).split(' ').pop(); return t.includes(k1) || t.includes(k2) || (k1.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k1))) || (k2.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k2))); });
+    const a = findArea(t);
     if (a) { st.area = a; remember(); return recommend(); }
     if (/obrigad|valeu/.test(t)) return bot(pick([`Imagina${st.nome ? ', ' + E(st.nome) : ''}! Bons estudos e conta comigo 💛`, `Por nada! Tô torcendo muito pela sua aprovação 🍀`, `Eu que agradeço! Qualquer coisa, é só chamar 😉`]));
+    { const bp = buscaProduto(t); if (bp && bp.lista.length) return mostrarProdutos(bp.lista, t); }
     await bot(pick(['Hmm, acho que não entendi direitinho 😅 Pra eu te ajudar melhor, escolhe uma dessas opções:', 'Opa, essa eu não peguei 🙈 Me ajuda escolhendo uma dessas opções aqui:']));
     otherMenu();
   }
