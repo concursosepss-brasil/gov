@@ -1807,8 +1807,9 @@ body.edu-solo .edu-cat{display:inline-block}
     await bot(`Olha, ${E(st.nome)}, vou te falar o que eu faria no seu lugar 👇 Eu começaria pelas nossas <b>Apostilas Interativas</b> ⭐ de ${nomes}${isTeacher(st.area) ? '. Elas caem em praticamente toda prova da educação, então é ponto garantido pra estudar' : ''}!`);
     if (k[0] === 'mer') await bot('E o melhor: ela já reúne <b>Língua Portuguesa</b>, <b>Matemática e Raciocínio Lógico</b> e os <b>Conhecimentos Específicos</b> do merendeiro (higiene, segurança alimentar, estoque, preparo, EPIs e relações interpessoais), com <b>510 questões comentadas</b>, incluindo um <b>banco final de 300 questões</b>. 🍲');
     await bot(`${k.length > 1 ? 'Olha só o que vem em cada uma 👇' : 'Olha só o que vem nela 👇'}<div class="edu-list" style="margin-top:6px"><div>📱 Funciona como um <b>app</b> no celular e no computador</div><div>✅ <b>Questões comentadas</b> no estilo das bancas</div><div>⏱️ <b>Simulados</b> com tempo de prova</div><div>📊 <b>Diagnóstico</b> mostra onde você precisa melhorar</div><div>🗓️ <b>Plano de estudos</b> até o dia da prova</div><div>👩‍🏫 A <b>Bia</b>, tutora virtual, tira suas dúvidas na hora</div></div>
-      <div style="margin-top:8px">E o melhor: tudo isso por <b>${money(IA.cp.preco)}</b> cada. Menos que uma pizza 🍕, e com acesso pelo seu e-mail na hora que a equipe liberar!</div>`);
+      <div style="margin-top:8px">E o melhor: tudo isso por <b>${money(IA.cp.preco)}</b> cada. Menos que uma pizza 🍕. E a compra é aqui no site mesmo, por <b>Pix ou cartão</b> na página segura do <b>PagBank</b>, com acesso <b>liberado na hora</b>, no seu e-mail 🔒</div>`);
     if (isTeacher(st.area)) await bot('✍️ Ah, e uma dica de amigo: se a sua prova tiver <b>redação ou questão discursiva</b>, temos a <b>Apostila Interativa de Redação</b>: teoria completa, 130 questões e <b>100 temas da educação</b> para você montar o seu texto e receber a correção da Bia na hora.');
+    await bot('💡 E pra treinar bastante: a <b>Apostila Interativa Questões de Concurso</b> tem <b>7.847 questões</b> comentadas de <b>66 matérias</b>, com treino por matéria e as ajudas da Bia. Dá pra levar junto! 😉');
     await biaCard();
     await bot(pick(['E aí, curtiu? 😄 Quer dar uma espiadinha por dentro primeiro? 👀', 'Me diz: por onde a gente começa? Tô animado aqui! 😄']));
     chips(['👀 Ver como é por dentro', '⭐ Quero a apostila interativa', '🗓️ Montar meu plano de estudos grátis', '🧠 Testar meus conhecimentos (quiz)', `📦 Prefiro o kit completo de ${cargo(st.area)}`, '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [showPreview, chooseIA, plano, quiz, chooseKit, faq, otherMenu][i]());
@@ -1997,6 +1998,13 @@ body.edu-solo .edu-cat{display:inline-block}
   /* ---------- CARRINHO ---------- */
   const iaItem = k => ({ nome: 'Apostila interativa — ' + IA[k].nome, preco: IA[k].preco, ia: k });
   function addItem(it){ st.cart = st.cart || []; if (!st.cart.some(x => x.nome === it.nome)) st.cart.push(it); }
+  /* compra online (Pix ou cartão, liberação automática): id do produto no worker */
+  const pidOf = it => it.pid || (it.ia ? 'apostila-' + it.ia : null);
+  const online = it => { const p = pidOf(it); if (!p) return false; if (/^apostila-/.test(p)) return true; try { return document.body.classList.contains('loja') && pdfAtivo(p); } catch(e) { return false; } };
+  const priceNum = v => parseFloat(String(v).replace(',', '.')) || 0;
+  const slugOf = area => { try { const l = licenciaturas.find(x => x.area === area); return l ? l.slug : null; } catch(e) { return null; } };
+  const avulsasFor = area => { try { const sl = slugOf(area); return avulsas.filter(a => !a.desc && (a.geral || (sl && a.slug === sl) || [901, 902, 903].includes(a.id))).sort((x, y) => ((y.slug && y.slug === sl) ? 1 : 0) - ((x.slug && x.slug === sl) ? 1 : 0)); } catch(e) { return []; } };
+  const labelAv = a => a.mod + (a.lic ? ' — ' + a.lic : '');
   async function chooseIA(pre){
     const keys = Object.keys(IA);
     const sel = new Set((pre && pre.length) ? pre : (st.cart || []).filter(x => x.ia).map(x => x.ia));
@@ -2029,9 +2037,9 @@ body.edu-solo .edu-cat{display:inline-block}
   }
   async function addMore(){
     await bot('Claro! O que mais você quer colocar no pedido?');
-    chips(['⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '✅ Questões (assinatura)', '↩️ Voltar ao meu pedido'], (v, i) => {
+    chips(['⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '📝 Simulados em PDF', '✅ Questões (assinatura)', '↩️ Voltar ao meu pedido'], (v, i) => {
       if ((i === 1 || i === 2) && !st.area) return pickArea();
-      [chooseIA, chooseKit, chooseAvulsa, () => subs('ques'), close_][i]();
+      [chooseIA, chooseKit, chooseAvulsa, simulados, () => subs('ques'), close_][i]();
     });
   }
 
@@ -2320,7 +2328,7 @@ body.edu-solo .edu-cat{display:inline-block}
   };
   async function chooseKit(){
     const p = kitPrice(st.area);
-    addItem({ nome: 'Kit completo — ' + cargo(st.area), preco: p });
+    addItem({ nome: 'Kit completo — ' + cargo(st.area), preco: p, pid: slugOf(st.area) ? 'kit-' + slugOf(st.area) : null });
     const cv = samplesFor(st.area).kit;
     let kc = null; try { const l = licenciaturas.find(x => x.area === st.area); const k = kits && kits.find(x => x.slug === l.slug); kc = k && k.conteudo; } catch(e) {}
     const desc = kc ? 'traz ' + E(kc.replace(/^(\d+ apostilas):/, '$1 em PDF:')) : 'reúne conhecimentos específicos, conhecimento pedagógico e legislação em PDF';
@@ -2333,10 +2341,76 @@ body.edu-solo .edu-cat{display:inline-block}
     } else askConcurso();
   }
   async function chooseAvulsa(){
-    addItem({ nome: 'Apostila avulsa — ' + cargo(st.area || 'a definir'), preco: P_AVULSA });
-    await bot(`A apostila avulsa sai por <b>${money(P_AVULSA)}</b>. E olha que interessante: por só ${money(IA.cp.preco - P_AVULSA)} a mais, a <b>interativa</b> vem com questões comentadas, simulados e a Bia. Quer trocar?`);
+    const list = avulsasFor(st.area);
+    if (!list.length){
+      addItem({ nome: 'Apostila avulsa — ' + cargo(st.area || 'a definir'), preco: P_AVULSA });
+      await bot(`A apostila avulsa sai por <b>${money(P_AVULSA)}</b>. E olha que interessante: por só ${money(IA.cp.preco - P_AVULSA)} a mais, a <b>interativa</b> vem com questões comentadas, simulados e a Bia. Quer trocar?`);
+      await biaCard();
+      return chips(['⭐ Quero a interativa', 'Fico com a avulsa'], (v, i) => { if (i === 0){ st.cart = st.cart.filter(x => !/^Apostila avulsa/.test(x.nome)); return chooseIA(); } askConcurso(); });
+    }
+    await bot(`As <b>apostilas avulsas</b> são em <b>PDF</b> 📄 e custam <b>${money(P_AVULSA)}</b> cada. Pra <b>${E(cargo(st.area))}</b>, olha o que eu separei 👇 Marque <b>quantas quiser</b>:`);
+    const sel = new Set([list[0].id]);
+    const d = say('', 'chips');
+    const draw = () => {
+      const tot = list.filter(a => sel.has(a.id)).reduce((t, a) => t + priceNum(a.price), 0);
+      d.innerHTML = list.map(a => `<button type="button" class="edu-chip sel${sel.has(a.id) ? ' on' : ''}" data-k="${a.id}">${sel.has(a.id) ? '✅' : '⬜'} ${E(labelAv(a))}</button>`).join('') +
+        `<button type="button" class="edu-chip star" data-ok ${sel.size ? '' : 'disabled'}>${sel.size ? `Continuar com ${sel.size} avulsa${sel.size > 1 ? 's' : ''} · ${money(tot)} ›` : 'Marque pelo menos 1'}</button>`;
+      d.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { const k = +b.dataset.k; sel.has(k) ? sel.delete(k) : sel.add(k); draw(); });
+      d.querySelector('[data-ok]').onclick = () => {
+        if (!sel.size) return; clearChips();
+        const arr = list.filter(a => sel.has(a.id));
+        say(E(arr.map(labelAv).join(' + ')), 'me');
+        arr.forEach(a => addItem({ nome: 'Apostila avulsa — ' + labelAv(a), preco: priceNum(a.price), pid: 'pdf-' + a.imgKey }));
+        upsellAvulsa();
+      };
+      scrollEnd();
+    };
+    draw();
+  }
+  async function upsellAvulsa(){
+    const k = recoKeys()[0];
+    if (!k || !IA[k] || (st.cart || []).some(x => x.ia === k)) return askConcurso();
+    await bot(`Só uma dica de quem torce por você 💛: por apenas ${money(IA[k].preco - P_AVULSA)} a mais que uma avulsa, a <b>Apostila Interativa de ${E(IA[k].nome)}</b> vem com questões comentadas, simulados com tempo e a Bia. Quer incluir?`);
     await biaCard();
-    chips(['⭐ Quero a interativa', 'Fico com a avulsa'], (v, i) => { if (i === 0){ st.cart = st.cart.filter(x => !/^Apostila avulsa/.test(x.nome)); return chooseIA(); } askConcurso(); });
+    chips(['⭐ Incluir a interativa', 'Fico só com as avulsas'], (v, i) => { if (i === 0) addItem(iaItem(k)); askConcurso(); });
+  }
+  /* simulados em PDF (avulsas com descrição) */
+  async function simulados(){
+    const sims = (typeof avulsas !== 'undefined' ? avulsas : []).filter(a => a.desc && /^Simulado/.test(a.mod));
+    if (!sims.length) return otherMenu();
+    await bot(`Pra treinar com cara de prova, tem os nossos <b>simulados em PDF</b> 📝: questões com <b>gabarito comentado</b>, por apenas <b>${money(priceNum(sims[0].price))}</b> cada. Olha só 👇`);
+    await bot(`<div class="edu-thumbs">${sims.map(a => `<figure><img src="${avulsaImgs[a.imgKey] || ''}" alt=""><figcaption>${E(a.mod)}</figcaption></figure>`).join('')}</div>` + sims.map(a => `<div style="margin-top:6px">• <b>${E(a.mod)}</b>: ${E(a.desc)}</div>`).join(''));
+    chips(sims.map(a => '📝 ' + a.mod).concat(['Ver outras opções']), (v, i) => {
+      if (i >= sims.length) return otherMenu();
+      const a = sims[i];
+      addItem({ nome: 'Simulado em PDF — ' + a.mod, preco: priceNum(a.price), pid: 'pdf-' + a.imgKey });
+      askConcurso();
+    });
+  }
+  /* kits de concursos específicos (aba Concursos da Educação e área Outros Concursos) */
+  async function concursosEsp(){
+    const OC = window.__OC || {};
+    const lista = [].concat(...Object.values(OC.ED || {}), ...Object.values(OC.OUT || {}));
+    if (!lista.length) return outroLivre();
+    await bot('Temos <b>kits em PDF prontos para concursos específicos</b> 🎯, montados em cima do edital. Qual é o seu?');
+    chips(lista.map(k => '🎯 ' + k.nome).concat(['Outro concurso ou cargo', 'Ver outras opções']), async (v, i) => {
+      if (i === lista.length) return outroLivre();
+      if (i > lista.length) return otherMenu();
+      const k = lista[i]; let cv = null; try { cv = k.capa && k.capa(); } catch(e) {}
+      await bot(`<b>${E(k.nome)}</b> — <b>${money(priceNum(k.price))}</b><br>${E(k.conteudo)}` + (cv ? `<img class="edu-img" src="${cv}" alt="Capa do kit" style="max-width:200px">` : ''));
+      chips(['✅ Quero esse kit', 'Ver outro concurso', 'Ver outras opções'], (v2, j) => {
+        if (j === 0){ addItem({ nome: 'Kit de concurso — ' + k.nome, preco: priceNum(k.price), pid: k.id }); st.concurso = st.concurso || 'Concurso municipal'; return askConcurso(); }
+        if (j === 1) return concursosEsp();
+        otherMenu();
+      });
+    });
+  }
+  /* áreas ainda em preparação */
+  async function emBreve(area){
+    const msg = `Olá! Meu nome é ${st.nome || ''}. Vim pelo assistente virtual Edu.\nTenho interesse em materiais para concursos da área ${area}.\nQuero ser avisado(a) quando estiverem disponíveis.`;
+    await bot(`Boa! Os materiais para concursos da área <b>${E(area)}</b> ainda estão <b>em preparação</b> 🚧 e vão chegar em breve. Toca aqui pra entrar na lista e ser avisado(a) primeiro: <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">🚀 Quero ser avisado(a)</a>`);
+    await bot('Enquanto isso, o nosso forte hoje é a <b>área da educação</b> 🍎. Se você também tem interesse nela, é só me falar o cargo 😉');
+    chipsP(['⭐ Ver as apostilas interativas', 'Ver outras opções'], (x, i) => [() => st.area ? recommend() : pickArea(), otherMenu][i]());
   }
   async function askConcurso(){
     if (st.concurso) return close_();
@@ -2346,15 +2420,23 @@ body.edu-solo .edu-cat{display:inline-block}
   /* como cada item é entregue: e-mail (interativas, questões, loja) ou WhatsApp (kit/avulsa em PDF) */
   function entrega(){
     const c = st.cart || [], ia = c.some(x => x.ia), q = c.some(x => /^Assinatura de questões/.test(x.nome)), loja = c.some(x => /Loja do Professor/.test(x.nome));
-    const pdf = c.some(x => /^(Kit completo|Apostila avulsa)/.test(x.nome)), aula = c.some(x => /^Aulas em vídeo/.test(x.nome)), outro = c.some(x => /^Material para/.test(x.nome));
+    const pdf = c.some(x => /^(Kit completo|Apostila avulsa|Kit de concurso|Simulado em PDF)/.test(x.nome)), aula = c.some(x => /^Aulas em vídeo/.test(x.nome)), outro = c.some(x => /^Material para/.test(x.nome));
     const iaN = c.filter(x => x.ia).length;
     const mail = [ia && (iaN > 1 ? 'as apostilas interativas' : 'a apostila interativa'), q && 'o banco de questões', loja && 'os materiais da Loja do Professor'].filter(Boolean);
     const verbo = mail.length > 1 ? ' são liberados' : ia ? (iaN > 1 ? ' são liberadas' : ' é liberada') : q ? ' é liberado' : ' são liberados';
     const p = [];
     if (mail.length) p.push((mail.length > 1 ? mail.slice(0, -1).join(', ') + ' e ' + mail.slice(-1) : mail[0]) + verbo + ' no seu e-mail');
-    if (pdf) p.push((c.filter(x => /^(Kit completo|Apostila avulsa)/.test(x.nome)).length > 1 ? 'os materiais em PDF são enviados' : (c.some(x => /^Kit completo/.test(x.nome)) ? 'o kit em PDF é enviado' : 'a apostila em PDF é enviada')) + ' no seu WhatsApp');
+    if (pdf) p.push((c.filter(x => /^(Kit completo|Apostila avulsa|Kit de concurso|Simulado em PDF)/.test(x.nome)).length > 1 ? 'os materiais em PDF são enviados' : (c.some(x => /^Kit completo/.test(x.nome)) ? 'o kit em PDF é enviado' : 'a apostila em PDF é enviada')) + ' no seu WhatsApp');
     if (aula || outro) p.push('a equipe te passa as orientações de acesso pelo WhatsApp');
     return p.length ? p.join('; ') : 'a equipe te passa as orientações pelo WhatsApp';
+  }
+  /* ---------- venda pelo site: segurança e vantagens ---------- */
+  const seloHtml = () => { const e = document.querySelector('.loja-selo'); return e ? `<img src="${e.src}" alt="Compra segura" style="height:64px;width:auto;float:left;margin:0 10px 4px 0;background:#fff;border-radius:10px;padding:4px">` : ''; };
+  const VANT = `<div class="edu-list" style="margin-top:8px;clear:both"><div>🔒 <b>Pagamento seguro:</b> Pix ou cartão na <b>página segura do PagBank</b>. O pagamento acontece lá, não aqui no chat</div><div>⚡ <b>Liberação automática:</b> pagou, recebeu. Sem mandar comprovante e sem esperar atendimento</div><div>📧 <b>Material guardado no seu e-mail:</b> o link chega no seu e-mail e fica lá pra você abrir quando quiser (na 1ª vez, olhe também o spam)</div><div>📲 <b>E no WhatsApp também:</b> depois de pagar, com 1 toque você envia o link para o seu próprio WhatsApp</div><div>🔐 <b>Só você acessa:</b> a liberação é para o seu Gmail da compra</div></div>`;
+  async function seguranca(){
+    await bot(`${seloHtml()}<b>Pode comprar tranquilo(a)! 💙</b> Comprando <b>aqui pelo site</b>, você tem:` + VANT);
+    await bot('E se bater qualquer dúvida na hora, a nossa equipe fica a um toque no WhatsApp pra te ajudar 😉 Mas a forma mais rápida e segura é pelo site mesmo.');
+    chipsP(['⭐ Quero a apostila interativa', '📦 Ver o kit completo', 'Ver outras opções'], (x, i) => [chooseIA, () => st.area ? chooseKit() : pickArea(), otherMenu][i]());
   }
   async function close_(){
     const tot = st.cart.reduce((s, x) => s + (x.preco || 0), 0);
@@ -2362,13 +2444,24 @@ body.edu-solo .edu-cat{display:inline-block}
     if (!st.cart || !st.cart.length) return otherMenu();
     st.pedido = st.pedido || ('CPS' + Date.now().toString(36).slice(-5).toUpperCase());
     const temIA = st.cart.some(x => x.ia), planLink = st.pl && st.planTxt && temIA ? b64e(planData()) : '';
-    const msg = `Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nPedido nº ${st.pedido}\nQuero garantir:\n` + st.cart.map(x => '• ' + x.nome + (x.preco ? ' (' + money(x.preco) + ')' : '')).join('\n') +
-      (tot ? `\nTotal: ${money(tot)}` : '') + (st.area ? `\nCargo: ${cargo(st.area)}` : '') + (st.concurso ? `\nSeleção: ${st.concurso}` : '') + (st.prazo ? `\nProva: ${st.prazo}` : '') + (st.quizRes ? `\nQuiz de Conhecimento Pedagógico: ${st.quizRes}` : '') + (planLink ? `\n\n🎁 Bônus: plano de estudos personalizado (enviado após a confirmação do pagamento)\nCódigo interno: ${planLink}` : '');
-    const bonus = planLink ? '<div>🎁 Bônus: seu plano de estudos em PDF, enviado no WhatsApp após o pagamento</div>' : '';
+    const on = st.cart.filter(online), rest = st.cart.filter(x => !online(x));
+    const mkMsg = (list, extra) => { const t = list.reduce((a, x) => a + (x.preco || 0), 0); return `Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nPedido nº ${st.pedido}\n` + (extra || '') + `Quero garantir:\n` + list.map(x => '• ' + x.nome + (x.preco ? ' (' + money(x.preco) + ')' : '')).join('\n') +
+      (t ? `\nTotal: ${money(t)}` : '') + (st.area ? `\nCargo: ${cargo(st.area)}` : '') + (st.concurso ? `\nSeleção: ${st.concurso}` : '') + (st.prazo ? `\nProva: ${st.prazo}` : '') + (st.quizRes ? `\nQuiz de Conhecimento Pedagógico: ${st.quizRes}` : '') + (planLink && list === st.cart ? `\n\n🎁 Bônus: plano de estudos personalizado (enviado após a confirmação do pagamento)\nCódigo interno: ${planLink}` : ''); };
+    const wppBtn = (list, txt, extra) => `<a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(mkMsg(list, extra))}" target="_blank" rel="noopener">${txt}</a>`;
+    const bonus = planLink ? '<div>🎁 Bônus: seu plano de estudos em PDF' + (on.length ? ', que você recebe no WhatsApp depois de pagar' : ', enviado no WhatsApp após o pagamento') + '</div>' : '';
     await bot(`Uhuul, <b>${E(st.nome)}</b>! 🎉 Seu pedido <b>nº ${st.pedido}</b> ficou assim: <div class="edu-sum">${itens}${bonus}${tot ? `<div style="margin-top:6px"><b>Total: ${money(tot)}</b></div>` : ''}</div>
-      <a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">💬 Finalizar pelo WhatsApp</a>
+      ${on.length ? '' : wppBtn(st.cart, '💬 Finalizar pelo WhatsApp')}
       <a class="edu-link" href="#" data-receipt>📄 Baixar comprovante do pedido (PDF)</a>`);
-    await bot(`Agora é só tocar no botão verde: a mensagem já vai prontinha com o número do pedido. A nossa equipe combina o pagamento com você e, assim que confirmar, ${entrega()}. Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉`);
+    if (on.length){
+      await bot(`${seloHtml()}<b>Agora a parte mais fácil: finalize aqui pelo site!</b> 💙 É o jeito mais rápido e seguro de garantir o seu material:` + VANT);
+      const el = await bot(`💳 Toque abaixo pra pagar por <b>Pix ou cartão</b> na página segura do PagBank:${on.length > 1 ? ' (é um botão por item, um de cada vez)' : ''}` +
+        on.map(it => `<button type="button" class="edu-wpp edu-buy" data-pid="${E(pidOf(it))}" style="background:#2F5BFF;display:block;width:100%;margin-top:8px;border:0;cursor:pointer;font:inherit;font-weight:800">💳 Comprar agora — ${E(it.nome.replace(/^[^—]+—\s*/, ''))} (${money(it.preco)})</button>`).join(''));
+      el.querySelectorAll('.edu-buy').forEach(b => b.onclick = () => { try { window.lojaComprar(b.dataset.pid); } catch(e) {} });
+      if (rest.length) await bot(`Esses itens são fechados direto com a nossa equipe no WhatsApp: <div class="edu-sum">${rest.map(x => `<div>• ${E(x.nome)}</div>`).join('')}</div>` + wppBtn(rest, '💬 Combinar pelo WhatsApp'));
+      else await bot(`Se você ainda preferir conversar com a equipe antes de pagar, tudo bem 😊 Mas pelo site é bem mais rápido, e você já sai com o material no e-mail. ${wppBtn(st.cart, '💬 Prefiro falar com a equipe').replace('class="edu-wpp"', 'class="edu-link"')}`);
+      if (planLink) await bot('🎁 E o seu <b>bônus</b> não se perde: depois de pagar, toque aqui pra pedir o seu <b>plano de estudos em PDF</b> no seu WhatsApp: ' + `<a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(`Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nPedido nº ${st.pedido} (pago pelo site).\nQuero receber o meu 🎁 bônus: plano de estudos personalizado.\nCódigo interno: ${planLink}`)}" target="_blank" rel="noopener">🎁 Pedir meu plano de estudos</a>`);
+      await bot('Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉');
+    } else await bot(`Agora é só tocar no botão verde: a mensagem já vai prontinha com o número do pedido. A nossa equipe combina o pagamento com você e, assim que confirmar, ${entrega()}. Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉`);
     await grupo();
     chipsP(['➕ Adicionar mais um material', '🗑️ Refazer o pedido', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [addMore, () => { st.cart = []; st.pedido = null; chooseIA(); }, faq, otherMenu][i]());
   }
@@ -2388,18 +2481,19 @@ body.edu-solo .edu-cat{display:inline-block}
 
   /* ---------- dúvidas (objeções) ---------- */
   const FAQ = [
-    ['Como eu recebo?', 'As <b>apostilas interativas</b> são liberadas no e-mail que você informar na compra: é só entrar com Google ou e-mail e senha e estudar, no celular ou no computador. Os <b>kits e avulsas</b> são enviados em PDF pelo WhatsApp depois da confirmação do pagamento.'],
+    ['Como eu recebo?', 'Comprando pelo site, a liberação é <b>automática</b>. A <b>apostila interativa</b> abre com o <b>mesmo Gmail da compra</b>, no celular ou no computador. Os <b>PDFs (kits, avulsas e simulados)</b> chegam por link no seu <b>e-mail</b> (olhe também o spam) e ficam liberados no seu Gmail. Se preferir, dá pra receber o link também no <b>WhatsApp</b>. Fechando o pedido pela equipe no WhatsApp, eles enviam depois da confirmação do pagamento.'],
     ['Serve para o meu concurso?', 'Serve sim! O material é feito para concursos e processos seletivos da área da educação em todo o Brasil, com conteúdo cobrado nas principais bancas. Se o seu edital tiver algo específico, a equipe te orienta no WhatsApp.'],
     ['Funciona no celular?', 'Funciona direitinho! A apostila interativa abre no navegador, sem instalar nada, e pode ser adicionada à tela inicial como app. Funciona em um aparelho por vez, e o progresso fica salvo no seu e-mail.'],
     ['Qual a diferença da interativa para o PDF?', 'O PDF você lê. Na <b>interativa</b> você lê, <b>treina com questões comentadas</b>, faz <b>simulados com tempo</b>, vê seu <b>diagnóstico</b> e ainda tem a <b>Bia</b> para tirar dúvidas. É estudar com método.'],
     ['Quem é a Bia?', '__BIA__'],
-    ['Como é o pagamento?', 'O pedido é finalizado pelo WhatsApp: a equipe combina a forma de pagamento com você e libera o material logo após a confirmação.']
+    ['É seguro comprar pelo site?', '__SEG__'],
+    ['Como é o pagamento?', 'No site é por <b>Pix ou cartão de crédito</b>, na página segura do <b>PagBank</b>, sem precisar enviar comprovante: confirmou o pagamento, o material é liberado sozinho. Se preferir, também dá pra fechar o pedido pelo WhatsApp com a nossa equipe.']
   ];
   async function faq(){
     await bot(pick(['Claro, pode perguntar! Qual é a sua dúvida? 😊', 'Fica à vontade! O que você quer saber?']));
     chips(FAQ.map(f => f[0]).concat(['Falar com um atendente']), async (v, i) => {
       if (i === FAQ.length) return human();
-      if (FAQ[i][1] === '__BIA__') await biaCard(true); else await bot(FAQ[i][1]);
+      if (FAQ[i][1] === '__BIA__') await biaCard(true); else if (FAQ[i][1] === '__SEG__') await seguranca(); else await bot(FAQ[i][1]);
       chipsP(['⭐ Quero a apostila interativa', 'Outra dúvida', 'Ver outras opções'], (v2, j) => [chooseIA, faq, otherMenu][j]());
     });
   }
@@ -2424,13 +2518,13 @@ body.edu-solo .edu-cat{display:inline-block}
   /* ---------- outras opções ---------- */
   async function otherMenu(){
     await bot('Olha tudo o que a gente tem pra você 👇');
-    chips(['🗓️ Montar meu plano de estudos', '🧠 Testar meus conhecimentos (quiz)', '🎯 Coach Virtual (Dany e Leo)', '⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '✅ Questões (assinatura)', '🎥 Aulas em vídeo', '📄 Ver amostras do kit e das avulsas', '📖 Ver páginas da apostila em PDF', '🍎 Já sou professor: Loja do Professor', '🏛️ Outro concurso / cargo', '🔑 Já comprei, quero acessar'], (v, i) => {
+    chips(['🗓️ Montar meu plano de estudos', '🧠 Testar meus conhecimentos (quiz)', '🎯 Coach Virtual (Dany e Leo)', '⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '📝 Simulados em PDF (R$ 9,90)', '✅ Questões (assinatura)', '🎥 Aulas em vídeo', '📄 Ver amostras do kit e das avulsas', '📖 Ver páginas da apostila em PDF', '🍎 Já sou professor: Loja do Professor', '🎯 Concursos específicos / outro cargo', '🔑 Já comprei, quero acessar'], (v, i) => {
       if (i === 0) return plano();
       if (i === 1) return quiz();
       if (i === 2) return coach();
       i -= 3;
       if ((i <= 2) && !st.area) return pickArea();
-      [chooseIA, chooseKit, chooseAvulsa, () => subs('ques'), () => subs('aula'), () => showSamples(), showPages, loja, outro, jaComprei][i]();
+      [chooseIA, chooseKit, chooseAvulsa, simulados, () => subs('ques'), () => subs('aula'), () => showSamples(), showPages, loja, outro, jaComprei][i]();
     });
   }
   async function subs(kind){
@@ -2438,9 +2532,15 @@ body.edu-solo .edu-cat{display:inline-block}
     await bot(q ? 'As questões são por assinatura de <b>R$ 9,90/mês</b> por disciplina. Qual te interessa?' : 'As aulas em vídeo são por assinatura de <b>R$ 59,90/mês</b>. Qual disciplina te interessa mais?');
     chips(disc(), v => { addItem({ nome: (q ? 'Assinatura de questões — ' : 'Aulas em vídeo — ') + v, preco: q ? 9.9 : 59.9 }); askConcurso(); });
   }
-  async function outro(){
+  async function outro(){ return concursosEsp(); }
+  async function outroLivre(){
     await bot('Me conta: pra qual concurso ou cargo você está estudando? A equipe verifica o material certinho pra você 😉');
-    ask('Ex.: Merendeiro, Secretário escolar…', v => { st.concurso = v; addItem({ nome: 'Material para ' + v, preco: 0 }); close_(); });
+    ask('Ex.: Merendeiro, Secretário escolar…', v => {
+      const t = N0(v);
+      const ar = /policia|policial|bombeir|guarda (municipal|civil)|penitenciar|\bpm\b|\bpc\b/.test(t) ? 'Policial' : /enfermeir|saude|\bsus\b|hospital|medic|farmac/.test(t) ? 'Saúde' : /tribunal|judiciar|oficial de justica|\btj\b|\btrt\b|\btrf\b|\btre\b/.test(t) ? 'Tribunais' : null;
+      if (ar) return emBreve(ar);
+      st.concurso = v; addItem({ nome: 'Material para ' + v, preco: 0 }); close_();
+    });
   }
   async function loja(){
     const N = st.nome ? ', ' + E(st.nome) : '';
@@ -2466,6 +2566,7 @@ body.edu-solo .edu-cat{display:inline-block}
   async function jaComprei(){
     await bot('Que bom ter você com a gente! 💛 Toque na sua apostila para entrar (use o mesmo e-mail da compra):');
     await bot(Object.values(IA).map(x => `<a class="edu-link" href="${x.url}" target="_blank" rel="noopener">📱 ${E(x.nome)} ›</a>`).join(''));
+    await bot('Comprou <b>PDF</b> (kit, avulsa ou simulado)? O link foi enviado no seu <b>e-mail</b> (olhe também o spam). Abra com o <b>mesmo Gmail da compra</b>. 📄');
     chipsP(['Quero comprar outra', 'Falar com um atendente'], (v, i) => i ? human() : chooseIA());
   }
 
@@ -2473,6 +2574,9 @@ body.edu-solo .edu-cat{display:inline-block}
   async function freeText(v){
     const t = N0(v);
     if (/quiz|teste|testar|simulado gratis|desafio/.test(t)) return quiz();
+    if (/simulad/.test(t)) return simulados();
+    if (/semed|porto velho|ipam|concurso especifico|kit de concurso/.test(t)) return concursosEsp();
+    if (/policia|policial|bombeir|guarda municipal|penitenciar|enfermeir|tribunal|oficial de justica|analista judiciario/.test(t)) return emBreve(/enfermeir/.test(t) ? 'Saúde' : /tribunal|oficial de justica|judiciario/.test(t) ? 'Tribunais' : 'Policial');
     if (/ansios|ansiedade|desanim|desmotiv|depress|triste|chorando|medo de nao passar|sem rumo|perdid[oa]|cansad/.test(t)) return coach(true);
     if (/\bcoach|\bdany\b|\bleo\b|nao consigo estudar|procrastin|preguica|disciplina|motivac|caderno de erros|acompanhamento/.test(t)) return coach();
     if (/plano|cronograma|rotina de estudo|organizar (meus )?estudo|como estudar/.test(t)) return plano();
@@ -2489,10 +2593,9 @@ body.edu-solo .edu-cat{display:inline-block}
       await bot('Deixa comigo! 😎 Escolher material é comigo mesmo.');
       return st.area ? recommend() : pickArea();
     }
-    if (/confiavel|golpe|seguro|e verdade|e real|da certo|funciona mesmo/.test(t)) {
-      await bot('Super justa a sua pergunta, viu? 💛 Hoje em dia todo cuidado é pouco!');
-      await bot('A gente é a <b>Concursos e PSS Brasil</b>: atende pelo WhatsApp e pelo Instagram <b>@concursos_pss</b>. O pedido é fechado conversando com a nossa equipe, que combina o pagamento com você, e a apostila interativa é liberada no seu e-mail. E você ainda pode ver a apostila por dentro antes de decidir 😉');
-      return chips(['👀 Ver a interativa por dentro', '💬 Falar com a equipe no WhatsApp', '⭐ Quero a apostila interativa'], (x, i) => [showPreview, human, chooseIA][i]());
+    if (/confiavel|golpe|seguro|seguranca|e verdade|e real|da certo|funciona mesmo|medo de comprar|medo de cair|vai chegar|nao chega/.test(t)) {
+      await bot('Super justa a sua pergunta, viu? 💛 Hoje em dia todo cuidado é pouco! A gente é a <b>Concursos e PSS Brasil</b> e atende pelo WhatsApp e pelo Instagram <b>@concursos_pss</b>.');
+      return seguranca();
     }
     if (/redacao|discursiva|dissertat/.test(t)) {
       await bot('Ahh, redação! ✍️ Essa é uma das que eu mais amo indicar!');
@@ -2506,8 +2609,8 @@ body.edu-solo .edu-cat{display:inline-block}
     if (/^(k{3,}|(ha){2,}|(rs){2,}|hehe|kkk)/.test(t)) { await bot(pick(['Kkkkk adoro gente bem-humorada! 😂', 'Hahaha você é das minhas! 😄'])); return otherMenu(); }
     if (/^(tchau|ate mais|ate logo|falou|flw|bye)/.test(t)) { return bot(pick([`Tchau${st.nome ? ', ' + E(st.nome) : ''}! Foi um prazer enorme conversar com você 💛 Bons estudos e volta sempre!`, 'Até mais! 👋 Tô torcendo muito pela sua aprovação. Quando quiser, é só voltar aqui 😉'])); }
     if (/caro|desconto|mais barato|sem dinheiro|apertad/.test(t)) { await bot(`Te entendo total, cada real conta 💛 Por isso a interativa custa <b>${money(IA.cp.preco)}</b>: num mês de estudo, dá menos de R$ 1 por dia, e já vem com questões comentadas, simulados, plano de estudos e a Bia. Se o orçamento estiver bem apertado, a <b>apostila avulsa</b> em PDF sai por ${money(P_AVULSA)}.`); return chipsP(['⭐ Quero a apostila interativa', '📘 Ver a avulsa', '💬 Falar com um atendente'], (x, i) => [chooseIA, () => st.area ? chooseAvulsa() : pickArea(), human][i]()); }
-    if (/preco|valor|quanto|custa|barato/.test(t)) { await bot(`As <b>apostilas interativas</b> custam <b>${money(IA.cp.preco)}</b> cada, a apostila avulsa ${money(P_AVULSA)} e o kit completo a partir de ${money(29.9)}. Quer que eu te indique a melhor opção pra você? 😉`); return chipsP(['⭐ Quero a apostila interativa', '📦 Ver o kit completo', 'Ver outras opções'], (x, i) => [chooseIA, chooseKit, otherMenu][i]()); }
-    if (/pagamento|pix|cartao|boleto/.test(t)) return bot(FAQ[5][1]).then(() => chipsP(['⭐ Quero a apostila interativa', 'Ver outras opções'], (x, i) => [chooseIA, otherMenu][i]()));
+    if (/preco|valor|quanto|custa|barato/.test(t)) { await bot(`As <b>apostilas interativas</b> custam <b>${money(IA.cp.preco)}</b> cada, a apostila avulsa ${money(P_AVULSA)}, os simulados em PDF ${money(9.9)} e o kit completo a partir de ${money(29.9)}. Quer que eu te indique a melhor opção pra você? 😉`); return chipsP(['⭐ Quero a apostila interativa', '📦 Ver o kit completo', 'Ver outras opções'], (x, i) => [chooseIA, chooseKit, otherMenu][i]()); }
+    if (/pagamento|pix|cartao|boleto|como (eu )?(compro|pago)|como comprar/.test(t)) return bot(FAQ[6][1]).then(() => seguranca());
     if (/celular|app|instal/.test(t)) return bot(FAQ[2][1]).then(() => chipsP(['⭐ Quero a apostila interativa', 'Ver outras opções'], (x, i) => [chooseIA, otherMenu][i]()));
     if (/interativ|app/.test(t)) return chooseIA();
     if (/\bkit/.test(t)) return st.area ? chooseKit() : pickArea();
@@ -2989,6 +3092,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
       { id:'kit-ipam-pvh-administrativo', nome:'Kit Aprovação — Técnico Autárquico (Administrativa) — IPAM Porto Velho', conteudo:'6 apostilas em PDF com as disciplinas do edital: Língua Portuguesa; Raciocínio Lógico e Matemático; Informática Básica; Noções de Administração Pública, Atendimento e Ética; Noções de Legislação Institucional, Previdenciária e de Assistência à Saúde; e Técnico Autárquico — Administrativa. Inclui simulados exclusivos.', price:'29,90', quad:true, capa:function(){ return COVER_IPAM; } }
     ]
   };
+  window.__OC = { ED: ED, OUT: OUT };
   var atualEd = 'pvh', atualOut = 'ipam', alvoId = null;
   function achar(id){
     var todos = [].concat(ED[atualEd] || [], OUT[atualOut] || []);
