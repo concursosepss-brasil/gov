@@ -2414,6 +2414,7 @@ body.edu-solo .edu-cat{display:inline-block}
   }
   async function askConcurso(){
     if (st.concurso) return close_();
+    if (st.cart && st.cart.length && st.cart.every(online)) return close_();
     await bot('Só pra eu deixar anotado aqui pra equipe: é que tipo de seleção?');
     chips(['Concurso federal', 'Concurso estadual', 'Concurso municipal', 'Processo seletivo (PSS)', 'Ainda não sei'], v => { st.concurso = v; close_(); });
   }
@@ -2462,6 +2463,7 @@ body.edu-solo .edu-cat{display:inline-block}
       if (planLink) await bot('🎁 E o seu <b>bônus</b> não se perde: depois de pagar, toque aqui pra pedir o seu <b>plano de estudos em PDF</b> no seu WhatsApp: ' + `<a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(`Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nPedido nº ${st.pedido} (pago pelo site).\nQuero receber o meu 🎁 bônus: plano de estudos personalizado.\nCódigo interno: ${planLink}`)}" target="_blank" rel="noopener">🎁 Pedir meu plano de estudos</a>`);
       await bot('Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉');
     } else await bot(`Agora é só tocar no botão verde: a mensagem já vai prontinha com o número do pedido. A nossa equipe combina o pagamento com você e, assim que confirmar, ${entrega()}. Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉`);
+    if (on.length) return chipsP(['➕ Adicionar mais um material', '🎁 Entrar no grupo grátis', '💬 Tenho uma dúvida', 'Ver outras opções'], async (v, i) => { if (i === 1){ await grupo(); return chipsP(['➕ Adicionar mais um material', 'Ver outras opções'], (v2, j) => [addMore, otherMenu][j]()); } [addMore, null, faq, otherMenu][i](); });
     await grupo();
     chipsP(['➕ Adicionar mais um material', '🗑️ Refazer o pedido', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [addMore, () => { st.cart = []; st.pedido = null; chooseIA(); }, faq, otherMenu][i]());
   }
@@ -2517,6 +2519,7 @@ body.edu-solo .edu-cat{display:inline-block}
 
   /* ---------- outras opções ---------- */
   async function otherMenu(){
+    st.ultimo = null;
     await bot('Olha tudo o que a gente tem pra você 👇');
     chips(['🗓️ Montar meu plano de estudos', '🧠 Testar meus conhecimentos (quiz)', '🎯 Coach Virtual (Dany e Leo)', '⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '📝 Simulados em PDF (R$ 9,90)', '✅ Questões (assinatura)', '🎥 Aulas em vídeo', '📄 Ver amostras do kit e das avulsas', '📖 Ver páginas da apostila em PDF', '🍎 Já sou professor: Loja do Professor', '🎯 Concursos específicos / outro cargo', '🔑 Já comprei, quero acessar'], (v, i) => {
       if (i === 0) return plano();
@@ -2604,16 +2607,52 @@ body.edu-solo .edu-cat{display:inline-block}
     const info = p => { let cv = null; try { cv = p.img || (p.capa && p.capa()); } catch(e) {} return `<span style="font-size:.82em;opacity:.8">${({ ia: '⭐ Apostila interativa', kit: '📦 Kit em PDF', av: '📘 Avulsa em PDF', sim: '📝 Simulado em PDF', oc: '🎯 Kit em PDF' })[p.t] || ''}</span><br><b>${E(p.nome)}</b> — <b>${money(p.preco)}</b>` + (p.desc ? `<br><span style="font-size:.92em">${E(p.desc)}</span>` : '') + (L.length === 1 && cv ? `<img class="edu-img" src="${cv}" alt="Capa" style="max-width:190px">` : ''); };
     await bot((L.length > 1 ? 'Achei estas opções no nosso catálogo 👇' : 'Achei! É esse aqui 👇') + '<div class="edu-sum" style="margin-top:6px">' + L.map(p => `<div style="margin-bottom:8px">${info(p)}</div>`).join('') + '</div>');
     if (/semusa/.test(N0(t)) && L.some(p => p.t === 'sim')) await bot('Pra <b>SEMUSA de Porto Velho</b>, o que eu tenho hoje é esse <b>simulado em PDF</b>, que serve para a SEMED e para a SEMUSA. Um kit completo só da SEMUSA a gente ainda não tem, tá? 😉');
-    chips(L.map(p => '✅ ' + p.nome).concat(['Ver outras opções']), (v, i) => {
+    st.ultimo = L;
+    if (L.length === 1){
+      const PITCH = { sim: 'Simulado é o jeito mais rápido de pegar o ritmo da prova 💪 Por menos de R$ 10 você já começa a treinar hoje mesmo, com gabarito comentado pra aprender com cada erro.', kit: 'Tudo em PDF num pacote só 📦 e sai bem mais em conta do que comprar as apostilas uma por uma.', av: 'É em PDF, chega no seu e-mail e você começa a estudar hoje mesmo 📄', oc: 'Esse kit foi montado em cima do edital desse concurso 🎯 É foco no que importa, sem perder tempo.', ia: 'Aqui você estuda com questões comentadas, simulados com tempo e a Bia do seu lado ⭐' };
+      await bot((PITCH[L[0].t] || '') + ' E o melhor: o pagamento é por <b>Pix ou cartão</b>, na página segura do <b>PagBank</b>, e a liberação é <b>automática</b>. Bora garantir o seu agora? 😉');
+      return chips(['💳 Quero comprar agora', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [() => comprarProduto(L[0]), faq, otherMenu][i]());
+    }
+    await bot('Qual deles é o seu? Escolhe aqui embaixo que eu já te levo pro pagamento 😉');
+    chips(L.map(p => '💳 Quero: ' + p.nome).concat(['Ver outras opções']), (v, i) => {
       if (i >= L.length) return otherMenu();
-      addProduto(L[i]); askConcurso();
+      comprarProduto(L[i]);
     });
+  }
+  async function comprarProduto(p){
+    addProduto(p); st.ultimo = null;
+    await bot(pick(['Boa escolha! 🎉 Já separei aqui pra você.', 'Ebaaa! 🙌 Ótima decisão, já deixei no seu pedido.', 'Isso aí! 🎉 Bora garantir o seu material.']));
+    return askConcurso();
   }
   const findArea = t => { const stem6 = w => (w || '').slice(0, 6); return areas().find(x => { const k1 = N0(x).split(/[ /(]/)[0], k2 = N0(cargo(x)).split(' ').pop(); return t.includes(k1) || t.includes(k2) || (k1.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k1))) || (k2.length >= 6 && t.split(/\s+/).some(w => w.length >= 6 && stem6(w) === stem6(k2))); }); };
 
   /* ---------- texto livre ---------- */
+  const BUYSTART = /^(eu )?(vou querer|vou levar|vou comprar|vou ficar com|quero comprar|quero levar|quero fechar|quero garantir|me vende|pode fechar)\b/;
+  const BUYSHORT = /^(eu )?(quero( sim| esse| essa| ele| ela| esse mesmo| essa mesma)?|sim|isso|isso mesmo|esse mesmo|essa mesma|esse|essa|ele|ela|comprar|aceito|manda|pode ser|fechado|fechou|bora|ok|beleza|blz|show|top|certo|combinado|vamos|vamo|claro)[!. ]*$/;
   async function freeText(v){
     const t = N0(v);
+    const ult = st.ultimo; st.ultimo = null;
+    if (ult && ult.length > 1 && /^(quero|vou|me ve|pode ser|o |a |os |as |esse|essa|aquele|aquela)/.test(t)){
+      const bp0 = buscaProduto(t);
+      const alvo0 = bp0 && bp0.lista.find(x => ult.some(u => u.nome === x.nome));
+      if (alvo0) return comprarProduto(ult.find(u => u.nome === alvo0.nome));
+    }
+    if (BUYSTART.test(t) || (BUYSHORT.test(t) && ((ult && ult.length) || (st.cart && st.cart.length)))){
+      const bp = buscaProduto(t.replace(BUYSTART, ''));
+      const nomeado = bp && bp.espec && bp.lista.length === 1 ? bp.lista[0] : null;
+      if (nomeado) return comprarProduto(nomeado);
+      if (ult && ult.length === 1) return comprarProduto(ult[0]);
+      if (ult && ult.length > 1){
+        const alvo = bp && bp.lista.find(x => ult.some(u => u.nome === x.nome));
+        if (alvo) return comprarProduto(ult.find(u => u.nome === alvo.nome));
+        st.ultimo = ult;
+        await bot('Show! 🎉 Qual deles você quer levar?');
+        return chips(ult.map(p => '💳 Quero: ' + p.nome).concat(['Ver outras opções']), (x, i) => i >= ult.length ? otherMenu() : comprarProduto(ult[i]));
+      }
+      if (st.cart && st.cart.length) return close_();
+      await bot('Que ótimo! 🎉 Vamos garantir o seu material agora mesmo.');
+      return st.area ? recommend() : pickArea();
+    }
     if (/quiz|teste|testar|simulado gratis|desafio/.test(t)) return quiz();
     { const bp = buscaProduto(t); if (bp && bp.espec) return mostrarProdutos(bp.lista, t); }
     if (/simulad/.test(t)) return simulados();
