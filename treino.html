@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Treino grátis de questões — Concursos e PSS Brasil</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Treine grátis com questões comentadas para concursos e processos seletivos da área da educação.">
+<meta name="theme-color" content="#0D2B55">
+<link rel="icon" href="/icon-192.png">
+<script>(function(){var t='light';try{t=localStorage.getItem('gov_tema')||'light';}catch(e){}document.documentElement.dataset.theme=(t==='dark')?'dark':'light';})();</script>
+<style>
+:root{--bg:#F4F7FC;--card:#fff;--ink:#0D2B55;--muted:#51617f;--line:#dbe3f0;--gold:#F2B705;--blue:#1B5FC1;--ok:#1E8E4E;--okbg:#E6F6EC;--bad:#C8352E;--badbg:#FCEBEA;--chip:#EAF1FF}
+:root[data-theme="dark"]{--bg:#0B1A33;--card:#12284A;--ink:#F3F6FC;--muted:#B6C3DA;--line:#27406b;--blue:#7DB2FF;--okbg:#10361F;--badbg:#3A1715;--chip:#183762}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header.top{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{max-width:760px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.bar a.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:800;line-height:1.15;flex:1;min-width:0}
+.bar img{width:34px;height:34px;border-radius:9px}
+.bar small{display:block;font-weight:600;color:var(--muted);font-size:.78rem}
+.ibtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;min-width:42px;height:42px;font-size:1.1rem;cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:1.55rem;line-height:1.25;margin:6px 0 6px}
+h2{font-size:1.15rem;margin:22px 0 10px}
+p.lead{margin:0 0 14px;color:var(--muted)}
+.badge{display:inline-block;background:var(--gold);color:#0D2B55;font-weight:800;font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;padding:3px 11px;border-radius:999px}
+.grid{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:560px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+button.disc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer}
+button.disc:active{transform:scale(.985)}
+.disc .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--chip);font-size:1.3rem;flex:none}
+.disc b{display:block;line-height:1.25}
+.disc small{color:var(--muted)}
+.disc .gr{font-weight:800;color:var(--ok)}
+.disc .go{margin-left:auto;color:var(--blue);font-size:1.3rem}
+.prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 4px}
+.prog i{display:block;height:100%;background:var(--blue);width:0;transition:width .25s}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem}
+.tag{display:inline-block;margin:10px 0 8px;padding:3px 11px;border-radius:999px;background:var(--chip);color:var(--blue);font-weight:700;font-size:.82rem}
+.cmd{font-size:1.08rem;line-height:1.6;margin:6px 0 14px;font-family:Georgia,"Times New Roman",serif}
+.cmdtx{margin:0 0 12px;padding:10px 12px;border-left:4px solid var(--gold);background:var(--chip);border-radius:8px;font-size:.98rem}
+details.tx{margin:0 0 12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+details.tx summary{cursor:pointer;padding:10px 12px;font-weight:700}
+details.tx div{padding:0 12px 10px;font-size:.98rem}
+.cehint{margin:0 0 8px;color:var(--muted)}
+.opts{display:grid;gap:9px}
+.opt{display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;font:inherit;color:inherit;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px 13px;cursor:pointer}
+.opt .bub{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-weight:800;font-size:.9rem}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--okbg)}
+.opt.right .bub{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.opt.wrong .bub{background:var(--bad);border-color:var(--bad);color:#fff}
+.fb{margin-top:14px;padding:12px 14px;border-radius:14px;border:1.5px solid}
+.fb.okk{border-color:var(--ok);background:var(--okbg)}
+.fb.bad{border-color:var(--bad);background:var(--badbg)}
+.fb h4{margin:0 0 6px;font-size:1.02rem}
+.fb p{margin:6px 0;font-family:Georgia,"Times New Roman",serif}
+.dica{margin-top:8px;font-size:.93rem;color:var(--muted)}
+.btn{display:block;width:100%;margin-top:14px;padding:14px 16px;border:0;border-radius:14px;background:var(--blue);color:#fff;font:inherit;font-weight:800;font-size:1.02rem;cursor:pointer;text-align:center;text-decoration:none}
+:root[data-theme="dark"] .btn{color:#0B1A33}
+.btn.ghost{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.btn.green{background:var(--ok);color:#fff}
+.result{text-align:center}
+.pct{font-size:3rem;font-weight:900;line-height:1;margin:6px 0}
+.frase{font-weight:800;font-size:1.15rem;margin:4px 0 8px}
+.up{margin-top:20px;border:2px solid var(--gold);background:var(--card);border-radius:18px;padding:16px;text-align:left}
+.up b{font-size:1.05rem}
+.up p{margin:6px 0 0;color:var(--muted)}
+.promo{margin:18px 0 6px;border:2px solid var(--gold);background:linear-gradient(135deg,rgba(242,183,5,.16),rgba(242,183,5,.04));border-radius:20px;padding:18px 16px}
+.promo .sel{display:inline-block;background:var(--gold);color:#0D2B55;font-weight:800;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.promo h2{margin:8px 0 6px;font-size:1.3rem;line-height:1.25}
+.promo ul{margin:8px 0 4px;padding-left:0;list-style:none}
+.promo li{margin:5px 0;padding-left:26px;position:relative}
+.promo li:before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:900}
+.promo .preco{margin:10px 0 2px;font-size:1.05rem}
+.promo .preco b{font-size:1.55rem}
+.promo small{color:var(--muted)}
+.honesto{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--chip);font-size:.93rem}
+.fim{border:2px solid var(--gold);border-radius:20px;background:var(--card);padding:18px 16px;text-align:center}
+.fim .big{font-size:1.4rem;font-weight:900;margin:6px 0}
+.foot{margin-top:26px;text-align:center;color:var(--muted);font-size:.85rem}
+.foot a{color:var(--blue)}
+.voltar{background:none;border:0;color:var(--blue);font:inherit;font-weight:700;cursor:pointer;padding:6px 0}
+.hidden{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="bar">
+  <a class="brand" href="/"><img src="/icon-192.png" alt=""><span>Concursos e PSS Brasil<small>Treino grátis</small></span></a>
+  <button class="ibtn" id="tema" type="button" aria-label="Trocar tema claro e escuro">🌙</button>
+</div></header>
+<main id="app"></main>
+<script>
+const DISC = [{"slug": "conhecimento-pedagogico", "ic": "📚", "nome": "Conhecimento Pedagógico", "n": 20, "tot": 198}, {"slug": "legislacao-educacional", "ic": "⚖️", "nome": "Legislação Educacional (LDB e ECA)", "n": 20, "tot": 43}, {"slug": "lingua-portuguesa", "ic": "✍️", "nome": "Língua Portuguesa", "n": 20, "tot": 493}, {"slug": "matematica", "ic": "➗", "nome": "Matemática", "n": 20, "tot": 350}, {"slug": "atualidades", "ic": "🌎", "nome": "Atualidades", "n": 20, "tot": 154}, {"slug": "lingua-inglesa", "ic": "🇬🇧", "nome": "Língua Inglesa", "n": 20, "tot": 212}];
+const MSG = [[100,'Modo gênio ativado 🧠⚡'],[90,'Lutando pelo primeiro lugar 🏆🥇'],[80,'Lutando por uma vaga 🎯🔥'],[70,'Lutando pela aprovação 💪📚'],[0,'Bora treinar mais! 💪📖']];
+const app = document.getElementById('app');
+const LET = ['A','B','C','D','E'];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+const paras = t => String(t || '').split('\n').map(p => '<p>' + fmt(p) + '</p>').join('');
+let ST = { slug: null, lista: [], i: 0, acertos: 0, feitas: [], respondida: false, pool: [], usados: 0 };
+let SAVE = {}; try { SAVE = JSON.parse(localStorage.getItem('treino_v1') || '{}'); } catch (e) {}
+const salvar = () => { try { localStorage.setItem('treino_v1', JSON.stringify(SAVE)); } catch (e) {} };
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+document.getElementById('tema').onclick = () => {
+  const d = document.documentElement, novo = d.dataset.theme === 'dark' ? 'light' : 'dark';
+  d.dataset.theme = novo; try { localStorage.setItem('gov_tema', novo); } catch (e) {}
+  document.getElementById('tema').textContent = novo === 'dark' ? '☀️' : '🌙';
+};
+document.getElementById('tema').textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+
+const PROMO = (titulo, sel, dd) => `
+    <div class="promo">
+      ${sel ? '<span class="sel">' + sel + '</span>' : ''}
+      <h2>${titulo}</h2>
+      <p style="margin:0;color:var(--muted)">A <b>Apostila Interativa de Questões</b> é o treino completo, direto no seu celular:</p>
+
+      <ul>
+        <li><b>7.847 questões comentadas</b> de 66 matérias (Direito, Português, Matemática, Informática, Pedagogia e muito mais)</li>
+        <li>Treino de 10 em 10 por <b>matéria, banca ou tipo</b> (múltipla escolha ou Certo/Errado)</li>
+        <li>Refaça só as que <b>errou</b> e veja as que ainda não fez</li>
+        <li><b>Cronômetro</b> e porcentagem de acertos a cada rodada</li>
+        <li>A <b>Bia</b> tira dúvidas e ajuda no estilo Show do Milhão: Dica, Cartas, Plateia e mais</li>
+        <li>Seu progresso fica <b>salvo na nuvem</b></li>
+      </ul>
+      <p class="preco">Por apenas <b>R$ 24,90</b> <small>(pagamento único)</small></p>
+      <small>Pix ou cartão, pagamento seguro pelo PagBank e liberação automática.</small>
+      <a class="btn green" href="/#apostila-qc">👉 Quero a Apostila de Questões</a>
+    </div>`;
+
+function home(){
+  ST.slug = null; document.title = 'Treino grátis de questões — Concursos e PSS Brasil';
+  const tot = DISC.reduce((s, d) => s + d.n, 0);
+  app.innerHTML = `
+    <span class="badge">100% grátis</span>
+    <h1>Treine com questões comentadas</h1>
+    <p class="lead">Escolha uma disciplina e responda até 20 questões comentadas, de 10 em 10. Você vê na hora se acertou e lê o comentário de cada uma. Sem cadastro e sem senha.</p>
+    <div class="grid">${DISC.map(d => {
+      const s = SAVE[d.slug] || { f: 0, a: 0 };
+      return `<button class="disc" data-s="${d.slug}"><span class="ic">${d.ic}</span><span><b>${esc(d.nome)}</b><small><span class="gr">${d.n} questões grátis</span>${s.f ? '<br>' + s.a + ' acertos em ' + s.f + ' respondidas' : ''}</small></span><span class="go">›</span></button>`;
+    }).join('')}</div>
+    ${PROMO('Gostou? Treine com 7.847 questões', 'Treino completo')}
+    <p class="foot">${tot} questões grátis · amostra do banco do Concursos e PSS Brasil<br><a href="/">Voltar ao site</a></p>`;
+  app.querySelectorAll('.disc').forEach(b => b.onclick = () => abrir(b.dataset.s));
+  scrollTo(0, 0);
+}
+
+async function abrir(slug){
+  const d = DISC.find(x => x.slug === slug); if (!d) return home();
+  app.innerHTML = '<p class="lead" style="margin-top:30px;text-align:center">Carregando as questões…</p>';
+  try {
+    const r = await fetch('treino-' + slug + '.json'); if (!r.ok) throw 0;
+    const q = await r.json();
+    ST = { slug, nome: d.nome, ic: d.ic, pool: shuffle(q), usados: 0, lista: [], i: 0, acertos: 0, respondida: false, totalAc: 0, totalFe: 0 };
+    history.replaceState(null, '', '#' + slug);
+    rodada();
+  } catch (e) {
+    app.innerHTML = '<div class="card" style="margin-top:20px"><b>Não deu para carregar agora.</b><p class="lead">Confira a sua internet e tente de novo.</p><button class="btn" id="tent">Tentar de novo</button><button class="btn ghost" id="vh">Voltar</button></div>';
+    document.getElementById('tent').onclick = () => abrir(slug); document.getElementById('vh').onclick = () => { history.replaceState(null, '', location.pathname); home(); };
+  }
+}
+
+function rodada(){
+  ST.lista = ST.pool.slice(ST.usados, ST.usados + 10); ST.usados += ST.lista.length;
+  ST.i = 0; ST.acertos = 0; ST.respondida = false; mostrar();
+}
+function refazer(){ ST.pool = shuffle(ST.pool); ST.usados = 0; ST.totalAc = 0; ST.totalFe = 0; rodada(); }
+
+function txHTML(tx){
+  if (!tx) return '';
+  if (tx.length < 420) return `<p class="cmdtx">${fmt(tx)}</p>`;
+  return `<details class="tx"><summary>📄 Texto de apoio (toque para abrir)</summary><div>${paras(tx)}</div></details>`;
+}
+
+function mostrar(){
+  const q = ST.lista[ST.i], n = ST.lista.length, k = !!q.k;
+  const opts = k ? ['Certo', 'Errado'] : q.o;
+  document.title = ST.nome + ' — Treino grátis';
+  app.innerHTML = `
+    <button class="voltar" id="vh">‹ Disciplinas</button>
+    <div class="meta"><span>${ST.ic} ${esc(ST.nome)}</span><span>Questão <b>${ST.i + 1}</b> de ${n}</span></div>
+    <div class="prog"><i style="width:${(ST.i / n) * 100}%"></i></div>
+    ${txHTML(q.tx)}
+    <p class="cmd">${fmt(q.t)}</p>
+    ${k ? '<p class="cehint">Julgue o item: <b>Certo</b> ou <b>Errado</b>?</p>' : ''}
+    <div class="opts" id="opts">${opts.map((t, j) => `<button class="opt" data-k="${j}" type="button"><span class="bub">${k ? (j ? 'E' : 'C') : LET[j]}</span><span>${k ? '<b>' + t + '</b>' : fmt(t)}</span></button>`).join('')}</div>
+    <div id="fb"></div>`;
+  document.getElementById('vh').onclick = () => { history.replaceState(null, '', location.pathname); home(); };
+  app.querySelectorAll('.opt').forEach(b => b.onclick = () => responder(+b.dataset.k));
+  scrollTo(0, 0);
+}
+
+function responder(j){
+  if (ST.respondida) return; ST.respondida = true;
+  const q = ST.lista[ST.i], k = !!q.k, ok = j === q.a;
+  if (ok) { ST.acertos++; ST.totalAc++; } ST.totalFe++;
+  const s = SAVE[ST.slug] || { f: 0, a: 0 }; s.f++; if (ok) s.a++; SAVE[ST.slug] = s; salvar();
+  app.querySelectorAll('.opt').forEach(b => { const x = +b.dataset.k; b.disabled = true; if (x === q.a) b.classList.add('right'); else if (x === j) b.classList.add('wrong'); });
+  const cert = k ? '<b>' + (q.a ? 'Errado' : 'Certo') + '</b>' : 'a <b>' + LET[q.a] + '</b>';
+  const ultima = ST.i === ST.lista.length - 1;
+  document.getElementById('fb').innerHTML = `
+    <div class="fb ${ok ? 'okk' : 'bad'}" role="status"><h4>${ok ? '✓ Resposta correta!' : '✗ A resposta certa é ' + cert}</h4>${paras(q.c)}${q.d ? `<p class="dica">💡 <b>Para fixar:</b> ${fmt(q.d)}</p>` : ''}</div>
+    <button class="btn" id="prox" type="button">${ultima ? 'Ver o meu resultado' : 'Próxima questão ›'}</button>`;
+  document.getElementById('prox').onclick = () => { if (ultima) resultado(); else { ST.i++; ST.respondida = false; mostrar(); } };
+  document.getElementById('fb').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resultado(){
+  const n = ST.lista.length, p = Math.round(ST.acertos / n * 100), frase = MSG.find(m => p >= m[0])[1];
+  const resta = ST.pool.length - ST.usados;
+  if (resta <= 0) return fim(n, p, frase);
+  app.innerHTML = `
+    <div class="card result" style="margin-top:14px">
+      <span class="badge">Resultado</span>
+      <div class="pct">${p}%</div>
+      <div class="frase">${frase}</div>
+      <p class="lead">Você acertou <b>${ST.acertos}</b> de <b>${n}</b> em ${esc(ST.nome)}.</p>
+      <button class="btn" id="mais">Continuar: mais ${Math.min(10, resta)} questões grátis (faltam ${resta})</button>
+      <button class="btn ghost" id="outra">Escolher outra disciplina</button>
+    </div>
+    ${PROMO('Quer continuar treinando com muito mais questões?', 'Dica do professor', DISC.find(x => x.slug === ST.slug))}`;
+  document.getElementById('mais').onclick = rodada;
+  document.getElementById('outra').onclick = () => { history.replaceState(null, '', location.pathname); home(); };
+  scrollTo(0, 0);
+}
+
+function fim(n, p, frase){
+  const tp = Math.round(ST.totalAc / Math.max(1, ST.totalFe) * 100);
+  app.innerHTML = `
+    <div class="fim" style="margin-top:14px">
+      <span class="badge">Fim das questões grátis</span>
+      <div class="big">🎉 Você terminou as ${ST.pool.length} questões de ${esc(ST.nome)}!</div>
+      <p class="lead" style="margin:0">Nesta rodada: <b>${p}%</b> · ${frase}<br>No total desta disciplina: <b>${ST.totalAc}</b> acertos em <b>${ST.totalFe}</b> (${tp}%).</p>
+    </div>
+    ${PROMO('Quer continuar treinando com muito mais questões?', 'Próximo passo', DISC.find(x => x.slug === ST.slug))}
+    <button class="btn ghost" id="outra">Treinar outra disciplina grátis</button>
+    <button class="voltar" id="refaz" style="display:block;margin:10px auto 0">Refazer estas ${ST.pool.length} questões</button>`;
+  document.getElementById('outra').onclick = () => { history.replaceState(null, '', location.pathname); home(); };
+  document.getElementById('refaz').onclick = refazer;
+  scrollTo(0, 0);
+}
+
+function rota(){ const h = decodeURIComponent((location.hash || '').slice(1)); if (h && DISC.some(d => d.slug === h)) abrir(h); else home(); }
+addEventListener('hashchange', rota); rota();
+</script>
+</body>
+</html>

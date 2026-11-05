@@ -20,6 +20,9 @@
 }
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--text);}
+.treino-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.treino-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg-alt);color:var(--text);text-decoration:none;font-weight:600;font-size:.92rem;}
+.treino-chip:active{transform:scale(.97);}
 .wrap{max-width:920px;margin:0 auto;padding:0 20px;}
 
 /* nav */
@@ -526,7 +529,7 @@ document.getElementById('themeBtn').addEventListener('click', function(){
     <span class="tab" data-tab="avulsas">Apostilas avulsas</span>
     <span class="tab" data-tab="interativas">Apostilas interativas</span>
     <span class="tab coach" data-tab="coach">🎯 Coach Virtual</span>
-    <span class="tab" data-tab="questoes">Questões</span>
+    <span class="tab" data-tab="questoes">Treinar grátis</span>
     <span class="tab" data-tab="assinatura">Aulas em Vídeo</span>
     <span class="tab" data-tab="outros">🍎 Loja do Professor</span>
     <span class="tab" data-tab="concursos">Concursos da Educação</span>
@@ -810,8 +813,8 @@ document.getElementById('themeBtn').addEventListener('click', function(){
   </section>
 
   <section id="tab-questoes" class="hidden">
-    <h2>Banco de questões</h2>
-    <p class="lede">Questões comentadas por disciplina, direto no app de estudos. Toque para abrir.</p>
+    <h2>Treino grátis de questões</h2>
+    <p class="lede">Escolha uma disciplina e treine agora, sem cadastro e sem senha. São <b>até 20 questões comentadas grátis</b> por disciplina, de 10 em 10.</p>
     <div id="questoesWrap"></div>
   </section>
 
@@ -1344,56 +1347,35 @@ function sendOrder(){
 }
 
 /* ---- questões (banco de questões por disciplina) ---- */
-const questoesDisciplinas = [
-  {key:"q-cp", nome:"Conhecimento Pedagógico", url:""},
-  {key:"q-leg", nome:"Legislação Educacional", url:""},
-  {key:"q-port", nome:"Língua Portuguesa", url:""},
-  {key:"q-eca", nome:"ECA", url:"https://concursosepss-brasil.github.io/Q.ECA/"},
-  {key:"q-ldb", nome:"LDB", url:"https://concursosepss-brasil.github.io/q.ldb/"},
-  {key:"q-area", nome:"Área Educação", url:"https://concursosepss-brasil.github.io/Q.P/"}
+const treinoDisciplinas = [
+  {slug:"conhecimento-pedagogico", ic:"📚", nome:"Conhecimento Pedagógico"},
+  {slug:"legislacao-educacional", ic:"⚖️", nome:"Legislação Educacional (LDB e ECA)"},
+  {slug:"lingua-portuguesa", ic:"✍️", nome:"Língua Portuguesa"},
+  {slug:"matematica", ic:"➗", nome:"Matemática"},
+  {slug:"atualidades", ic:"🌎", nome:"Atualidades"},
+  {slug:"lingua-inglesa", ic:"🇬🇧", nome:"Língua Inglesa"}
 ];
 function renderQuestoes(){
   const wrap = document.getElementById('questoesWrap');
-  wrap.innerHTML = questoesDisciplinas.map(q=>`
-    <div class="accordion-item">
-      <div class="accordion-header" onclick="toggleAccordion('${q.key}', this)">
-        <span>${q.nome}</span><span class="accordion-arrow">▾</span>
+  wrap.innerHTML = `
+    <div class="kitrow" style="flex-direction:column;align-items:stretch;gap:12px;">
+      <div>
+        <div class="kitname">🎯 Treino grátis, sem cadastro</div>
+        <div class="kitcontent">Responda, veja na hora se acertou e leia o comentário de cada questão. Escolha a disciplina abaixo ou comece pelo botão verde.</div>
       </div>
-      <div class="accordion-body" id="acc-${q.key}">
-        <div class="kitrow" style="border:none;padding:0;background:transparent;flex-direction:column;align-items:stretch;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-            <div>
-              <div class="kitname">Conteúdo exclusivo para assinantes</div>
-              <div class="kitcontent">Questões comentadas de ${q.nome}, direto no app de estudos.</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div class="kitprice">R$ <b>9,90</b>/mês</div>
-              <button class="order" onclick="openOrderQuestoes('${q.key}')">Assinar agora</button>
-            </div>
-          </div>
-          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line);text-align:right;">
-            <button class="ghost" onclick="abrirAppQuestoes('${q.key}')">Já é assinante? Acesso às questões</button>
-          </div>
-        </div>
+      <a href="/treino.html" style="display:block;text-align:center;text-decoration:none;padding:15px 16px;border-radius:14px;background:#168A47;color:#fff;font-weight:800;font-size:1.05rem;box-shadow:0 6px 16px rgba(22,138,71,.35);">🎯 Começar a treinar grátis</a>
+    </div>
+    <div class="treino-chips">${treinoDisciplinas.map(d=>`<a class="treino-chip" href="/treino.html#${d.slug}"><span>${d.ic}</span>${d.nome}</a>`).join('')}</div>
+    <div class="kitrow" style="flex-direction:column;align-items:stretch;gap:10px;border:2px solid #F2B705;margin-top:14px;">
+      <div>
+        <div class="kitname">⭐ Quer treinar com 7.847 questões?</div>
+        <div class="kitcontent">A <b>Apostila Interativa de Questões</b> tem 7.847 questões comentadas de 66 matérias, treino por matéria, banca ou tipo, cronômetro, refazer as que errou e a Bia para tirar dúvidas. <b>R$ 24,90</b>, com liberação automática.</div>
       </div>
-    </div>`).join('');
+      <a href="#apostila-qc" onclick="irApostilaQC(event)" style="display:block;text-align:center;text-decoration:none;padding:15px 16px;border-radius:14px;background:#3D5AFE;color:#fff;font-weight:800;font-size:1.05rem;">👉 Conhecer a Apostila de Questões</a>
+    </div>`;
 }
+function irApostilaQC(e){ if(e) e.preventDefault(); history.replaceState(null,'','#apostila-qc'); window.dispatchEvent(new HashChangeEvent('hashchange')); }
 renderQuestoes();
-function openOrderQuestoes(key){
-  const q = questoesDisciplinas.find(x=>x.key===key);
-  if(!q) return;
-  currentItem = {title:`Assinatura mensal — ${q.nome}`, price:"9,90"};
-  document.getElementById('orderItemLabel').textContent = currentItem.title;
-  document.getElementById('orderOverlay').classList.add('show');
-}
-function abrirAppQuestoes(key){
-  const q = questoesDisciplinas.find(x=>x.key===key);
-  if(q && q.url){
-    window.open(q.url, '_blank');
-  } else {
-    window.alert('Essa disciplina ainda não está disponível no app de questões. Em breve!');
-  }
-}
 
 const aulasDisciplinas = [
   {key:"av-cp", nome:"Conhecimento Pedagógico", url:""},
@@ -1697,7 +1679,7 @@ body.edu-solo .edu-cat{display:inline-block}
   const P_AVULSA = 19.9;
   const money = v => 'R$ ' + v.toFixed(2).replace('.', ',');
   const areas = () => (typeof licenciaturas !== 'undefined' ? licenciaturas.map(l => l.area) : ['Pedagogia']);
-  const disc = () => (typeof questoesDisciplinas !== 'undefined' ? questoesDisciplinas.map(q => q.nome) : ['Conhecimento Pedagógico', 'Legislação Educacional']);
+  const disc = () => (typeof aulasDisciplinas !== 'undefined' ? aulasDisciplinas.map(q => q.nome) : ['Conhecimento Pedagógico', 'Legislação Educacional']);
   const kitPrice = area => { try { const l = licenciaturas.find(x => x.area === area); const k = kits && kits.find(x => x.slug === l.slug); return parseFloat(String(k ? k.price : '29,90').replace(',', '.')) || 29.9; } catch(e) { return 29.9; } };
   const shortArea = a => NOMEG[a] || a;
   const cargo = a => { try { const l = licenciaturas.find(x => x.area === a); if (l) return l.kit.replace(/^Kit\s+/i, ''); } catch(e) {} return a; };
@@ -2037,7 +2019,7 @@ body.edu-solo .edu-cat{display:inline-block}
   }
   async function addMore(){
     await bot('Claro! O que mais você quer colocar no pedido?');
-    chips(['⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '📝 Simulados em PDF', '✅ Questões (assinatura)', '↩️ Voltar ao meu pedido'], (v, i) => {
+    chips(['⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '📝 Simulados em PDF', '🎯 Treinar questões grátis', '↩️ Voltar ao meu pedido'], (v, i) => {
       if ((i === 1 || i === 2) && !st.area) return pickArea();
       [chooseIA, chooseKit, chooseAvulsa, simulados, () => subs('ques'), close_][i]();
     });
@@ -2521,7 +2503,7 @@ body.edu-solo .edu-cat{display:inline-block}
   async function otherMenu(){
     st.ultimo = null;
     await bot('Olha tudo o que a gente tem pra você 👇');
-    chips(['🗓️ Montar meu plano de estudos', '🧠 Testar meus conhecimentos (quiz)', '🎯 Coach Virtual (Dany e Leo)', '⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '📝 Simulados em PDF (R$ 9,90)', '✅ Questões (assinatura)', '🎥 Aulas em vídeo', '📄 Ver amostras do kit e das avulsas', '📖 Ver páginas da apostila em PDF', '🍎 Já sou professor: Loja do Professor', '🎯 Concursos específicos / outro cargo', '🔑 Já comprei, quero acessar'], (v, i) => {
+    chips(['🗓️ Montar meu plano de estudos', '🧠 Testar meus conhecimentos (quiz)', '🎯 Coach Virtual (Dany e Leo)', '⭐ Apostilas interativas', '📦 Kit completo', '📘 Apostila avulsa', '📝 Simulados em PDF (R$ 9,90)', '🎯 Treinar questões grátis', '🎥 Aulas em vídeo', '📄 Ver amostras do kit e das avulsas', '📖 Ver páginas da apostila em PDF', '🍎 Já sou professor: Loja do Professor', '🎯 Concursos específicos / outro cargo', '🔑 Já comprei, quero acessar'], (v, i) => {
       if (i === 0) return plano();
       if (i === 1) return quiz();
       if (i === 2) return coach();
@@ -2530,8 +2512,20 @@ body.edu-solo .edu-cat{display:inline-block}
       [chooseIA, chooseKit, chooseAvulsa, simulados, () => subs('ques'), () => subs('aula'), () => showSamples(), showPages, loja, outro, jaComprei][i]();
     });
   }
+  async function treinoGratis(){
+    await bot('Temos <b>treino grátis de questões comentadas</b>: 20 por disciplina, sem cadastro e sem senha 🎉 É só escolher a disciplina e responder.');
+    chips(['🎯 Treinar grátis agora', '⭐ Quero 7.847 questões (Apostila de Questões)', 'Ver outras opções'], async (v, i) => {
+      if (i === 0) { window.open("/treino.html", "_blank", "noopener"); return bot('Abri o treino numa nova aba 🚀 Quando terminar as 20 questões, volta aqui que eu te mostro como continuar treinando com muito mais questões 😉'); }
+      if (i === 1) {
+        try { const bp = buscaProduto('questoes de concurso'); const ia = bp && bp.lista.filter(x => x.t === 'ia').slice(0, 1); if (ia && ia.length) return mostrarProdutos(ia, 'questoes de concurso'); } catch (e) {}
+        return chooseIA();
+      }
+      otherMenu();
+    });
+  }
   async function subs(kind){
     const q = kind === 'ques';
+    if (q) return treinoGratis();
     await bot(q ? 'As questões são por assinatura de <b>R$ 9,90/mês</b> por disciplina. Qual te interessa?' : 'As aulas em vídeo são por assinatura de <b>R$ 59,90/mês</b>. Qual disciplina te interessa mais?');
     chips(disc(), v => { addItem({ nome: (q ? 'Assinatura de questões — ' : 'Aulas em vídeo — ') + v, preco: q ? 9.9 : 59.9 }); askConcurso(); });
   }
@@ -2631,6 +2625,7 @@ body.edu-solo .edu-cat{display:inline-block}
   const BUYSHORT = /^(eu )?(quero( sim| esse| essa| ele| ela| esse mesmo| essa mesma)?|sim|isso|isso mesmo|esse mesmo|essa mesma|esse|essa|ele|ela|comprar|aceito|manda|pode ser|fechado|fechou|bora|ok|beleza|blz|show|top|certo|combinado|vamos|vamo|claro)[!. ]*$/;
   async function freeText(v){
     const t = N0(v);
+    if (/^((eu )?(quero|queria|gostaria de|tem|voces tem|vcs tem|vc tem|tem alguma|onde (acho|tem|treino)) )?((um |o )?(banco|treino) de )?(questao|questoes|treinar questoes|treino)( de concurso| de concursos| gratis| para treinar| pra treinar)?[?!. ]*$/.test(t)) return treinoGratis();
     const ult = st.ultimo; st.ultimo = null;
     if (ult && ult.length > 1 && /^(quero|vou|me ve|pode ser|o |a |os |as |esse|essa|aquele|aquela)/.test(t)){
       const bp0 = buscaProduto(t);
@@ -3121,7 +3116,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     avulsas:     { t:'Apostilas avulsas para concursos públicos', d:'Escolha só o material que você precisa: Legislação Educacional, Conhecimento Pedagógico e Conhecimento Específico da sua área, em PDF e direto ao edital.' },
     interativas: { t:'Apostilas Interativas para sua aprovação', d:'Estude pelo celular com questões comentadas, simulados, mapas mentais e a ajuda da Bia, a nossa tutora virtual.' },
     coach:       { t:'Coach Virtual para concurseiros', d:'Orientação para organizar a rotina, definir metas e manter a motivação durante toda a sua preparação.' },
-    questoes:    { t:'Treine com questões de concursos públicos', d:'Pratique com questões organizadas por disciplina e acompanhe a sua evolução.' },
+    questoes:    { t:'Treino grátis de questões comentadas', d:'Escolha uma disciplina e treine agora, sem cadastro e sem senha: até 20 questões grátis por disciplina, com comentário em todas.' },
     assinatura:  { t:'Assinatura de Aulas em Vídeo', d:'Videoaulas para estudar no seu ritmo, com assinatura mensal. Em breve.' },
     outros:      { t:'Loja do Professor', d:'Materiais prontos para a sala de aula e ferramentas para facilitar a rotina de quem já dá aula.' },
     concursos:   { t:'Materiais para concursos da Educação', d:'Kits preparados para o edital de concursos específicos da área da educação.' }
