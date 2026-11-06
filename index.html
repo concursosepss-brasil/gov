@@ -935,7 +935,7 @@ const licenciaturas = [
   {area:"Física", kit:"Kit Professor de Física", slug:"fisica"},
   {area:"Química", kit:"Kit Professor de Química", slug:"quimica"},
   {area:"Educação Física", kit:"Kit Professor de Educação Física", slug:"educacao-fisica"},
-  {area:"Artes", kit:"Kit Professor de Artes", slug:"artes"},
+  {area:"Artes", kit:"Kit Professor de Arte", slug:"artes"},
   {area:"Sociologia", kit:"Kit Professor de Sociologia", slug:"sociologia"},
   {area:"Filosofia", kit:"Kit Professor de Filosofia", slug:"filosofia"},
   {area:"Ensino Religioso", kit:"Kit Professor de Ensino Religioso", slug:"ensino-religioso"},
@@ -1750,7 +1750,7 @@ body.edu-solo .edu-cat{display:inline-block}
     const AR = areas();
     chips(AR.map(cargo).concat(['Outro cargo']), (v, idx) => {
       if (idx < AR.length) v = AR[idx];
-      if (v === 'Outro cargo'){ bot('Ah, legal! Qual é o cargo? Pode escrever do seu jeito 😉').then(() => ask('Ex.: Pedagogo, Professor de Artes…', a => { st.area = a; remember(); askPrazo(true); })); return; }
+      if (v === 'Outro cargo'){ bot('Ah, legal! Qual é o cargo? Pode escrever do seu jeito 😉').then(() => ask('Ex.: Pedagogo, Professor de Arte…', a => { st.area = a; remember(); askPrazo(true); })); return; }
       st.area = v; remember(); askPrazo(true);
     });
   }
