@@ -974,7 +974,6 @@ if(!kits){
     "tecnico-administrativo": "4 apostilas: Conhecimento Específico, Língua Portuguesa, Raciocínio Lógico e Informática"
   };
   const PRICE_ESPECIAL = {
-    "merendeiro": "19,90"
   };
   kits = licenciaturas.map((l,i)=>({id:i+1, nome:l.kit, slug:l.slug, conteudo: CONTEUDO_ESPECIAL[l.slug] || "5 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional, LDB Ponto a Ponto e Mapas Mentais", price: PRICE_ESPECIAL[l.slug] || "29,90"}));
 }
