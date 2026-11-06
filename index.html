@@ -463,7 +463,7 @@ body.area-fora header.hero{padding-bottom:4px;}
 <nav>
   <div class="wrap">
     <div class="brand" style="display:flex;align-items:center;gap:8px;"><img class="navicon" src="img/330be179b2.webp" alt=""> Concursos<span> e PSS</span> Brasil</div>
-    <div class="search"><input id="searchBox" placeholder="Qual licenciatura você procura?"></div>
+    <div class="search"><input id="searchBox" placeholder="Digite seu cargo" aria-label="Digite seu cargo para ver kits e apostilas" autocomplete="off"></div>
     <button class="theme-btn" id="themeBtn" type="button" aria-label="Alternar tema claro e escuro" title="Tema claro/escuro">
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
@@ -3317,6 +3317,91 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar); else montar();
+})();
+</script>
+
+<style>
+.search{position:relative}
+#cargoRes{position:absolute;top:calc(100% + 8px);left:0;right:0;min-width:300px;background:var(--bg-alt);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.22);padding:10px 12px 12px;z-index:60;text-align:left;color:var(--text);max-height:70vh;overflow:auto}
+#cargoRes[hidden]{display:none}
+#cargoRes .cr-t{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:10px 2px 0}
+#cargoRes .cr-t:first-child{margin-top:0}
+#cargoRes .cr-i{display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg-alt-2);color:var(--text);font:inherit;font-size:13px;text-align:left;cursor:pointer;text-decoration:none}
+#cargoRes .cr-i span{flex:1;line-height:1.3}
+#cargoRes .cr-i b{white-space:nowrap}
+#cargoRes .cr-i em{font-style:normal;color:var(--accent);font-weight:700;white-space:nowrap}
+#cargoRes .cr-no{margin:6px 2px 0;font-size:13px;color:var(--muted);line-height:1.35}
+#cargoRes .cr-zap{background:#16a34a;border-color:#16a34a;color:#fff;font-weight:700;justify-content:center}
+</style>
+<script>
+// busca do topo: digite o cargo e veja se existe kit, apostila avulsa e apostila interativa
+(function(){
+  var box = document.getElementById('searchBox'); if (!box) return;
+  var wrap = box.closest('.search'); if (!wrap) return;
+  var pan = document.createElement('div'); pan.id = 'cargoRes'; pan.hidden = true; wrap.appendChild(pan);
+  var MAX = 4;
+  var ALIAS = [[/pedagog|professor|educacao infantil|anos iniciais|series iniciais/, ['cp','leg','lp']]];
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function interativas(){
+    var out = [];
+    document.querySelectorAll('#interativaList > .kitrow[id^="apostila-"]').forEach(function(el){
+      var n = el.querySelector('.kitname'), p = el.querySelector('.kitprice b'); if (!n) return;
+      out.push({ key: el.id.replace('apostila-',''), id: el.id.replace('apostila-',''),
+        nome: n.textContent.replace(/^[^A-Za-zÀ-ÿ]*Apostila Interativa (de )?/i,'').trim(), preco: p ? p.textContent.trim() : '' });
+    });
+    return out;
+  }
+  function sec(tit, arr, vazio, tipo){
+    var h = '<div class="cr-t">' + tit + '</div>';
+    if (!arr.length) return h + '<div class="cr-no">' + vazio + '</div>';
+    arr.slice(0, MAX).forEach(function(x){
+      h += '<button type="button" class="cr-i" data-t="' + tipo + '" data-id="' + esc(x.id) + '"><span>✅ ' + esc(x.nome) + '</span><b>R$ ' + esc(x.preco) + '</b><em>Ver ›</em></button>';
+    });
+    if (arr.length > MAX) h += '<div class="cr-no">+ ' + (arr.length - MAX) + ' resultados. Digite mais letras para afinar.</div>';
+    return h;
+  }
+  function render(){
+    var q = norm(box.value).trim();
+    if (q.length < 2) { pan.hidden = true; return; }
+    var ks = kits.filter(function(k){ return norm(k.nome).includes(q); }).map(function(k){ return { id: k.slug, nome: k.nome, preco: k.price }; });
+    var as = avulsas.filter(function(a){ return norm(a.mod + ' ' + (a.lic || '')).includes(q); }).map(function(a){ return { id: a.imgKey, nome: a.mod + (a.lic ? ' — ' + a.lic : ''), preco: a.price }; });
+    var chaves = []; ALIAS.forEach(function(r){ if (r[0].test(q)) chaves = chaves.concat(r[1]); });
+    var is = interativas().filter(function(i){ return norm(i.nome).includes(q) || chaves.indexOf(i.key) >= 0; });
+    var h;
+    if (!ks.length && !as.length && !is.length) {
+      var msg = encodeURIComponent('Olá! Procurei o cargo "' + box.value.trim() + '" no site e não encontrei. Vocês têm material para esse cargo?');
+      h = '<div class="cr-no" style="margin-top:0">Não encontrei material para esse cargo. Fale com a equipe, que a gente vê o que tem para você.</div>'
+        + '<a class="cr-i cr-zap" target="_blank" rel="noopener" href="https://wa.me/5592984478798?text=' + msg + '">💬 Falar com a equipe no WhatsApp</a>';
+    } else {
+      h = sec('📦 Kit', ks, 'Ainda não temos kit para esse cargo.', 'k')
+        + sec('📙 Apostila avulsa (PDF)', as, 'Ainda não temos apostila avulsa para esse cargo.', 'a')
+        + sec('⭐ Apostila interativa', is, 'Ainda não temos apostila interativa para esse cargo.', 'i');
+    }
+    pan.innerHTML = h; pan.hidden = false;
+  }
+  function ir(tipo, id){
+    box.value = ''; pan.hidden = true;
+    var tab = { k:'kits', a:'avulsas', i:'interativas' }[tipo];
+    var t = document.querySelector('.tab[data-tab="' + tab + '"]'); if (t) t.click();
+    var card;
+    if (tipo === 'k') { window.__kitAlvo = id; renderKits(''); card = 'kit-card-' + id; }
+    else if (tipo === 'a') { window.__avulsaAlvo = id; var av = document.getElementById('avulsaSearch'); if (av) av.value = ''; renderAvulsas(''); card = 'avulsa-card-' + id; }
+    else { card = 'apostila-' + id; var el = document.getElementById(card); if (el) el.classList.add('card-alvo'); }
+    function alinha(){
+      var c = document.getElementById(card); if (!c) return;
+      var bar = document.querySelector('.tabbar'), off = (bar && getComputedStyle(bar).display !== 'none' ? bar.getBoundingClientRect().height : 0) + 12;
+      window.scrollTo(0, Math.max(0, window.scrollY + c.getBoundingClientRect().top - off));
+    }
+    setTimeout(alinha, 120); setTimeout(alinha, 700);
+    document.querySelectorAll('.tab, .areabtn').forEach(function(b){
+      b.addEventListener('click', function(){ window.__kitAlvo = null; window.__avulsaAlvo = null; document.querySelectorAll('.card-alvo').forEach(function(x){ x.classList.remove('card-alvo'); }); }, { once:true });
+    });
+  }
+  box.addEventListener('input', render);
+  box.addEventListener('focus', render);
+  box.addEventListener('keydown', function(e){ if (e.key === 'Escape') pan.hidden = true; });
+  document.addEventListener('click', function(e){ if (!wrap.contains(e.target)) pan.hidden = true; });
+  pan.addEventListener('click', function(e){ var b = e.target.closest('.cr-i[data-t]'); if (b) ir(b.dataset.t, b.dataset.id); });
 })();
 </script>
 </body>
