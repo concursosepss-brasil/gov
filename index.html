@@ -962,7 +962,7 @@ const capaImgs = {
   "filosofia": "img/23bfd12c8c.webp",
   "ensino-religioso": "img/b68ed4bc4d.webp",
   "espanhol": "img/9b5b47245e.webp",
-  "merendeiro": "img/7631a95ba9.webp",
+  "merendeiro": "img/c7cf64b64b.webp",
   "tecnico-administrativo": "img/918d7289fa.webp"
 };
 
@@ -974,6 +974,7 @@ if(!kits){
     "tecnico-administrativo": "4 apostilas: Conhecimento Específico, Língua Portuguesa, Raciocínio Lógico e Informática"
   };
   const PRICE_ESPECIAL = {
+    "merendeiro": "24,90"
   };
   kits = licenciaturas.map((l,i)=>({id:i+1, nome:l.kit, slug:l.slug, conteudo: CONTEUDO_ESPECIAL[l.slug] || "5 apostilas: Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional, LDB Ponto a Ponto e Mapas Mentais", price: PRICE_ESPECIAL[l.slug] || "29,90"}));
 }
