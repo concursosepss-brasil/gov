@@ -416,7 +416,7 @@ body.loja div.loja-banner.loja-on{display:flex !important;}
 body.area-fora #areaSoon{display:block;}
 body.area-fora.area-outros #areaSoon{display:none;}
 body.area-outros #areaOutros{display:block;}
-body.area-fora .tabbar,body.area-fora nav .search,body.area-fora .wrap > section:not(#areaSoon):not(#areaOutros),body.area-fora .howto,body.area-fora #edu-btn,body.area-fora #edu-pan,body.area-fora #stats-btn{display:none !important;}
+body.area-fora .tabbar,body.area-fora .wrap > section:not(#areaSoon):not(#areaOutros),body.area-fora .howto,body.area-fora #edu-btn,body.area-fora #edu-pan,body.area-fora #stats-btn{display:none !important;}
 body.area-fora header.hero{padding-bottom:4px;}
 .soon-card{max-width:560px;margin:18px auto 30px;text-align:center;background:var(--bg-alt);border:1px solid var(--line);border-radius:16px;padding:34px 22px;}
 .soon-ico{font-size:44px;line-height:1;margin-bottom:10px;}
@@ -463,7 +463,7 @@ body.area-fora header.hero{padding-bottom:4px;}
 <nav>
   <div class="wrap">
     <div class="brand" style="display:flex;align-items:center;gap:8px;"><img class="navicon" src="img/330be179b2.webp" alt=""> Concursos<span> e PSS</span> Brasil</div>
-    <div class="search"><input id="searchBox" placeholder="Digite seu cargo" aria-label="Digite seu cargo para ver kits e apostilas" autocomplete="off"></div>
+    <div class="search"><input id="searchBox" placeholder="Digite seu cargo ou concurso" aria-label="Digite seu cargo ou concurso para buscar em todo o site" autocomplete="off"></div>
     <button class="theme-btn" id="themeBtn" type="button" aria-label="Alternar tema claro e escuro" title="Tema claro/escuro">
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
@@ -3211,6 +3211,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     'semed-pvh':{ t:'ed', id:'' }, 'semed-pvh-series':{ t:'ed', id:'kit-pvh-series-iniciais' }, 'semed-pvh-secretaria':{ t:'ed', id:'kit-pvh-agente-secretaria' },
     'ipam-pvh':{ t:'out', id:'kit-ipam-pvh-administrativo' }
   };
+  window.__OC_LINKS = LINKS;
   function abreOC(){
     var h = (location.hash || '').slice(1);
     if (!Object.prototype.hasOwnProperty.call(LINKS, h)) return;
@@ -3331,6 +3332,8 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
 #cargoRes .cr-i b{white-space:nowrap}
 #cargoRes .cr-i em{font-style:normal;color:var(--accent);font-weight:700;white-space:nowrap}
 #cargoRes .cr-no{margin:6px 2px 0;font-size:13px;color:var(--muted);line-height:1.35}
+#cargoRes .cr-sub{margin-left:14px;width:calc(100% - 14px);padding:7px 10px;font-size:12.5px}
+#cargoRes small{display:block;color:var(--muted);font-weight:400;margin-top:2px}
 #cargoRes .cr-zap{background:#16a34a;border-color:#16a34a;color:#fff;font-weight:700;justify-content:center}
 </style>
 <script>
@@ -3340,6 +3343,11 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
   var wrap = box.closest('.search'); if (!wrap) return;
   var pan = document.createElement('div'); pan.id = 'cargoRes'; pan.hidden = true; wrap.appendChild(pan);
   var MAX = 4;
+  // materiais GRÁTIS: para incluir um novo no futuro, é só acrescentar uma linha aqui
+  // (nome, desc, tab = aba do site que abre, kw = palavras que também levam até ele; "grátis" mostra todos)
+  var GRATIS = [
+    { id:'treino', nome:'Treino grátis de questões comentadas', desc:'Sem cadastro e sem senha · até 20 questões por disciplina', tab:'questoes', kw:/treino|treinar|questo/ }
+  ];
   var ALIAS = [[/pedagog|professor|educacao infantil|anos iniciais|series iniciais/, ['cp','leg','lp']]];
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function interativas(){
@@ -3353,34 +3361,81 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
   }
   function sec(tit, arr, vazio, tipo){
     var h = '<div class="cr-t">' + tit + '</div>';
-    if (!arr.length) return h + '<div class="cr-no">' + vazio + '</div>';
+    if (!arr.length) return vazio ? h + '<div class="cr-no">' + vazio + '</div>' : '';
     arr.slice(0, MAX).forEach(function(x){
       h += '<button type="button" class="cr-i" data-t="' + tipo + '" data-id="' + esc(x.id) + '"><span>✅ ' + esc(x.nome) + '</span><b>R$ ' + esc(x.preco) + '</b><em>Ver ›</em></button>';
     });
     if (arr.length > MAX) h += '<div class="cr-no">+ ' + (arr.length - MAX) + ' resultados. Digite mais letras para afinar.</div>';
     return h;
   }
+  function graSec(arr){
+    var h = '<div class="cr-t">🎁 Grátis</div>';
+    arr.forEach(function(g){
+      h += '<button type="button" class="cr-i" data-t="g" data-id="' + esc(g.id) + '"><span>✅ ' + esc(g.nome) + '<small>' + esc(g.desc) + '</small></span><b>Grátis</b><em>Ver ›</em></button>';
+      if (g.id === 'treino' && typeof treinoDisciplinas !== 'undefined') treinoDisciplinas.forEach(function(d){
+        h += '<a class="cr-i cr-sub" href="/treino.html#' + esc(d.slug) + '"><span>' + d.ic + ' ' + esc(d.nome) + '</span><em>Treinar ›</em></a>';
+      });
+    });
+    return h;
+  }
+  function areaSec(arr){
+    var h = '<div class="cr-t">📌 Outras áreas</div>';
+    arr.forEach(function(a){ h += '<button type="button" class="cr-i" data-t="z" data-id="' + a[1] + '"><span>' + a[2] + ' — materiais em breve</span><em>Ver ›</em></button>'; });
+    return h;
+  }
+  function abrirOC(id){
+    var L = window.__OC_LINKS || {}, h = null;
+    Object.keys(L).forEach(function(k){ if (L[k].id === id) h = k; });
+    if (!h) return;
+    if (location.hash === '#' + h) history.replaceState(null, '', location.pathname + location.search);
+    location.hash = h;
+  }
   function render(){
     var q = norm(box.value).trim();
     if (q.length < 2) { pan.hidden = true; return; }
-    var ks = kits.filter(function(k){ return norm(k.nome).includes(q); }).map(function(k){ return { id: k.slug, nome: k.nome, preco: k.price }; });
-    var as = avulsas.filter(function(a){ return norm(a.mod + ' ' + (a.lic || '')).includes(q); }).map(function(a){ return { id: a.imgKey, nome: a.mod + (a.lic ? ' — ' + a.lic : ''), preco: a.price }; });
+    // compara sem acento, sem hífen e sem espaço: "seduc am", "seduc-am" e "seducam" acham o mesmo produto
+    var qa = q.replace(/[^a-z0-9]+/g, ' ').trim(), qc = qa.replace(/ /g, '');
+    function m(t){ var a = norm(t).replace(/[^a-z0-9]+/g, ' '); return !!qc && (a.includes(qa) || a.replace(/ /g, '').includes(qc)); }
+    var ks = kits.filter(function(k){ return m(k.nome); }).map(function(k){ return { id: k.slug, nome: k.nome, preco: k.price }; });
+    var as = avulsas.filter(function(a){ return m(a.mod + ' ' + (a.lic || '')); }).map(function(a){ return { id: a.imgKey, nome: a.mod + (a.lic ? ' — ' + a.lic : ''), preco: a.price }; });
     var chaves = []; ALIAS.forEach(function(r){ if (r[0].test(q)) chaves = chaves.concat(r[1]); });
-    var is = interativas().filter(function(i){ return norm(i.nome).includes(q) || chaves.indexOf(i.key) >= 0; });
+    var is = interativas().filter(function(i){ return m(i.nome) || chaves.indexOf(i.key) >= 0; });
+    var oc = [];
+    try { var OC = window.__OC || {}; [].concat.apply([], Object.keys(OC.ED || {}).map(function(k){ return OC.ED[k]; }).concat(Object.keys(OC.OUT || {}).map(function(k){ return OC.OUT[k]; }))).forEach(function(k){ if (m(k.nome)) oc.push({ id: k.id, nome: k.nome, preco: k.price }); }); } catch (e) {}
+    var ar = [];
+    [[/polic/, 'policial', '🛡️ Policial'], [/saude|enferm|medic/, 'saude', '❤️ Saúde'], [/tribunal|judiciari|forum/, 'tribunais', '⚖️ Tribunais']].forEach(function(a){ if (a[0].test(q)) ar.push(a); });
+    var gr = [];
+    if (/gratis|gratuit|free/.test(q)) gr = GRATIS.slice(); else GRATIS.forEach(function(g){ if (g.kw && g.kw.test(q)) gr.push(g); });
+    var tem3 = ks.length || as.length || is.length, extra = oc.length || ar.length || gr.length;
     var h;
-    if (!ks.length && !as.length && !is.length) {
+    if (!tem3 && !extra) {
       var msg = encodeURIComponent('Olá! Procurei o cargo "' + box.value.trim() + '" no site e não encontrei. Vocês têm material para esse cargo?');
       h = '<div class="cr-no" style="margin-top:0">Não encontrei material para esse cargo. Fale com a equipe, que a gente vê o que tem para você.</div>'
         + '<a class="cr-i cr-zap" target="_blank" rel="noopener" href="https://wa.me/5592984478798?text=' + msg + '">💬 Falar com a equipe no WhatsApp</a>';
     } else {
-      h = sec('📦 Kit', ks, 'Ainda não temos kit para esse cargo.', 'k')
-        + sec('📙 Apostila avulsa (PDF)', as, 'Ainda não temos apostila avulsa para esse cargo.', 'a')
-        + sec('⭐ Apostila interativa', is, 'Ainda não temos apostila interativa para esse cargo.', 'i');
+      h = '';
+      var neg = !extra;
+      if (tem3) h += sec('📦 Kit', ks, neg ? 'Ainda não temos kit para esse cargo.' : '', 'k')
+        + sec('📙 Apostila avulsa (PDF)', as, neg ? 'Ainda não temos apostila avulsa para esse cargo.' : '', 'a')
+        + sec('⭐ Apostila interativa', is, neg ? 'Ainda não temos apostila interativa para esse cargo.' : '', 'i');
+      if (gr.length) h += graSec(gr);
+      if (oc.length) h += sec('📌 Concurso específico', oc, '', 'o');
+      if (ar.length) h += areaSec(ar);
     }
     pan.innerHTML = h; pan.hidden = false;
   }
   function ir(tipo, id){
     box.value = ''; pan.hidden = true;
+    if (tipo === 'z') { if (window.setAreaConcurso) window.setAreaConcurso(id); window.scrollTo(0, 0); return; }
+    if (tipo === 'o') { abrirOC(id); return; }
+    if (tipo === 'g') {
+      var g = GRATIS.filter(function(x){ return x.id === id; })[0]; if (!g) return;
+      if (document.body.classList.contains('area-fora') && window.setAreaConcurso) window.setAreaConcurso('educacao');
+      var tg = document.querySelector('.tab[data-tab="' + g.tab + '"]'); if (tg) tg.click();
+      setTimeout(function(){ var bar = document.querySelector('.tabbar'); if (bar) bar.scrollIntoView({ behavior:'smooth' }); }, 150);
+      return;
+    }
+    if (document.body.classList.contains('area-fora') && window.setAreaConcurso) window.setAreaConcurso('educacao');
     var tab = { k:'kits', a:'avulsas', i:'interativas' }[tipo];
     var t = document.querySelector('.tab[data-tab="' + tab + '"]'); if (t) t.click();
     var card;
