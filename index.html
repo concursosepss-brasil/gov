@@ -873,7 +873,7 @@ document.getElementById('themeBtn').addEventListener('click', function(){
   <section id="areaOutros">
     <h2>Outros concursos</h2>
     <p class="lede">Kits em PDF preparados para o edital de concursos públicos de outras áreas. Escolha o concurso.</p>
-    <div class="oc-pills" id="oc2Pills"><button type="button" class="oc-pill active" data-oc2="ipam">IPAM Porto Velho</button></div>
+    <div class="oc-pills" id="oc2Pills"><button type="button" class="oc-pill active" data-oc2="ipam">IPAM Porto Velho</button><button type="button" class="oc-pill" data-oc2="ibge">IBGE Recenseador</button></div>
     <div class="kitlist" id="oc2Kits"></div>
   </section>
 
@@ -3157,6 +3157,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
 // kits de concursos específicos: aba "Concursos da Educação" (Semed Porto Velho) e área "Outros Concursos" (IPAM Porto Velho)
 (function(){
   var COVER_IPAM = 'img/156a7df220.webp';
+  var COVER_RECENS = 'img/0a13bde342.webp';
   var ED = {
     pvh: [
       { id:'kit-pvh-series-iniciais', nome:'Kit Professor de Séries Iniciais — Semed Porto Velho', conteudo:'Material preparatório em PDF direcionado ao concurso da Semed Porto Velho para o cargo de Professor de Séries Iniciais.', price:'29,90', capa:function(){ return capaImgs['anos-iniciais']; } },
@@ -3168,6 +3169,9 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
       { id:'kit-ipam-pvh-administrativo', nome:'Kit Aprovação — Técnico Autárquico (Administrativa) — IPAM Porto Velho', conteudo:'6 apostilas em PDF com as disciplinas do edital: Língua Portuguesa; Raciocínio Lógico e Matemático; Informática Básica; Noções de Administração Pública, Atendimento e Ética; Noções de Legislação Institucional, Previdenciária e de Assistência à Saúde; e Técnico Autárquico — Administrativa. Inclui simulados exclusivos.', price:'29,90', quad:true, capa:function(){ return COVER_IPAM; } }
     ]
   };
+  OUT.ibge = [
+    { id:'pdf-recenseador-ibge', nome:'Apostila de Estudos — Recenseador IBGE (12º Censo Agro)', conteudo:'Apostila em PDF com o assunto completo do 12º Censo Agropecuário, em 9 assuntos. Traz 135 questões inéditas (15 por assunto), gabarito comentado com a explicação de cada alternativa e quadro-resumo com números, siglas e pegadinhas.', price:'9,90', capa:function(){ return COVER_RECENS; } }
+  ];
   window.__OC = { ED: ED, OUT: OUT };
   var atualEd = 'pvh', atualOut = 'ipam', alvoId = null;
   function achar(id){
@@ -3209,7 +3213,8 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
   // links diretos para divulgar
   var LINKS = {
     'semed-pvh':{ t:'ed', id:'' }, 'semed-pvh-series':{ t:'ed', id:'kit-pvh-series-iniciais' }, 'semed-pvh-secretaria':{ t:'ed', id:'kit-pvh-agente-secretaria' },
-    'ipam-pvh':{ t:'out', id:'kit-ipam-pvh-administrativo' }
+    'ipam-pvh':{ t:'out', id:'kit-ipam-pvh-administrativo', pill:'ipam' },
+    'recenseador-ibge':{ t:'out', id:'pdf-recenseador-ibge', pill:'ibge' }
   };
   window.__OC_LINKS = LINKS;
   function abreOC(){
@@ -3218,6 +3223,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     var L = LINKS[h];
     if (L.t === 'ed') { var t = document.querySelector('.tab[data-tab="concursos"]'); if (t) t.click(); }
     else if (window.setAreaConcurso) window.setAreaConcurso('outros');
+    if (L.pill) { atualOut = L.pill; document.querySelectorAll('.oc-pill[data-oc2]').forEach(function(x){ x.classList.toggle('active', x.dataset.oc2 === L.pill); }); }
     alvoId = L.id || null; window.renderOutrosConcursos();
     var parou = false, n = 0;
     ['wheel','touchstart','keydown','mousedown'].forEach(function(ev){ addEventListener(ev, function(){ parou = true; }, { passive:true, once:true }); });
