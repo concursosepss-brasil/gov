@@ -379,6 +379,8 @@ body.loja div.loja-banner.loja-on{display:flex !important;}
 #kitList .kitrow.card-alvo::before,#ocKits .kitrow.card-alvo::before,#oc2Kits .kitrow.card-alvo::before{content:"★ KIT SELECIONADO";}
 .kit-thumb.thumb-quad{width:170px;height:170px;object-fit:cover;border-radius:12px;flex-shrink:0;}
 @media (max-width:600px){.kitlist > .kitrow .kit-thumb.thumb-quad{width:100%;max-width:320px;height:auto;aspect-ratio:1/1;}}
+.kit-thumb.thumb-cap{height:auto;aspect-ratio:1199/1515;}
+@media (max-width:600px){.kitlist > .kitrow .kit-thumb.thumb-cap:not(.app-thumb){width:170px;height:auto;aspect-ratio:1199/1515;}}
 @media (prefers-reduced-motion:reduce){.kitrow.card-alvo{animation:none;box-shadow:inset 0 0 0 4px #F2B705}}
 #lojaTut{position:fixed;inset:0;z-index:2147483600;display:flex;flex-direction:column;background:#0D2B55;color:#fff;}
 #lojaTut .tt-topo{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#0A2144;border-bottom:1px solid rgba(255,255,255,.12);}
@@ -3170,7 +3172,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     ]
   };
   OUT.ibge = [
-    { id:'pdf-recenseador-ibge', nome:'Apostila de Estudos — Recenseador IBGE (12º Censo Agro)', conteudo:'Apostila em PDF com o assunto completo do 12º Censo Agropecuário, em 9 assuntos. Traz 135 questões inéditas (15 por assunto), gabarito comentado com a explicação de cada alternativa e quadro-resumo com números, siglas e pegadinhas.', price:'9,90', capa:function(){ return COVER_RECENS; } }
+    { id:'pdf-recenseador-ibge', cap:true, nome:'Apostila de Estudos — Recenseador IBGE (12º Censo Agro)', conteudo:'Apostila em PDF com o assunto completo do 12º Censo Agropecuário, em 9 assuntos. Traz 135 questões inéditas (15 por assunto), gabarito comentado com a explicação de cada alternativa e quadro-resumo com números, siglas e pegadinhas.', price:'9,90', capa:function(){ return COVER_RECENS; } }
   ];
   window.__OC = { ED: ED, OUT: OUT };
   var atualEd = 'pvh', atualOut = 'ipam', alvoId = null;
@@ -3188,7 +3190,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     return (lista || []).map(function(k){
       var on = pdfAtivo(k.id), img = k.capa() || '';
       return '<div class="kitrow' + (k.id === alvoId ? ' card-alvo' : '') + '" id="oc-' + k.id + '">'
-        + (img ? '<img loading="lazy" decoding="async" class="kit-thumb' + (k.quad ? ' thumb-quad' : '') + '" src="' + img + '" alt="">' : '')
+        + (img ? '<img loading="lazy" decoding="async" class="kit-thumb' + (k.quad ? ' thumb-quad' : '') + (k.cap ? ' thumb-cap' : '') + '" src="' + img + '" alt="">' : '')
         + '<div style="flex:1;min-width:120px;"><div class="kitname">' + k.nome + '</div><div class="kitcontent">' + k.conteudo + '</div></div>'
         + '<div style="display:flex;align-items:center;gap:12px;"><div class="kitprice">R$ <b>' + k.price + '</b></div>'
         + (on ? '<div class="buybox"><button class="order buy-now loja-on" onclick="lojaComprar(\'' + k.id + '\')">Comprar agora — Pix ou cartão</button><small class="loja-on loja-nota">Pagamento seguro pelo PagBank • Entrega por e-mail após a confirmação</small></div>' : '')
