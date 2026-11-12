@@ -3171,7 +3171,9 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
       { id:'kit-ipam-pvh-administrativo', nome:'Kit Aprovação — Técnico Autárquico (Administrativa) — IPAM Porto Velho', conteudo:'6 apostilas em PDF com as disciplinas do edital: Língua Portuguesa; Raciocínio Lógico e Matemático; Informática Básica; Noções de Administração Pública, Atendimento e Ética; Noções de Legislação Institucional, Previdenciária e de Assistência à Saúde; e Técnico Autárquico — Administrativa. Inclui simulados exclusivos.', price:'29,90', quad:true, capa:function(){ return COVER_IPAM; } }
     ]
   };
+  var COVER_REC_APP = 'img/80ebde6d48.webp';
   OUT.ibge = [
+    { id:'apostila-rec', online:true, quad:true, acesso:'https://apostila-recenseador.web.app/', nome:'Apostila Interativa — Recenseador IBGE (Censo Agro + Português + Matemática)', conteudo:'24 assuntos em um só app: Censo Agropecuário (9), Língua Portuguesa (8) e Matemática (7), com a teoria em linguagem simples, quadros Guarde isto, 360 questões com gabarito comentado, 4 simulados no formato da prova (60 questões), plano de estudos, desempenho e a Bia, tutora que responde com o conteúdo da apostila. Acesso pelo Gmail da compra.', price:'14,90', capa:function(){ return COVER_REC_APP; } },
     { id:'pdf-recenseador-ibge', cap:true, nome:'Apostila de Estudos — Recenseador IBGE (12º Censo Agro)', conteudo:'Apostila em PDF com o assunto completo do 12º Censo Agropecuário, em 9 assuntos. Traz 135 questões inéditas (15 por assunto), gabarito comentado com a explicação de cada alternativa e quadro-resumo com números, siglas e pegadinhas.', price:'9,90', capa:function(){ return COVER_RECENS; } }
   ];
   window.__OC = { ED: ED, OUT: OUT };
@@ -3188,12 +3190,13 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
   };
   function linhas(lista){
     return (lista || []).map(function(k){
-      var on = pdfAtivo(k.id), img = k.capa() || '';
+      var on = !!k.online || pdfAtivo(k.id), img = k.capa() || '';
       return '<div class="kitrow' + (k.id === alvoId ? ' card-alvo' : '') + '" id="oc-' + k.id + '">'
         + (img ? '<img loading="lazy" decoding="async" class="kit-thumb' + (k.quad ? ' thumb-quad' : '') + (k.cap ? ' thumb-cap' : '') + '" src="' + img + '" alt="">' : '')
         + '<div style="flex:1;min-width:120px;"><div class="kitname">' + k.nome + '</div><div class="kitcontent">' + k.conteudo + '</div></div>'
         + '<div style="display:flex;align-items:center;gap:12px;"><div class="kitprice">R$ <b>' + k.price + '</b></div>'
         + (on ? '<div class="buybox"><button class="order buy-now loja-on" onclick="lojaComprar(\'' + k.id + '\')">Comprar agora — Pix ou cartão</button><small class="loja-on loja-nota">Pagamento seguro pelo PagBank • Entrega por e-mail após a confirmação</small></div>' : '')
+        + (k.acesso ? '<a class="access-btn" href="' + k.acesso + '" target="_blank" rel="noopener">Já comprei — Acessar apostila</a>' : '')
         + '<button class="order ' + (on ? 'so-wpp' : '') + '" onclick="openOrderOC(\'' + k.id + '\')">Pedir pelo WhatsApp</button></div></div>';
     }).join('');
   }
@@ -3216,7 +3219,8 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
   var LINKS = {
     'semed-pvh':{ t:'ed', id:'' }, 'semed-pvh-series':{ t:'ed', id:'kit-pvh-series-iniciais' }, 'semed-pvh-secretaria':{ t:'ed', id:'kit-pvh-agente-secretaria' },
     'ipam-pvh':{ t:'out', id:'kit-ipam-pvh-administrativo', pill:'ipam' },
-    'recenseador-ibge':{ t:'out', id:'pdf-recenseador-ibge', pill:'ibge' }
+    'recenseador-ibge':{ t:'out', id:'pdf-recenseador-ibge', pill:'ibge' },
+    'recenseador-interativa':{ t:'out', id:'apostila-rec', pill:'ibge' }
   };
   window.__OC_LINKS = LINKS;
   function abreOC(){
