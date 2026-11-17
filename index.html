@@ -788,7 +788,7 @@ document.getElementById('themeBtn').addEventListener('click', function(){
     <div class="coach-buy">
       <div><div class="kitname">Coach Virtual (Dany e Leo)</div><div class="kitcontent">Pagamento único · use no celular e no computador · <b>7 perguntas grátis</b> para testar</div></div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div class="kitprice">R$ <b>19,90</b></div>
+        <div class="kitprice">R$ <b>9,90</b></div>
         <div class="buybox">
           <a class="coach-free" href="https://coach-virtual.web.app/" target="_blank" rel="noopener">Testar grátis agora</a>
           <button class="order buy-now loja-on" onclick="lojaComprar('coach')">Comprar agora — Pix ou cartão</button>
@@ -1336,7 +1336,7 @@ function openOrderInterativa(title){
   document.getElementById('orderOverlay').classList.add('show');
 }
 function openOrderCoach(){
-  currentItem = {title:'Coach Virtual (Dany e Leo)', price:'19,90'};
+  currentItem = {title:'Coach Virtual (Dany e Leo)', price:'9,90'};
   document.getElementById('orderItemLabel').textContent = currentItem.title;
   document.getElementById('orderOverlay').classList.add('show');
 }
@@ -2493,10 +2493,10 @@ body.edu-solo .edu-cat{display:inline-block}
     if (emo === true) await bot(pick([`Poxa${st.nome ? ', ' + E(st.nome) : ''}, te entendo 💛 A preparação mexe mesmo com a gente, e você não precisa passar por isso sozinha(o).`, `Ei${st.nome ? ', ' + E(st.nome) : ''}, respira 💛 Isso que você sente é muito comum em quem estuda pra concurso, e tem jeito de aliviar.`]));
     await bot('Deixa eu te apresentar duas pessoas especiais 💛 O <b>Coach Virtual</b>: a <b>Dany</b> e o <b>Leo</b>!');
     await bot('<div class="edu-coach"><img loading="lazy" decoding="async" src="' + COACH_DANY + '" alt="Dany"><img loading="lazy" decoding="async" src="' + COACH_LEO + '" alt="Leo"><div><b>Dany</b> cuida da mente e das emoções. <b>Leo</b> cuida do método e da estratégia.</div></div>');
-    await bot('Eles montam o seu <b>plano de 40 dias</b>, dizem <b>o que estudar hoje</b>, guardam o seu <b>caderno de erros</b>, acompanham os seus <b>simulados</b> e te apoiam nos dias de ansiedade e desânimo. Tudo por <b>R$ 19,90</b>, pagamento único, e você pode <b>testar grátis</b> com 7 perguntas 😉');
-    chips(['🎯 Testar o Coach grátis', '💳 Quero o Coach (R$ 19,90)', 'Ver outras opções'], (v, i) => {
+    await bot('Eles montam o seu <b>plano de 40 dias</b>, dizem <b>o que estudar hoje</b>, guardam o seu <b>caderno de erros</b>, acompanham os seus <b>simulados</b> e te apoiam nos dias de ansiedade e desânimo. Tudo por <b>R$ 9,90</b>, pagamento único, e você pode <b>testar grátis</b> com 7 perguntas 😉');
+    chips(['🎯 Testar o Coach grátis', '💳 Quero o Coach (R$ 9,90)', 'Ver outras opções'], (v, i) => {
       if (i === 0) { window.open(COACH_URL, '_blank', 'noopener'); return bot('Abri o Coach numa nova aba 🚀 Lá você escolhe a Dany ou o Leo e já começa a conversar!'); }
-      if (i === 1) { addItem({ nome: 'Coach Virtual (Dany e Leo)', preco: 19.9 }); return askConcurso(); }
+      if (i === 1) { addItem({ nome: 'Coach Virtual (Dany e Leo)', preco: 9.9 }); return askConcurso(); }
       otherMenu();
     });
   }
