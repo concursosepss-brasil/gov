@@ -3244,7 +3244,9 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     }
     function reaplica(){ if (parou) return; alvoId = L.id || null; window.renderOutrosConcursos(); alinha(); }
     alinha();
-    var iv = setInterval(function(){ alinha(); if (parou || ++n > 24) clearInterval(iv); }, 150);
+    var iv = setInterval(function(){ alinha(); if (parou || ++n > 100) clearInterval(iv); }, 150);
+    // a lista é redesenhada quando a lista do Drive chega (os cartões ficam maiores): realinha enquanto a pessoa não mexer na rolagem
+    if (window.MutationObserver){ var mo = new MutationObserver(function(){ if (parou) { mo.disconnect(); return; } alinha(); }); document.querySelectorAll('#tab-concursos, #areaOutros').forEach(function(el){ mo.observe(el, { childList:true, subtree:true }); }); setTimeout(function(){ mo.disconnect(); }, 20000); }
     addEventListener('load', function(){ setTimeout(reaplica, 100); setTimeout(reaplica, 1200); }, { once:true });
     document.querySelectorAll('.tab, .areabtn').forEach(function(b){ b.addEventListener('click', function(){ alvoId = null; document.querySelectorAll('.card-alvo').forEach(function(x){ if (x.id && x.id.indexOf('oc-') === 0) x.classList.remove('card-alvo'); }); }, { once:true }); });
   }
@@ -3275,7 +3277,9 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     }
     function reaplica(){ if (parou) return; window.__kitAlvo = slug; renderKits(''); alinha(); }
     alinha();
-    var iv = setInterval(function(){ alinha(); if (parou || ++n > 24) clearInterval(iv); }, 150);
+    var iv = setInterval(function(){ alinha(); if (parou || ++n > 100) clearInterval(iv); }, 150);
+    // a lista é redesenhada quando a lista do Drive chega (os cartões ficam maiores): realinha enquanto a pessoa não mexer na rolagem
+    if (window.MutationObserver){ var mo = new MutationObserver(function(){ if (parou) { mo.disconnect(); return; } alinha(); }); document.querySelectorAll('#kitList').forEach(function(el){ mo.observe(el, { childList:true, subtree:true }); }); setTimeout(function(){ mo.disconnect(); }, 20000); }
     addEventListener('load', function(){ setTimeout(reaplica, 100); setTimeout(reaplica, 1200); }, { once:true });
     document.querySelectorAll('.tab, .areabtn').forEach(function(b){ b.addEventListener('click', function(){ window.__kitAlvo = null; var x = document.querySelector('#kitList .card-alvo'); if (x) x.classList.remove('card-alvo'); }, { once:true }); });
   }
@@ -3305,7 +3309,9 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     }
     function reaplica(){ if (parou) return; window.__avulsaAlvo = key; renderAvulsas(''); alinha(); }
     alinha();
-    var iv = setInterval(function(){ alinha(); if (parou || ++n > 24) clearInterval(iv); }, 150);
+    var iv = setInterval(function(){ alinha(); if (parou || ++n > 100) clearInterval(iv); }, 150);
+    // a lista é redesenhada quando a lista do Drive chega (os cartões ficam maiores): realinha enquanto a pessoa não mexer na rolagem
+    if (window.MutationObserver){ var mo = new MutationObserver(function(){ if (parou) { mo.disconnect(); return; } alinha(); }); document.querySelectorAll('#avulsaList').forEach(function(el){ mo.observe(el, { childList:true, subtree:true }); }); setTimeout(function(){ mo.disconnect(); }, 20000); }
     addEventListener('load', function(){ setTimeout(reaplica, 100); setTimeout(reaplica, 1200); }, { once:true });
     document.querySelectorAll('.tab, .areabtn').forEach(function(b){ b.addEventListener('click', function(){ window.__avulsaAlvo = null; var x = document.querySelector('#avulsaList .card-alvo'); if (x) x.classList.remove('card-alvo'); }, { once:true }); });
   }
