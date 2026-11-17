@@ -1017,6 +1017,7 @@ function renderKits(filter){
 renderKits('');
 
 const avulsaImgs = {
+  "simulado-seducpa": "img/53ead940b9.webp",
   "simulado-ibgp": "img/071dc03ad3.webp",
   "simulado-seducam": "img/759be568a5.webp",
   "eca": "img/6f2e628cfe.webp",
@@ -1062,7 +1063,8 @@ let avulsas = [
   {id:904, mod:"Legislação Educacional", lic:"", slug:"", imgKey:"legislacao", price:"19,90", geral:true},
   {id:905, mod:"Conhecimento Pedagógico", lic:"", slug:"", imgKey:"pedagogico", price:"19,90", geral:true},
   {id:906, mod:"Simulado SEDUC-AM Professor — 300 questões", lic:"", slug:"", imgKey:"simulado-seducam", price:"9,90", desc:"30 simulados (1 por dia) · 300 questões com gabarito comentado"},
-  {id:907, mod:"Simulados IBGP — SEMED e SEMUSA Porto Velho (400 questões)", lic:"", slug:"", imgKey:"simulado-ibgp", price:"9,90", desc:"400 questões (100 por disciplina): Língua Portuguesa, Matemática, Conhecimentos Gerais e Atualidades e Legislação Municipal · gabarito comentado"}
+  {id:907, mod:"Simulados IBGP — SEMED e SEMUSA Porto Velho (400 questões)", lic:"", slug:"", imgKey:"simulado-ibgp", price:"9,90", desc:"400 questões (100 por disciplina): Língua Portuguesa, Matemática, Conhecimentos Gerais e Atualidades e Legislação Municipal · gabarito comentado"},
+  {id:908, mod:"Super Simulado SEDUC-PA — 400 questões", lic:"", slug:"", imgKey:"simulado-seducpa", price:"9,90", desc:"400 questões (100 por disciplina): Língua Portuguesa, Raciocínio Lógico-Matemático, Conhecimentos Gerais e Atualidades e Conhecimentos Pedagógicos · 40 simulados"},
 ];
 AREAS_ESPECIFICO.forEach(([slug,area],i)=>avulsas.push({id:i+1, mod:"Conhecimento Específico", lic:area, slug, imgKey:"especifico-"+slug, price:"19,90"}));
 
@@ -3281,9 +3283,9 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
 })();
 </script>
 <script>
-// link direto da avulsa: #simulado-seducam, #simulado-ibgp (abre a aba Apostilas avulsas e destaca o cartão)
+// link direto da avulsa: #simulado-seducam, #simulado-ibgp, #simulado-seducpa (abre a aba Apostilas avulsas e destaca o cartão)
 (function(){
-  var AV = { 'simulado-seducam':'simulado-seducam', 'simulado-ibgp':'simulado-ibgp' };
+  var AV = { 'simulado-seducam':'simulado-seducam', 'simulado-ibgp':'simulado-ibgp', 'simulado-seducpa':'simulado-seducpa' };
   function abreAv(){
     var h = (location.hash || '').slice(1);
     if (!Object.prototype.hasOwnProperty.call(AV, h)) return;
