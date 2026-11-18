@@ -1170,7 +1170,10 @@ renderOutros();
    { nome:"Nome do produto", desc:"O que é", preco:"19,90", img:"(imagem opcional)", demo:"(link de demonstração opcional)" } */
 const LOJA = [
   { key:"alfa", ico:"🔤", nome:"Alfabetização", sub:"Apostilas e atividades", itens:[] },
-  { key:"imprimir", ico:"🖨️", nome:"Para imprimir", sub:"Painéis, moldes de letras e decoração", itens:[] },
+  { key:"imprimir", ico:"🖨️", nome:"Para imprimir", sub:"Painéis, moldes de letras e decoração", itens:[
+    { produtoId:"painel", app:"https://painel-em-folhas.web.app/", nome:"Painel em Folhas", desc:"Transforme qualquer imagem em um painel gigante dividido em folhas A4. Já vem com 8 modelos (Páscoa, Natal, 7 de Setembro, Férias, Volta às Aulas, Festa Junina, Carnaval e Dia das Crianças) e aceita as suas imagens. Baixe o PDF, imprima e monte. 3 downloads grátis para testar.", preco:"9,90", img:"img/painel-em-folhas.webp" },
+    { produtoId:"painel3d", app:"https://painel-3d.web.app/", nome:"Painel 3D em Camadas", desc:"O app recorta o personagem do fundo e gera as folhas de cada camada para você colar em relevo, com fita banana ou EVA. Com 8 modelos prontos e suas próprias imagens. 3 downloads grátis para testar.", preco:"9,90", img:"img/painel-3d.webp" }
+  ] },
   { key:"apps", ico:"📱", nome:"Aplicativos", sub:"Apps para a rotina do professor", itens:[] },
   { key:"outros", ico:"➕", nome:"Outros", sub:"Mais materiais", itens:[] }
 ];
@@ -1184,7 +1187,14 @@ function renderLoja(){
     <div class="lp-card">${p.img ? `<img src="${p.img}" alt="" loading="lazy">` : `<div class="ph">${c.ico}</div>`}
       <div class="bd"><div class="nm">${p.nome}</div><div class="ds">${p.desc||''}</div>
         ${p.demo ? `<a class="demo" href="${p.demo}" target="_blank" rel="noopener">Ver demonstração ›</a>` : ''}
-        <div class="ft"><div class="kitprice">R$ <b>${p.preco}</b></div><button class="order" onclick="pedirLoja('${c.key}',${i})">Pedir pelo WhatsApp</button></div></div>
+        ${p.produtoId ? `<div class="ft"><div class="kitprice">R$ <b>${p.preco}</b> <small style="font-weight:500;color:var(--muted)">pagamento único</small></div></div>
+        <div class="buybox" style="margin-top:6px">
+          <a class="coach-free" href="${p.app}" target="_blank" rel="noopener">Testar grátis agora</a>
+          <button class="order buy-now loja-on" onclick="lojaComprar('${p.produtoId}')">Comprar agora — Pix ou cartão</button>
+          <small class="loja-on loja-nota">Pagamento seguro pelo PagBank • Liberação automática após confirmação</small>
+          <button class="order so-wpp" onclick="pedirLoja('${c.key}',${i})">Pedir pelo WhatsApp</button>
+          <a class="access-btn" href="${p.app}" target="_blank" rel="noopener">Já comprei — abrir o app</a>
+        </div>` : `<div class="ft"><div class="kitprice">R$ <b>${p.preco}</b></div><button class="order" onclick="pedirLoja('${c.key}',${i})">Pedir pelo WhatsApp</button></div>`}</div>
     </div>`).join('') + '</div>'
     : `<div class="lp-empty"><span class="lp-soon">EM BREVE</span><b>${c.ico} ${c.nome}</b>Estamos desenvolvendo esses materiais e logo eles estarão aqui. Quer ser avisado(a) quando chegarem?<div style="margin-top:14px"><button class="order" onclick="avisarLoja('${c.key}')">Quero ser avisado(a)</button></div></div>`;
 }
@@ -2901,16 +2911,16 @@ function mostrarTutorial(produtoId){
 }
 window.lojaComprar = async (produtoId, tutorialVisto) => {
   if (!tutorialVisto && window.rastro) window.rastro('comprar', produtoId);
-  if (!tutorialVisto && produtoId !== 'coach') { mostrarTutorial(produtoId); return; }
+  if (!tutorialVisto && produtoId !== 'coach' && produtoId.indexOf('painel') !== 0) { mostrarTutorial(produtoId); return; }
   await esperarPronto();
   if (!usuario) { aoEntrar = () => lojaComprar(produtoId, true); telaLogin('Para receber a apostila na hora, entre com sua conta Google.'); return; }
   abrir('<h3>Preparando seu pagamento…</h3><div class="loja-spin"></div><p class="small" style="text-align:center">Você vai para a página segura do PagBank.</p>');
   try {
     const r = await api('/pedido', { produtoId, retorno: location.origin + location.pathname });
     if (r.jaTem) {
-      const ehCoach = produtoId === 'coach', ehPdf = r.tipo === 'pdf';
-      abrir('<h3>' + (ehCoach ? 'Você já tem o Coach Virtual 🎉' : ehPdf ? 'Você já tem este material 🎉' : 'Você já tem esta apostila 🎉') + '</h3><p class="small">' + (ehCoach ? 'Ele está liberado' : ehPdf ? 'Os PDFs estão liberados' : 'Ela está liberada') + ' na conta <b>' + esc(usuario.email) + '</b>.</p>'
-        + '<a class="abrir" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + (ehCoach ? 'Abrir o Coach' : ehPdf ? 'Abrir meus PDFs' : 'Abrir apostila') + '</a>'
+      const ehApp = produtoId.indexOf('painel') === 0, ehCoach = produtoId === 'coach', ehPdf = r.tipo === 'pdf';
+      abrir('<h3>' + (ehApp ? 'Você já tem o plano Pro 🎉' : ehCoach ? 'Você já tem o Coach Virtual 🎉' : ehPdf ? 'Você já tem este material 🎉' : 'Você já tem esta apostila 🎉') + '</h3><p class="small">' + (ehApp || ehCoach ? 'Ele está liberado' : ehPdf ? 'Os PDFs estão liberados' : 'Ela está liberada') + ' na conta <b>' + esc(usuario.email) + '</b>.</p>'
+        + '<a class="abrir" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + (ehApp ? 'Abrir o app' : ehCoach ? 'Abrir o Coach' : ehPdf ? 'Abrir meus PDFs' : 'Abrir apostila') + '</a>'
         + blocoZap('📲 Receba o link no seu WhatsApp', ehPdf)
         + '<div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>');
       ligarZap([{ produtoNome: ehCoach ? 'Coach Virtual (Dany e Leo)' : ehPdf ? 'Seus PDFs' : 'Sua apostila interativa', link: r.link, pdf: ehPdf }], usuario.email);
@@ -3005,6 +3015,11 @@ async function telaMinhas(pedidoVolta){
   }
   if (espera) { clearInterval(espera); espera = null; }
   if (volta && volta.acessoLiberado) {
+    if ((volta.produtoId || '').indexOf('painel') === 0) {
+      abrir('<h3>Pagamento confirmado! 🎉</h3><p class="small">O plano Pro <b>' + esc(volta.produtoNome) + '</b> já está liberado no e-mail <b>' + esc(m.email) + '</b>. Abra o app e entre com este mesmo Gmail: sem limite e sem marca nas folhas.</p>'
+        + '<a class="abrir" href="' + esc(volta.link) + '" target="_blank" rel="noopener">Abrir o app agora</a>' + FECHAR);
+      return;
+    }
     const ehPdf = volta.tipo === 'pdf';
     const ap = [{ produtoNome: volta.produtoNome, link: volta.link, pdf: ehPdf }];
     abrir('<h3>Pagamento confirmado! 🎉</h3><p class="small">' + (ehPdf ? 'Seus PDFs' : 'Sua apostila') + ' <b>' + esc(volta.produtoNome) + '</b> ' + (ehPdf ? 'foram liberados' : 'já está liberada') + ' no e-mail <b>' + esc(m.email) + '</b>.</p>'
