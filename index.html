@@ -843,11 +843,11 @@ document.getElementById('themeBtn').addEventListener('click', function(){
 
   <section id="secaoComoFunciona">
     <h2>Como funciona</h2>
-    <p class="lede">Do pedido até o PDF na sua mão, em 3 passos simples.</p>
+    <p class="lede">Do pedido até o PDF na sua mão, em 3 passos simples. A compra é feita aqui mesmo, pelo site, com pagamento seguro no PagBank.</p>
     <div class="steps">
-      <div class="step"><div class="step-n">1</div><div><b>Escolha o kit ou a apostila avulsa</b><p>Encontre sua licenciatura ou cargo nas abas acima.</p></div></div>
-      <div class="step"><div class="step-n">2</div><div><b>Peça pelo WhatsApp</b><p>Toque em "Pedir pelo WhatsApp" e confirme seu nome — a mensagem já vai pronta pro nosso atendimento.</p></div></div>
-      <div class="step"><div class="step-n">3</div><div><b>Combine o pagamento e receba o PDF</b><p>Combinamos a forma de pagamento por lá e enviamos o material digital assim que confirmado.</p></div></div>
+      <div class="step"><div class="step-n">1</div><div><b>Escolha o kit ou a apostila avulsa</b><p>Encontre sua licenciatura, cargo ou concurso nas abas acima.</p></div></div>
+      <div class="step"><div class="step-n">2</div><div><b>Toque em "Comprar agora" e pague</b><p>Entre com o seu Gmail e pague com Pix ou cartão na página segura do PagBank. É o Gmail da compra que vai receber o material. Se algum produto ainda não tiver o botão "Comprar agora", toque em "Pedir pelo WhatsApp".</p></div></div>
+      <div class="step"><div class="step-n">3</div><div><b>Receba o PDF na hora</b><p>Assim que o PagBank confirma o pagamento, o link dos PDFs chega no seu e-mail (olhe também o spam), e você pode mandá-lo para o seu WhatsApp pelo botão verde. Abra com o mesmo Gmail da compra e toque em "Fazer download" para guardar no aparelho.</p></div></div>
     </div>
   </section>
 
@@ -855,9 +855,9 @@ document.getElementById('themeBtn').addEventListener('click', function(){
     <h2>Como funciona a apostila interativa</h2>
     <p class="lede">Um aplicativo de estudos no seu celular ou computador, liberado para o seu e-mail.</p>
     <div class="steps">
-      <div class="step"><div class="step-n">1</div><div><b>Peça pelo WhatsApp</b><p>Toque em "Pedir pelo WhatsApp", confirme seu nome e combine o pagamento com o nosso atendimento.</p></div></div>
-      <div class="step"><div class="step-n">2</div><div><b>Solicite o acesso com seu e-mail</b><p>Toque em "Já comprei — Acessar apostila" e informe o mesmo e-mail que você passou na compra.</p></div></div>
-      <div class="step"><div class="step-n">3</div><div><b>Nós liberamos o seu e-mail</b><p>Assim que o pagamento for confirmado, liberamos o acesso. É só abrir o link de novo e a apostila já abre.</p></div></div>
+      <div class="step"><div class="step-n">1</div><div><b>Compre pelo site</b><p>Toque em "Comprar agora", entre com o seu Gmail e pague com Pix ou cartão na página segura do PagBank.</p></div></div>
+      <div class="step"><div class="step-n">2</div><div><b>O acesso é liberado sozinho</b><p>Assim que o PagBank confirma o pagamento, o seu Gmail é liberado automaticamente e o link chega no seu e-mail.</p></div></div>
+      <div class="step"><div class="step-n">3</div><div><b>Entre com o mesmo Gmail</b><p>Abra o link (ou toque em "Já comprei — Acessar apostila") e entre com o Gmail da compra.</p></div></div>
       <div class="step"><div class="step-n">4</div><div><b>Estude como num aplicativo</b><p>Teoria por módulos, questões comentadas, simulados com tempo, diagnóstico e plano de estudos. Dá para instalar na tela inicial do celular.</p></div></div>
     </div>
   </section>
@@ -1203,14 +1203,14 @@ renderLoja();
 /* ---- FAQ ---- */
 const faqs = [
   {id:"f1", q:"Qual a diferença entre a apostila avulsa e o kit completo?", a:"A avulsa é só um módulo: Legislação Educacional, Conhecimento Pedagógico (os dois valem para todas as áreas) ou o Conhecimento Específico da sua área. O kit completo reúne as 4 apostilas (Conhecimento Específico, Conhecimento Pedagógico, Legislação Educacional e Mapas Mentais) por um valor melhor."},
-  {id:"f2", q:"Como eu recebo o material?", a:"Você paga pelo site (Pix ou cartão) e, assim que o PagBank confirma, os PDFs são liberados no seu Gmail pelo Google Drive e o link chega por e-mail. É só abrir e baixar. Se algum material ainda estiver só por pedido, a gente combina pelo WhatsApp."},
+  {id:"f2", q:"Como eu recebo o material?", a:"Você paga pelo site (Pix ou cartão) e, assim que o PagBank confirma, os PDFs são liberados no seu Gmail pelo Google Drive e o link chega por e-mail. É só abrir e baixar. Se algum material ainda não tiver o botão \"Comprar agora\", a nossa equipe fecha com você pelo WhatsApp."},
   {id:"f3", q:"Posso estudar pelo celular ou imprimir?", a:"Pode! É um PDF, então funciona no celular, no tablet e no computador — e dá pra imprimir se preferir."},
   {id:"f4", q:"As apostilas seguem o edital do meu concurso?", a:"Sim, mas sempre confira o edital vigente do seu concurso — alguns ainda não foram publicados oficialmente e podem ter ajustes."},
   {id:"f5", q:"Serve para qual concurso?", a:"Para concursos e processos seletivos da área da educação em todo o Brasil. Na aba \"Outros Concursos\" você também encontra kits organizados por cargo de editais específicos."}
 ];
 const faqsIA = [
   {id:"i1", q:"Qual a diferença entre a apostila interativa e a apostila em PDF?", a:"A interativa é um aplicativo: além da teoria, tem questões comentadas que corrigem na hora, simulados com tempo de prova, diagnóstico dos seus pontos fracos e plano de estudos até a data da prova. O seu progresso fica salvo."},
-  {id:"i2", q:"Como eu recebo o acesso?", a:"Depois do pagamento, toque em \"Já comprei — Acessar apostila\" e informe o e-mail usado na compra. Assim que liberarmos, é só abrir o link de novo."},
+  {id:"i2", q:"Como eu recebo o acesso?", a:"Depois do pagamento no PagBank, o acesso é liberado automaticamente para o Gmail da compra. É só tocar em \"Já comprei — Acessar apostila\" e entrar com o mesmo Gmail."},
   {id:"i3", q:"Posso usar no celular e no computador?", a:"Pode, um aparelho por vez. Se abrir em outro aparelho, o anterior é desconectado e você escolhe onde continuar — sem precisar pedir liberação de novo."},
   {id:"i4", q:"Preciso instalar alguma coisa?", a:"Não. Funciona direto no navegador. Se quiser, dá para adicionar à tela inicial do celular e usar como um aplicativo."},
   {id:"i5", q:"Serve para qual concurso?", a:"Para concursos e processos seletivos da área da educação em todo o Brasil, com questões no estilo das bancas de concurso."}
@@ -2066,7 +2066,8 @@ body.edu-solo .edu-cat{display:inline-block}
     W.y += 2; doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.text('Total', 14, W.y); doc.text(money(tot), 196, W.y, { align: 'right' }); W.y += 10;
     doc.setFillColor(255, 244, 204); doc.roundedRect(14, W.y - 5, 182, 24, 3, 3, 'F');
     W.p('Status: aguardando confirmação do pagamento.', { bold: true, x: 18, w: 174, gap: 0 });
-    W.p('Finalize pelo WhatsApp (92) 98447-8798 informando o número do pedido. Após a confirmação do pagamento, ' + entrega() + '.', { x: 18, w: 174, size: 9.5 });
+    if (st.cart.every(online)) W.p('Finalize no site: toque em "Comprar agora" no cartão do produto e pague com Pix ou cartão na página segura do PagBank. Assim que o pagamento é confirmado, o material é liberado automaticamente e o link chega no seu e-mail.', { x: 18, w: 174, size: 9.5 });
+    else W.p('Itens com "Comprar agora" no site: pague pelo site (Pix ou cartão, no PagBank) e o material é liberado automaticamente. Os demais itens: finalize pelo WhatsApp (92) 98447-8798 informando o número do pedido. Após a confirmação do pagamento, ' + entrega() + '.', { x: 18, w: 174, size: 9.5 });
     W.foot(); doc.save(`comprovante-pedido-${st.pedido}.pdf`);
   }
   function planData(){ const P = st.pl; return { n: st.nome || '', a: st.area || '', di: P.disc, s: P.sem, t: P.semTxt, h: P.h, d: P.d }; }
@@ -2444,11 +2445,11 @@ body.edu-solo .edu-cat{display:inline-block}
       const el = await bot(`💳 Toque abaixo pra pagar por <b>Pix ou cartão</b> na página segura do PagBank:${on.length > 1 ? ' (é um botão por item, um de cada vez)' : ''}` +
         on.map(it => `<button type="button" class="edu-wpp edu-buy" data-pid="${E(pidOf(it))}" style="background:#2F5BFF;display:block;width:100%;margin-top:8px;border:0;cursor:pointer;font:inherit;font-weight:800">💳 Comprar agora — ${E(it.nome.replace(/^[^—]+—\s*/, ''))} (${money(it.preco)})</button>`).join(''));
       el.querySelectorAll('.edu-buy').forEach(b => b.onclick = () => { try { window.lojaComprar(b.dataset.pid); } catch(e) {} });
-      if (rest.length) await bot(`Esses itens são fechados direto com a nossa equipe no WhatsApp: <div class="edu-sum">${rest.map(x => `<div>• ${E(x.nome)}</div>`).join('')}</div>` + wppBtn(rest, '💬 Combinar pelo WhatsApp'));
-      else await bot(`Se você ainda preferir conversar com a equipe antes de pagar, tudo bem 😊 Mas pelo site é bem mais rápido, e você já sai com o material no e-mail. ${wppBtn(st.cart, '💬 Prefiro falar com a equipe').replace('class="edu-wpp"', 'class="edu-link"')}`);
+      if (rest.length) await bot(`Esses itens ainda não têm compra automática no site, então a nossa equipe fecha com você pelo WhatsApp: <div class="edu-sum">${rest.map(x => `<div>• ${E(x.nome)}</div>`).join('')}</div>` + wppBtn(rest, '💬 Falar com a equipe pelo WhatsApp'));
+      else await bot(`A compra é feita aqui mesmo, pelo site: é rápido e você já sai com o material no e-mail 😊 Se tiver qualquer dúvida antes de pagar, é só me perguntar aqui ou <a class="edu-link" href="https://wa.me/${WPP}?text=${encodeURIComponent('Olá! Tenho uma dúvida antes de comprar no site.')}" target="_blank" rel="noopener">falar com a equipe</a>.`);
       if (planLink) await bot('🎁 E o seu <b>bônus</b> não se perde: depois de pagar, toque aqui pra pedir o seu <b>plano de estudos em PDF</b> no seu WhatsApp: ' + `<a class="edu-wpp" href="https://wa.me/${WPP}?text=${encodeURIComponent(`Olá! Meu nome é ${st.nome}. Vim pelo assistente virtual Edu.\nPedido nº ${st.pedido} (pago pelo site).\nQuero receber o meu 🎁 bônus: plano de estudos personalizado.\nCódigo interno: ${planLink}`)}" target="_blank" rel="noopener">🎁 Pedir meu plano de estudos</a>`);
       await bot('Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉');
-    } else await bot(`Agora é só tocar no botão verde: a mensagem já vai prontinha com o número do pedido. A nossa equipe combina o pagamento com você e, assim que confirmar, ${entrega()}. Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉`);
+    } else await bot(`Esse material ainda não tem compra automática no site. Então é só tocar no botão verde: a mensagem já vai prontinha com o número do pedido, e a nossa equipe fecha o pagamento com você. Assim que confirmar, ${entrega()}. Já tô torcendo muito por você! Qualquer coisa, é só me chamar 😉`);
     if (on.length) return chipsP(['➕ Adicionar mais um material', '🎁 Entrar no grupo grátis', '💬 Tenho uma dúvida', 'Ver outras opções'], async (v, i) => { if (i === 1){ await grupo(); return chipsP(['➕ Adicionar mais um material', 'Ver outras opções'], (v2, j) => [addMore, otherMenu][j]()); } [addMore, null, faq, otherMenu][i](); });
     await grupo();
     chipsP(['➕ Adicionar mais um material', '🗑️ Refazer o pedido', '💬 Tenho uma dúvida', 'Ver outras opções'], (v, i) => [addMore, () => { st.cart = []; st.pedido = null; chooseIA(); }, faq, otherMenu][i]());
@@ -2469,13 +2470,13 @@ body.edu-solo .edu-cat{display:inline-block}
 
   /* ---------- dúvidas (objeções) ---------- */
   const FAQ = [
-    ['Como eu recebo?', 'Comprando pelo site, a liberação é <b>automática</b>. A <b>apostila interativa</b> abre com o <b>mesmo Gmail da compra</b>, no celular ou no computador. Os <b>PDFs (kits, avulsas e simulados)</b> chegam por link no seu <b>e-mail</b> (olhe também o spam) e ficam liberados no seu Gmail. Se preferir, dá pra receber o link também no <b>WhatsApp</b>. Fechando o pedido pela equipe no WhatsApp, eles enviam depois da confirmação do pagamento.'],
+    ['Como eu recebo?', 'Comprando pelo site, a liberação é <b>automática</b>. A <b>apostila interativa</b> abre com o <b>mesmo Gmail da compra</b>, no celular ou no computador. Os <b>PDFs (kits, avulsas e simulados)</b> chegam por link no seu <b>e-mail</b> (olhe também o spam) e ficam liberados no seu Gmail. Se preferir, dá pra receber o link também no <b>WhatsApp</b>. Para os itens que ainda não têm compra automática no site, a equipe fecha pelo WhatsApp e envia depois da confirmação do pagamento.'],
     ['Serve para o meu concurso?', 'Serve sim! O material é feito para concursos e processos seletivos da área da educação em todo o Brasil, com conteúdo cobrado nas principais bancas. Se o seu edital tiver algo específico, a equipe te orienta no WhatsApp.'],
     ['Funciona no celular?', 'Funciona direitinho! A apostila interativa abre no navegador, sem instalar nada, e pode ser adicionada à tela inicial como app. Funciona em um aparelho por vez, e o progresso fica salvo no seu e-mail.'],
     ['Qual a diferença da interativa para o PDF?', 'O PDF você lê. Na <b>interativa</b> você lê, <b>treina com questões comentadas</b>, faz <b>simulados com tempo</b>, vê seu <b>diagnóstico</b> e ainda tem a <b>Bia</b> para tirar dúvidas. É estudar com método.'],
     ['Quem é a Bia?', '__BIA__'],
     ['É seguro comprar pelo site?', '__SEG__'],
-    ['Como é o pagamento?', 'No site é por <b>Pix ou cartão de crédito</b>, na página segura do <b>PagBank</b>, sem precisar enviar comprovante: confirmou o pagamento, o material é liberado sozinho. Se preferir, também dá pra fechar o pedido pelo WhatsApp com a nossa equipe.']
+    ['Como é o pagamento?', 'No site é por <b>Pix ou cartão de crédito</b>, na página segura do <b>PagBank</b>, sem precisar enviar comprovante: confirmou o pagamento, o material é liberado sozinho. Se algum item ainda não tiver o botão de compra no site, a nossa equipe fecha com você pelo WhatsApp.']
   ];
   async function faq(){
     await bot(pick(['Claro, pode perguntar! Qual é a sua dúvida? 😊', 'Fica à vontade! O que você quer saber?']));
@@ -2777,7 +2778,7 @@ window.LOJA_PARA_TODOS = true;
 // enquanto o login ainda está carregando (ou se a internet falhar), avisa em vez de não fazer nada
 window.lojaFechar = function(){ document.getElementById('lojaOverlay').classList.remove('show'); };
 window.lojaComprar = window.lojaMinhas = function(){
-  document.getElementById('lojaSheet').innerHTML = '<h3>Carregando…</h3><p class="small">Aguarde alguns segundos e toque de novo. Se não funcionar, peça pelo WhatsApp.</p><div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>';
+  document.getElementById('lojaSheet').innerHTML = '<h3>Carregando…</h3><p class="small">Aguarde alguns segundos e toque de novo. Se não funcionar, fale com a gente pelo WhatsApp.</p><div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>';
   document.getElementById('lojaOverlay').classList.add('show');
 };
 </script>
@@ -2842,7 +2843,7 @@ function telaLogin(motivo, comEmail){
     try { await signInWithPopup(auth, new GoogleAuthProvider()); }
     catch (e) {
       console.warn(e);
-      erro(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request' ? 'Login cancelado.' : 'Não foi possível entrar. Tente de novo ou peça pelo WhatsApp.');
+      erro(e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request' ? 'Login cancelado.' : 'Não foi possível entrar. Tente de novo ou fale com a gente pelo WhatsApp.');
     }
   };
   if (!comEmail) return;
@@ -2919,7 +2920,7 @@ window.lojaComprar = async (produtoId, tutorialVisto) => {
     location.href = r.url;
   } catch (e) {
     console.warn(e);
-    abrir('<h3>Não foi possível iniciar o pagamento</h3><p class="small">Tente de novo em instantes ou peça pelo WhatsApp.</p><div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>');
+    abrir('<h3>Não foi possível iniciar o pagamento</h3><p class="small">Tente de novo em instantes. Se continuar, fale com a gente pelo WhatsApp.</p><div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>');
   }
 };
 
