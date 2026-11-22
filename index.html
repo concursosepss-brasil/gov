@@ -810,7 +810,7 @@ document.getElementById('themeBtn').addEventListener('click', function(){
   <section id="tab-concursos" class="hidden">
     <h2>Concursos da Educação</h2>
     <p class="lede">Kits preparados para o edital de concursos específicos da área da educação. Escolha o concurso.</p>
-    <div class="oc-pills" id="ocPills"><button type="button" class="oc-pill active" data-oc="pvh">Semed Porto Velho</button></div>
+    <div class="oc-pills" id="ocPills"><button type="button" class="oc-pill active" data-oc="pvh">Semed Porto Velho</button><button type="button" class="oc-pill" data-oc="ma">SEDUC Maranhão</button></div>
     <div class="kitlist" id="ocKits"></div>
   </section>
 
@@ -1171,10 +1171,7 @@ renderOutros();
 const LOJA = [
   { key:"alfa", ico:"🔤", nome:"Alfabetização", sub:"Apostilas e atividades", itens:[] },
   { key:"imprimir", ico:"🖨️", nome:"Para imprimir", sub:"Painéis, moldes de letras e decoração", itens:[] },
-  { key:"apps", ico:"📱", nome:"Aplicativos", sub:"Apps para a rotina do professor", itens:[
-    { produtoId:"painel", app:"https://painel-em-folhas.web.app/", nome:"Painel em Folhas", desc:"Transforme qualquer imagem em um painel gigante dividido em folhas A4. Já vem com 17 modelos prontos (datas comemorativas e histórias bíblicas, como Dia das Mães, Páscoa, Natal, Arca de Noé e Davi e Golias) e aceita as suas imagens. Baixe o PDF, imprima e monte. 3 downloads grátis para testar.", preco:"9,90", img:"img/painel-em-folhas.webp" },
-    { produtoId:"painel3d", app:"https://painel-3d.web.app/", nome:"Painel 3D em Camadas", desc:"O app recorta o personagem do fundo e gera as folhas de cada camada para você colar em relevo, com fita banana ou EVA. Com 17 modelos prontos, já com as camadas separadas, e suas próprias imagens. Imprime cada camada separada. 3 downloads grátis para testar.", preco:"9,90", img:"img/painel-3d.webp" }
-  ] },
+  { key:"apps", ico:"📱", nome:"Aplicativos", sub:"Apps para a rotina do professor", itens:[] },
   { key:"outros", ico:"➕", nome:"Outros", sub:"Mais materiais", itens:[] }
 ];
 let lojaCat = 'alfa';
@@ -1187,14 +1184,7 @@ function renderLoja(){
     <div class="lp-card">${p.img ? `<img src="${p.img}" alt="" loading="lazy">` : `<div class="ph">${c.ico}</div>`}
       <div class="bd"><div class="nm">${p.nome}</div><div class="ds">${p.desc||''}</div>
         ${p.demo ? `<a class="demo" href="${p.demo}" target="_blank" rel="noopener">Ver demonstração ›</a>` : ''}
-        ${p.produtoId ? `<div class="ft"><div class="kitprice">R$ <b>${p.preco}</b> <small style="font-weight:500;color:var(--muted)">pagamento único</small></div></div>
-        <div class="buybox" style="margin-top:6px">
-          <a class="coach-free" href="${p.app}" target="_blank" rel="noopener">Testar grátis agora</a>
-          <button class="order buy-now loja-on" onclick="lojaComprar('${p.produtoId}')">Comprar agora — Pix ou cartão</button>
-          <small class="loja-on loja-nota">Pagamento seguro pelo PagBank • Liberação automática após confirmação</small>
-          <button class="order so-wpp" onclick="pedirLoja('${c.key}',${i})">Pedir pelo WhatsApp</button>
-          <a class="access-btn" href="${p.app}" target="_blank" rel="noopener">Já comprei — abrir o app</a>
-        </div>` : `<div class="ft"><div class="kitprice">R$ <b>${p.preco}</b></div><button class="order" onclick="pedirLoja('${c.key}',${i})">Pedir pelo WhatsApp</button></div>`}</div>
+        <div class="ft"><div class="kitprice">R$ <b>${p.preco}</b></div><button class="order" onclick="pedirLoja('${c.key}',${i})">Pedir pelo WhatsApp</button></div></div>
     </div>`).join('') + '</div>'
     : `<div class="lp-empty"><span class="lp-soon">EM BREVE</span><b>${c.ico} ${c.nome}</b>Estamos desenvolvendo esses materiais e logo eles estarão aqui. Quer ser avisado(a) quando chegarem?<div style="margin-top:14px"><button class="order" onclick="avisarLoja('${c.key}')">Quero ser avisado(a)</button></div></div>`;
 }
@@ -2911,16 +2901,16 @@ function mostrarTutorial(produtoId){
 }
 window.lojaComprar = async (produtoId, tutorialVisto) => {
   if (!tutorialVisto && window.rastro) window.rastro('comprar', produtoId);
-  if (!tutorialVisto && produtoId !== 'coach' && produtoId.indexOf('painel') !== 0) { mostrarTutorial(produtoId); return; }
+  if (!tutorialVisto && produtoId !== 'coach') { mostrarTutorial(produtoId); return; }
   await esperarPronto();
   if (!usuario) { aoEntrar = () => lojaComprar(produtoId, true); telaLogin('Para receber a apostila na hora, entre com sua conta Google.'); return; }
   abrir('<h3>Preparando seu pagamento…</h3><div class="loja-spin"></div><p class="small" style="text-align:center">Você vai para a página segura do PagBank.</p>');
   try {
     const r = await api('/pedido', { produtoId, retorno: location.origin + location.pathname });
     if (r.jaTem) {
-      const ehApp = produtoId.indexOf('painel') === 0, ehCoach = produtoId === 'coach', ehPdf = r.tipo === 'pdf';
-      abrir('<h3>' + (ehApp ? 'Você já tem o plano Pro 🎉' : ehCoach ? 'Você já tem o Coach Virtual 🎉' : ehPdf ? 'Você já tem este material 🎉' : 'Você já tem esta apostila 🎉') + '</h3><p class="small">' + (ehApp || ehCoach ? 'Ele está liberado' : ehPdf ? 'Os PDFs estão liberados' : 'Ela está liberada') + ' na conta <b>' + esc(usuario.email) + '</b>.</p>'
-        + '<a class="abrir" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + (ehApp ? 'Abrir o app' : ehCoach ? 'Abrir o Coach' : ehPdf ? 'Abrir meus PDFs' : 'Abrir apostila') + '</a>'
+      const ehCoach = produtoId === 'coach', ehPdf = r.tipo === 'pdf';
+      abrir('<h3>' + (ehCoach ? 'Você já tem o Coach Virtual 🎉' : ehPdf ? 'Você já tem este material 🎉' : 'Você já tem esta apostila 🎉') + '</h3><p class="small">' + (ehCoach ? 'Ele está liberado' : ehPdf ? 'Os PDFs estão liberados' : 'Ela está liberada') + ' na conta <b>' + esc(usuario.email) + '</b>.</p>'
+        + '<a class="abrir" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + (ehCoach ? 'Abrir o Coach' : ehPdf ? 'Abrir meus PDFs' : 'Abrir apostila') + '</a>'
         + blocoZap('📲 Receba o link no seu WhatsApp', ehPdf)
         + '<div class="actions"><button class="btn-cancel" onclick="lojaFechar()">Fechar</button></div>');
       ligarZap([{ produtoNome: ehCoach ? 'Coach Virtual (Dany e Leo)' : ehPdf ? 'Seus PDFs' : 'Sua apostila interativa', link: r.link, pdf: ehPdf }], usuario.email);
@@ -3015,11 +3005,6 @@ async function telaMinhas(pedidoVolta){
   }
   if (espera) { clearInterval(espera); espera = null; }
   if (volta && volta.acessoLiberado) {
-    if ((volta.produtoId || '').indexOf('painel') === 0) {
-      abrir('<h3>Pagamento confirmado! 🎉</h3><p class="small">O plano Pro <b>' + esc(volta.produtoNome) + '</b> já está liberado no e-mail <b>' + esc(m.email) + '</b>. Abra o app e entre com este mesmo Gmail: sem limite e sem marca nas folhas.</p>'
-        + '<a class="abrir" href="' + esc(volta.link) + '" target="_blank" rel="noopener">Abrir o app agora</a>' + FECHAR);
-      return;
-    }
     const ehPdf = volta.tipo === 'pdf';
     const ap = [{ produtoNome: volta.produtoNome, link: volta.link, pdf: ehPdf }];
     abrir('<h3>Pagamento confirmado! 🎉</h3><p class="small">' + (ehPdf ? 'Seus PDFs' : 'Sua apostila') + ' <b>' + esc(volta.produtoNome) + '</b> ' + (ehPdf ? 'foram liberados' : 'já está liberada') + ' no e-mail <b>' + esc(m.email) + '</b>.</p>'
@@ -3177,7 +3162,11 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
 (function(){
   var COVER_IPAM = 'img/156a7df220.webp';
   var COVER_RECENS = 'img/0a13bde342.webp';
+  var COVER_SEDUC_MA = 'img/0497eebe90.webp';
   var ED = {
+    ma: [
+      { id:'kit-seduc-ma-especialista', nome:'Kit SEDUC Maranhão — Especialista em Educação (Supervisão Escolar)', conteudo:'Kit completo em PDF com 7 apostilas conforme o edital: Língua Portuguesa; Matemática e Raciocínio Lógico; Conhecimentos Gerais (Geografia e História do Maranhão); Noções de Informática, Inteligência Artificial e LGPD; Redação Discursiva; Educação Inclusiva e Legislação da Educação Especial; e Especialista em Educação — Supervisão Escolar. Teoria objetiva, quadros, resumos e simulados.', price:'29,90', quad:true, capa:function(){ return COVER_SEDUC_MA; } }
+    ],
     pvh: [
       { id:'kit-pvh-series-iniciais', nome:'Kit Professor de Séries Iniciais — Semed Porto Velho', conteudo:'Material preparatório em PDF direcionado ao concurso da Semed Porto Velho para o cargo de Professor de Séries Iniciais.', price:'29,90', capa:function(){ return capaImgs['anos-iniciais']; } },
       { id:'kit-pvh-agente-secretaria', nome:'Kit Agente de Secretaria — Semed Porto Velho', conteudo:'Material preparatório em PDF direcionado ao concurso da Semed Porto Velho para o cargo de Agente de Secretaria Escolar.', price:'29,90', capa:function(){ return avulsaImgs['especifico-agente-secretaria']; } }
@@ -3234,7 +3223,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
   window.renderOutrosConcursos();
   // links diretos para divulgar
   var LINKS = {
-    'semed-pvh':{ t:'ed', id:'' }, 'semed-pvh-series':{ t:'ed', id:'kit-pvh-series-iniciais' }, 'semed-pvh-secretaria':{ t:'ed', id:'kit-pvh-agente-secretaria' },
+    'semed-pvh':{ t:'ed', id:'' }, 'semed-pvh-series':{ t:'ed', id:'kit-pvh-series-iniciais' }, 'semed-pvh-secretaria':{ t:'ed', id:'kit-pvh-agente-secretaria' }, 'seduc-maranhao':{ t:'ed', id:'kit-seduc-ma-especialista', edpill:'ma' },
     'ipam-pvh':{ t:'out', id:'kit-ipam-pvh-administrativo', pill:'ipam' },
     'recenseador-ibge':{ t:'out', id:'pdf-recenseador-ibge', pill:'ibge' },
     'recenseador-interativa':{ t:'out', id:'apostila-rec', pill:'ibge' }
@@ -3246,6 +3235,7 @@ if (isSignInWithEmailLink(auth, location.href)) concluirLink();
     var L = LINKS[h];
     if (L.t === 'ed') { var t = document.querySelector('.tab[data-tab="concursos"]'); if (t) t.click(); }
     else if (window.setAreaConcurso) window.setAreaConcurso('outros');
+    if (L.edpill) { atualEd = L.edpill; document.querySelectorAll('.oc-pill[data-oc]').forEach(function(x){ x.classList.toggle('active', x.dataset.oc === L.edpill); }); }
     if (L.pill) { atualOut = L.pill; document.querySelectorAll('.oc-pill[data-oc2]').forEach(function(x){ x.classList.toggle('active', x.dataset.oc2 === L.pill); }); }
     alvoId = L.id || null; window.renderOutrosConcursos();
     var parou = false, n = 0;
